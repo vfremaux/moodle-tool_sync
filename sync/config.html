@@ -76,7 +76,7 @@
 					<SELECT name="tool_sync_h">
 					<?php
 						echo "<option value=\"0\"";
-							if (($frm->tool_sync_h)=="0"){
+							if ((@$frm->tool_sync_h)=="0"){
 								echo " selected=\"selected\"";
 							}
 						echo ">0 ";
@@ -84,7 +84,7 @@
 						echo "</option>";
 						
 						echo "<option value=\"1\"";
-							if (($frm->tool_sync_h)=="1"){
+							if ((@$frm->tool_sync_h)=="1"){
 								echo " selected=\"selected\"";
 							}
 						echo ">1 ";
@@ -94,7 +94,7 @@
 						$i = 2;
 						while($i < 24){
 							echo "<option value=\"$i\"";
-							if (($frm->tool_sync_h) == "$i"){
+							if ((@$frm->tool_sync_h) == "$i"){
 								echo " selected=\"selected\"";
 							}
 							echo ">$i ";
