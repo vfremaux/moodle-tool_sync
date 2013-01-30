@@ -187,7 +187,7 @@
 						$i = 60;
 						while($i < 180){
 							echo "<option value=\"$i\"";
-							if (($frm->tool_sync_ct) == "$i"){
+							if ((@$frm->tool_sync_ct) == "$i"){
 								echo " selected=\"selected\"";
 							}
 							echo ">$i ";
@@ -230,7 +230,7 @@
 			<tr valign="top">
 				<td align="right"><?php print_string('group_clean', 'tool_sync')?></td>
 				<td>
-					<input type="checkbox" value="1" name="tool_sync_enrolcleanup" <?php if ($frm->tool_sync_enrolcleanup) echo "checked=\"checked\"" ?> />
+					<input type="checkbox" value="1" name="tool_sync_enrolcleanup" <?php if (@$frm->tool_sync_enrolcleanup) echo "checked=\"checked\"" ?> />
 				</td>
 				<td>
 					<?php print_string('group_cleanex', 'tool_sync')?>

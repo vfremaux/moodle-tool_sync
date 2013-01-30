@@ -19,7 +19,7 @@
 		<?php
 		if (!isset($frm->tool_sync_enrol_courseidentifier)) set_config('tool_sync_enrol_courseidentifier', 0);
 		$identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
-		echo html_writer::select($identifieroptions, 'enrol_courseidentifier', $frm->tool_sync_enrol_courseidentifier); 
+		echo html_writer::select($identifieroptions, 'enrol_courseidentifier', 0 + @$frm->tool_sync_enrol_courseidentifier); 
 		?>
 		</td>
 		<td>
@@ -32,7 +32,7 @@
 		<?php
 		if (!isset($frm->enrol_useridentifier)) set_config('tool_sync_enrol_useridentifier', 0);
 		$identifieroptions = array('0' => 'idnumber', '1' => 'username', '2' => 'email', '3' => 'id');
-		echo html_writer::select($identifieroptions, 'tool_sync_enrol_useridentifier', $frm->tool_sync_enrol_useridentifier); 
+		echo html_writer::select($identifieroptions, 'tool_sync_enrol_useridentifier', 0 + @$frm->tool_sync_enrol_useridentifier); 
 		?>
 		</td>
 		<td>
