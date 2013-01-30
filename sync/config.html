@@ -120,7 +120,7 @@
 					<SELECT name="tool_sync_m">
 					<?php
 						echo "<option value=\"0\"";
-							if (($frm->tool_sync_m)=="0"){
+							if ((@$frm->tool_sync_m)=="0"){
 								echo " selected=\"selected\"";
 							}
 						echo ">0 ";
@@ -131,7 +131,7 @@
 						$i=5;
 						while($i<60){
 							echo "<option value=\"$i\"";
-							if (($frm->tool_sync_m)=="$i"){
+							if ((@$frm->tool_sync_m)=="$i"){
 								echo " selected=\"selected\"";
 							}
 							echo ">$i ";
