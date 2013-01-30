@@ -1,0 +1,53 @@
+<fieldset>
+	<legend><strong><?php print_string('userpicturesconfig', 'tool_sync') ?></strong></legend>
+
+	<table cellspacing="0" cellpadding="5" border="0" class="boxaligncenter">
+
+	<tr valign="top">
+		<td align="right"><?php print_string('userpicturesfilesprefix', 'tool_sync') ?>:</td>
+		<td>
+			<input type="text" size="20" name="tool_sync_userpictures_fileprefix" value="<?php echo @$frm->tool_sync_userpictures_fileprefix ?>" />
+		</td>
+		<td align="right">
+			<?php  print_string('userpicturesfilesprefix_desc', 'tool_sync') ?>
+		</td>
+	</tr>
+
+	<tr valign="top">
+		<td align="right"><?php print_string('userpicturesuserfield', 'tool_sync') ?>:</td>
+		<td>
+			<?php
+			echo html_writer::select($this->get_userfields(), 'tool_sync_userpictures_userfield', @$frm->tool_sync_userpictures_userfield);
+			?>
+		</td>
+		<td align="right">
+			<?php  print_string('userpicturesuserfield_desc', 'tool_sync') ?>
+		</td>
+	</tr>
+
+	<tr valign="top">
+		<td align="right"><?php print_string('userpicturesoverwrite', 'tool_sync') ?>:</td>
+		<td>
+			<?php
+			echo html_writer::select_yes_no('tool_sync_userpictures_overwrite', @$frm->tool_sync_userpictures_overwrite);
+			?>
+		</td>
+		<td align="right">
+			<?php  print_string('userpicturesoverwrite_desc', 'tool_sync') ?>
+		</td>
+	</tr>
+
+	<tr valign="top">
+		<td align="right"><?php print_string('userpicturesforcedeletion', 'tool_sync') ?>:</td>
+		<td>
+			<?php
+			echo html_writer::select_yes_no('tool_sync_userpictures_forcedeletion', @$frm->tool_sync_userpictures_forcedeletion);
+			?>
+		</td>
+		<td align="right">
+			<?php  print_string('userpicturesforcedeletion_desc', 'tool_sync') ?>
+		</td>
+	</tr>
+
+	</table>
+</fieldset>

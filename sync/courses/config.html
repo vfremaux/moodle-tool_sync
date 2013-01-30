@@ -1,0 +1,84 @@
+<fieldset >
+	<legend><strong><?php print_string('coursesmgtfiles', 'tool_sync') ?></strong></legend>
+	
+	<table cellspacing="0" cellpadding="5" border="0" class="boxaligncenter">
+
+		<tr valign="top">
+			<td align="right"><?php print_string('coursedeletefile', 'tool_sync') ?></td>
+			<td>
+				<input type="text" size="20" name="tool_sync_course_filedeletelocation" value="<?php echo $frm->tool_sync_course_filedeletelocation ?>" />
+			</td>
+			<td>
+			<?php print_string('location', 'enrol_flatfile') ?>
+			</td>
+		</tr>
+
+		<tr valign="top">
+			<td align="right"><?php print_string('deletefileidentifier', 'tool_sync') ?></td>
+			<td>
+			<?php
+			if (!isset($frm->tool_sync_course_filedeleteidentifier)) set_config('course_filedeleteidentifier', 0);
+			$identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
+			echo html_writer::select($identifieroptions, 'course_filedeleteidentifier', $frm->tool_sync_course_filedeleteidentifier); 
+			?>
+			</td>
+			<td>
+			</td>
+		</tr>
+
+		<tr valign="top">
+			<td align="right"><?php print_string('uploadcoursecreationfile', 'tool_sync') ?></td>
+			<td>
+				<input type="text" size="20" name="tool_sync_course_fileuploadlocation" value="<?php echo $frm->tool_sync_course_fileuploadlocation ?>" />
+			</td>
+			<td>
+			<?php  print_string('location', 'enrol_flatfile') ?>
+			</td>
+		</tr>
+
+		<tr valign="top">
+			<td align="right"><?php print_string('existcoursesfile', 'tool_sync') ?></td>
+			<td>
+				<input type="text" size="20" name="tool_sync_course_fileexistlocation" value="<?php echo $frm->tool_sync_course_fileexistlocation ?>" />
+			</td>
+			<td>
+			<?php  print_string('location', 'enrol_flatfile') ?>
+			</td>
+		</tr>	
+
+		<tr valign="top">
+			<td align="right"><?php print_string('existfileidentifier', 'tool_sync') ?></td>
+			<td>
+			<?php
+			if (!isset($frm->tool_sync_course_existfileidentifier)) set_config('course_existfileidentifier', 0);
+			$identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
+			echo html_writer::select($identifieroptions, 'course_existfileidentifier', $frm->tool_sync_course_existfileidentifier); 
+			?>
+			</td>
+			<td>
+			</td>
+		</tr>
+		
+		<tr valign="top">
+			<td align="right"><?php print_string('resetfile', 'tool_sync') ?></td>
+			<td>
+				<input type="text" size="20" name="tool_sync_reset_course_file" value="<?php echo $frm->tool_sync_reset_course_file ?>" />
+			</td>
+			<td>
+			<?php  print_string('location', 'enrol_flatfile') ?>
+			</td>
+		</tr>		
+
+		<tr valign="top">
+			<td align="right"><?php print_string('syncforcecourseupdate', 'tool_sync') ?></td>
+			<td>
+				<input type="radio" name="tool_sync_forcecourseupdate" value="1" <?php echo (!empty($frm->tool_sync_forcecourseupdate)) ? ' checked="checked" ' : '' ; ?> /> <?php print_string('yes') ?>
+				- <input type="radio" name="tool_sync_forcecourseupdate" value="0" <?php echo (empty($frm->tool_sync_forcecourseupdate)) ? ' checked="checked" ' : '' ; ?> /> <?php print_string('no') ?>
+			</td>
+			<td>
+			<?php print_string('forcecourseupdateconfig', 'tool_sync') ?>
+			</td>
+		</tr>		
+		
+	</table>
+</fieldset>
