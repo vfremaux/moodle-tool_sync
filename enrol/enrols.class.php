@@ -6,6 +6,7 @@
 **/
 
 require_once $CFG->dirroot.'/admin/tool/sync/lib.php';
+require_once $CFG->dirroot.'/group/lib.php';
 
 class enrol_plugin_manager {
 
@@ -100,6 +101,8 @@ class enrol_plugin_manager {
 				'uid' => 1);
 		$optional = array(
 				'hidden' => 1,
+				'starttime' => 1,
+				'endtime' => 1,
 				'cmd' => 1,
 				'enrol' => 1,
 				'gcmd' => 1,
@@ -125,7 +128,7 @@ class enrol_plugin_manager {
 			$i++;
 		}
 
-		$headers = split($csv_delimiter, $text);
+		$headers = explode($csv_delimiter2, $text);
 		
 		function trim_fields(&$e){
 			$e = trim($e);
@@ -153,19 +156,46 @@ class enrol_plugin_manager {
 		// Starting processing lines
 		$i = 2;
 		while (!feof ($fp)) {
+			
+			$record = array();
 
 			$text = fgets($fp, 1024);
 			if (sync_is_empty_line_or_format($text, false)) {
 				$i++;
 				continue;
 			}
-			$line = explode($CFG->tool_sync_csvseparator, $text);
+			$line = explode($csv_delimiter2, $text);
 
 			foreach ($line as $key => $value) {
 				//decode encoded commas
 				$record[$header[$key]] = trim($value);
-			}	
+			}
+			
+			if (!array_key_exists('cmd', $record)) {
+				$record['cmd'] = (empty($CFG->tool_sync_enrol_defaultcmd)) ? 'add' : $CFG->tool_sync_enrol_defaultcmd ;
+			}
 
+			if (!array_key_exists('enrol', $record)) {
+				$record['enrol'] = '';
+			} else {
+				if (empty($record['enrol'])){
+					$record['enrol'] = 'manual';
+				}
+			}
+
+			if (array_key_exists('starttime', $record)) {
+				$record['starttime'] = tool_sync_parsetime($record['starttime'], time());
+			} else {
+				$record['starttime'] = time();
+			}
+
+			if (array_key_exists('endtime', $record)) {
+				$record['endtime'] = tool_sync_parsetime($record['endtime'], 0);
+			} else {
+				$record['endtime'] = 0;
+			}
+
+			$e = new StdClass;
 			$e->i = $i;
 			$e->mycmd = $record['cmd'];
 			$e->myrole = $record['rolename'];
@@ -204,132 +234,144 @@ class enrol_plugin_manager {
 
 			$CFG->tool_sync_coursesg[$i - 1] = $course->id;
 			$context = context_course::instance($course->id);
+			
+			// get enrolment plugin and method
+			if ($enrolments = enrol_get_instances($course->id, true)){
+				$enrol = array_pop($enrolments);
+				$enrolcomponent = 'enrol_'.$enrol->enrol;
+				$enrolinstance = $enrol->id;
+			} else {
+				$enrolcomponent = '';
+				$enrolinstance = 0;
+			}
+			
+			$enrol = enrol_get_plugin('manual');
 
-			if(isset($record['cmd'])){				
-				if($record['cmd'] == 'del'){
+		    if (!$enrols = $DB->get_records('enrol', array('enrol' => $record['enrol'], 'courseid' => $course->id, 'status' => ENROL_INSTANCE_ENABLED), 'sortorder ASC')) {
+				tool_sync_report($CFG->tool_sync_enrollog, get_string('errornomanualenrol', 'tool_sync'));
+		        $record['enrol'] = '';
+		    } else {
+		    	$enrol = reset($enrols);
+		    	$enrolplugin = enrol_get_plugin($record['enrol']);
+		    }
+
+			// start process record
+			
+			if($record['cmd'] == 'del' || $record['cmd'] == 'delete'){
+				if (!empty($record['enrol'])){
+
+					// unenrol also removes all role assigniations
+					try{
+						$enrolplugin->unenrol_user($enrol, $user->id);
+						tool_sync_report($CFG->tool_sync_enrollog, get_string('unenrolled', 'tool_sync', $e));
+					} catch (Exception $exc) {
+						tool_sync_report($CFG->tool_sync_enrollog, get_string('errorunenrol', 'tool_sync', $e));
+					}
+
+				} else {
 					if($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
-						if(!role_unassign($role->id, $user->id, null, $context->id)){
-							tool_sync_report($CFG->tool_sync_enrollog, get_string('errorunassign', 'tool_sync', $e));				
+						// avoids weird behaviour of role assignement in other assignement admin
+						$enrolcomponent = '';
+						$enrolinstance = 0;
+						if(!role_unassign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, time())){
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('errorunassign', 'tool_sync', $e));
 						} else {
 							tool_sync_report($CFG->tool_sync_enrollog, get_string('unassign', 'tool_sync', $e));
 						}
 					} else {
-						if(!role_unassign(null, $user->id, null, $context->id)){
+						if(!role_unassign(null, $user->id, $context->id, $enrolcomponent, $enrolinstance)){
 							tool_sync_report($CFG->tool_sync_enrollog, get_string('errorunassign', 'tool_sync', $e));
 						} else {
 							tool_sync_report($CFG->tool_sync_enrollog, get_string('unassignall', 'tool_sync', $e));
 						}									
 					}
-				} elseif ($record['cmd'] == 'add'){
-					if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
+				}
+				
+			} elseif ($record['cmd'] == 'add'){
+				if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
 
-						if(!$DB->get_record('role_assignments', array('roleid' => $role->id, 'contextid' => $context->id, 'userid' => $user->id))){
-							if (@$record['enrol'] == 'manual'){
-								// Uses manual enrolment plugin to enrol AND assign role properly
-								enrol_try_internal_enrol($context->instance, $user->id, $role->id, time(), 0);
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('enrolled', 'tool_sync', $e));
+					if (!empty($record['enrol'])){
+						// Uses manual enrolment plugin to enrol AND assign role properly
+						// enrollment with explicit role does role_assignation
+						try {
+							$enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'], $record['endtime'], ENROL_USER_ACTIVE);
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('enrolled', 'tool_sync', $e));
+						} catch (Exception $exc){
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('errorenrol', 'tool_sync', $e));
+						}
+					} else {
+						if(!$DB->get_record('role_assignments', array('roleid' => $role->id, 'contextid' => $context->id, 'userid' => $user->id, 'component' => ''))){
+							if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])){
+							// if(!role_assign($role->id, $user->id, $context->id)){
+								if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+								tool_sync_report($CFG->tool_sync_enrollog, get_string('errorline', 'tool_sync')." $i : $mycmd $myrole $myuser $mycourse : $user->lastname $user->firstname == $role->shortname ==> $course->shortname");
 							} else {
-								if(!role_assign($role->id, $user->id, null, $context->id)){
-									if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-									tool_sync_report($CFG->tool_sync_enrollog, get_string('errorline', 'tool_sync')." $i : $mycmd $myrole $myuser $mycourse : $user->lastname $user->firstname == $role->shortname ==> $course->shortname");
-								} else {
-									tool_sync_report($CFG->tool_sync_enrollog, get_string('assign', 'tool_sync', $e));
-								}
+								tool_sync_report($CFG->tool_sync_enrollog, get_string('assign', 'tool_sync', $e));
 							}
 						} else {
 							tool_sync_report($CFG->tool_sync_enrollog, get_string('alreadyassigned', 'tool_sync', $e));
 						}
-					} else {
-						if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-						tool_sync_report($CFG->tool_sync_enrollog, get_string('errornorole', 'tool_sync', $e));
 					}
-				} elseif ($record['cmd'] == 'shift'){
-					// check this rôle exists in this moodle
-					if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
+
+				} else {
+					if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+					tool_sync_report($CFG->tool_sync_enrollog, get_string('errornorole', 'tool_sync', $e));
+				}
+			} elseif ($record['cmd'] == 'shift'){
+
+				// check this role exists in this moodle
+				if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
+
+					// unenrol also unassign all roles
+					if (!empty($record['enrol'])){
+						try {
+							$enrolplugin->unenrol_user($enrol, $user->id);
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('unenrolled', 'tool_sync', $e));
+						} catch (Exception $exc) {
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('errorunenrol', 'tool_sync', $e));
+						}
+					} else {
 						if ($roles = get_user_roles($context, $user->id)) {
 							foreach ($roles as $r){
-								if (!role_unassign($r->roleid, $user->id, null, $context->id)){
+								// weird behaviour 
+								$enrolcomponent = '';
+								$enrolinstance = 0;
+								if (!role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent, $enrolinstance)){
 									tool_sync_report($CFG->tool_sync_enrollog, get_string('unassignerror', 'tool_sync', $e));
 								} else {
 									tool_sync_report($CFG->tool_sync_enrollog, get_string('unassign', 'tool_sync', $e));
 								}
 							}
 						}
-						// maybe we need enrol this user (if first time in shift list)
-						if (@$record['enrol'] == 'manual'){
-							// Uses manual enrolment plugin to enrol AND assign role properly
-							enrol_try_internal_enrol($context->instance, $user->id, $role->id, time(), 0);
+					}
+
+					// maybe we need enrol this user (if first time in shift list)
+					// enrolement does perform role_assign
+					if (!empty($record['enrol'])){
+						try {
+							$enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'], $record['endtime'], ENROL_USER_ACTIVE);
 							tool_sync_report($CFG->tool_sync_enrollog, get_string('enrolled', 'tool_sync', $e));
-						} else {
-							if (!role_assign($role->id, $user->id, null, $context->id)){
-								if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('errorassign', 'tool_sync', $e));
-								$i++;
-								continue;
-							} else {
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('assign', 'tool_sync', $e));
-							}
+						} catch(Exception $exc){
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('errorenrol', 'tool_sync', $e));
 						}
 					} else {
-						if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-						tool_sync_report($CFG->tool_sync_enrollog, get_string('errornorole', 'tool_sync', $e));
-						$i++;
-						continue;
+						if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])){
+							if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('errorassign', 'tool_sync', $e));
+						} else {
+							tool_sync_report($CFG->tool_sync_enrollog, get_string('assign', 'tool_sync', $e));
+						}
 					}
+
 				} else {
 					if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-					tool_sync_report($CFG->tool_sync_enrollog, get_string('errorbadcmd', 'tool_sync', $e));
+					tool_sync_report($CFG->tool_sync_enrollog, get_string('errornorole', 'tool_sync', $e));
+					$i++;
+					continue;
 				}
 			} else {
-				if (empty($CFG->tool_sync_enrol_defaultcmd)) {
-					tool_sync_report($CFG->tool_sync_enrollog, get_string('errorcritical', 'tool_sync', $e));
-				} else {
-					$cmd = $CFG->tool_sync_enrol_defaultcmd;
-					if($cmd == 'del'){
-						if($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
-							if(!role_unassign($role->id,$user->id,null,$context->id)){
-								if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('errorunassign', 'tool_sync', $e));
-							} else {
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('unassign', 'tool_sync', $e));
-							}										
-
-						} else {
-							if(!role_unassign(null,$user->id,null,$context->id)){
-								if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('errorunassign', 'tool_sync', $e));
-							} else {
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('unassign', 'tool_sync', $e));
-							}									
-						}
-					} elseif ($cmd == 'add') {
-						if($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
-							if (@$record['enrol'] == 'manual'){
-								// Uses manual enrolment plugin to enrol AND assign role properly
-								enrol_try_internal_enrol($context->instance, $user->id, $role->id, time(), 0);
-								tool_sync_report($CFG->tool_sync_enrollog, get_string('enrolled', 'tool_sync', $e));
-							} else {
-								// elsewhere just assign role (other users)
-								if(!role_assign($role->id, $user->id, null, $context->id)){
-									if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-									tool_sync_report($CFG->tool_sync_enrollog, get_string('errorhiddenroleadded', 'tool_sync'). $context->id);
-								} else {
-									tool_sync_report($CFG->tool_sync_enrollog, get_string('hiddenroleadded', 'tool_sync'). $context->id);
-								}
-							}
-						} else {
-							if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-							tool_sync_report($CFG->tool_sync_enrollog, get_string('erroremptyrole', 'tool_sync', $e));
-							$i++;
-							continue;
-						}	
-					} else {
-						if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
-						tool_sync_report($CFG->tool_sync_enrollog, get_string('erroremptycommand', 'tool_sync', $e));
-						$i++;
-						continue;
-					}
-				}
+				if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+				tool_sync_report($CFG->tool_sync_enrollog, get_string('errorbadcmd', 'tool_sync', $e));
 			}
 			
 			if (!empty($record['gcmd'])){
@@ -360,7 +402,7 @@ class enrol_plugin_manager {
 							$e->group = $record['g'.$i];
 							
 							if (count(get_user_roles($context, $user->id))) {
-								if (add_user_to_group($groupid[$i], $user->id)) {
+								if (groups_add_member($groupid[$i], $user->id)) {
 									tool_sync_report($CFG->tool_sync_enrollog, get_string('addedtogroup','tool_sync',$e));
 								} else {
 									tool_sync_report($CFG->tool_sync_enrollog, get_string('addedtogroupnot','tool_sync',$e));
@@ -396,7 +438,7 @@ class enrol_plugin_manager {
 							}
 							
 							if (count(get_user_roles($context, $user->id))) {
-								if (add_user_to_group($groupid[$i], $user->id)) {
+								if (groups_add_member($groupid[$i], $user->id)) {
 									tool_sync_report($CFG->tool_sync_enrollog, get_string('addedtogroup','tool_sync',$e));
 								} else {
 									tool_sync_report($CFG->tool_sync_enrollog, get_string('addedtogroupnot','tool_sync',$e));
@@ -407,7 +449,7 @@ class enrol_plugin_manager {
 						}
 					}								
 				} else {
-					tool_sync_report($CFG->enrollog, get_string('errorgcmdvalue', 'tool_sync', $e));
+					tool_sync_report($CFG->tool_sync_enrollog, get_string('errorgcmdvalue', 'tool_sync', $e));
 				}
 			}							
 			//echo "\n";

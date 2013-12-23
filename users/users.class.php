@@ -41,14 +41,15 @@ class users_plugin_manager {
 
 	/// Override the base process_config() function
 	function process_config($config) {
-	     if (!isset($config->users_filelocation)) {
-	        $config->users_filelocation = '';
+		
+	     if (!isset($config->tool_sync_users_filelocation)) {
+	        $config->tool_sync_users_filelocation = '';
 	    }
-	    set_config('users_filelocation', $config->users_filelocation);
-		if (!isset($config->users_uutype)) {
-	        $config->users_uutype = '';
+	    set_config('tool_sync_users_filelocation', $config->tool_sync_users_filelocation);
+		if (!isset($config->tool_sync_users_uutype)) {
+	        $config->tool_sync_users_uutype = '';
 	    }
-	    set_config('users_uutype', $config->users_uutype);
+	    set_config('tool_sync_users_uutype', $config->tool_sync_users_uutype);
 	    return true;	
 	}
 
@@ -60,6 +61,8 @@ class users_plugin_manager {
 	*/
     function cron() {
         global $CFG, $USER, $DB;
+        
+        $systemcontext = context_system::instance();
 
 		// Internal process controls
 		$createpassword = false;
@@ -71,7 +74,7 @@ class users_plugin_manager {
         	return;
 		}
 
-		if (empty($CFG->users_filelocation)) {
+		if (empty($CFG->tool_sync_users_filelocation)) {
             $filename = $CFG->dataroot.'/sync/userimport.csv';  // Default location
         } else {
             $filename = $CFG->dataroot.'/'.$CFG->tool_sync_users_filelocation;
@@ -94,7 +97,7 @@ class users_plugin_manager {
 			$csv_delimiter = "\;";
 			$csv_delimiter2 = ";";
 		}
-
+		
 		//*NT* File that is used is currently hardcoded here!
 		// Large files are likely to take their time and memory. Let PHP know
 		// that we'll take longer, and that the process should be recycled soon
@@ -131,6 +134,8 @@ class users_plugin_manager {
 				'maildisplay' => 1,
 				'htmleditor' => 1,
 				'autosubscribe' => 1,
+				'cohort' => 1,
+				'cohortid' => 1,
 				'course1' => 1,
 				'group1' => 1,
 				'type1' => 1,
@@ -163,7 +168,7 @@ class users_plugin_manager {
 			$i++;
 		}
 
-		$headers = split($csv_delimiter, $text);
+		$headers = explode($csv_delimiter2, $text);
 
 		// check for valid field names
 		foreach ($headers as $h) {
@@ -199,14 +204,17 @@ class users_plugin_manager {
 		$courses = get_courses('all', 'c.sortorder','c.id,c.shortname,c.idnumber,c.fullname,c.sortorder,c.visible');
 
 		// take some from admin profile, other fixed by hardcoded defaults
-		foreach ($optionalDefaults as $key => $value) {
-			if ($value == 'adminvalue'){
-				$user->$key = $adminuser->$key;
-			} else {
-				$user->$key = $value;
-			}
-		}
 		while (!feof ($fp)) {
+
+			// make a new base record
+			$user = new StdClass;
+			foreach ($optionalDefaults as $key => $value) {			
+				if ($value == 'adminvalue'){
+					$user->$key = $adminuser->$key;
+				} else {
+					$user->$key = $value;
+				}
+			}
 
 			//Note: commas within a field should be encoded as &#44 (for comma separated csv files)
 			//Note: semicolon within a field should be encoded as &#59 (for semicolon separated csv files)
@@ -215,7 +223,7 @@ class users_plugin_manager {
 				$i++;
 				continue;
 			}
-			$valueset = explode($CFG->tool_sync_csvseparator, $text);				
+			$valueset = explode($csv_delimiter2, $text);				
 			$record = array();
 			foreach ($valueset as $key => $value) {
 				//decode encoded commas
@@ -236,7 +244,7 @@ class users_plugin_manager {
 					// password needs to be encrypted
 						//$user->password = hash_internal_user_password($value);  *NT*  Password is LDAP!
 					} elseif ($name == 'username') {
-						$user->username = moodle_strtolower($value);
+						$user->username = textlib::strtolower($value);
 					} else {
 					// normal entry
 						$user->{$name} = $value;
@@ -303,6 +311,8 @@ class users_plugin_manager {
 				if (!isset($CFG->primaryidentity)) set_config('primaryidentity', 'idnumber');
 
 				if (empty($user->mnethostid)) $user->mnethostid = $CFG->mnet_localhost_id;
+				
+				// echo "checking primary identity : $CFG->primaryidentity with ($idnumber,{$user->email},{$username}) " ;
 				if (($CFG->primaryidentity == 'idnumber') && !empty($idnumber)){
 					$olduser = $DB->get_record('user', array('idnumber' => $idnumber, 'mnethostid' => $user->mnethostid));
 				} elseif (($CFG->primaryidentity == 'email') && !empty($user->email)){
@@ -324,6 +334,8 @@ class users_plugin_manager {
 						if ($DB->update_record('user', $user)) {
 							tool_sync_report($CFG->tool_sync_userlog, get_string('useraccountupdated', 'tool_sync', "$user->username ($idnumber)"));
 							$usersupdated++;
+		                	
+		                	events_trigger('user_updated', $user);
 						} else {
 							tool_sync_report($CFG->tool_sync_userlog, get_string('usernotupdatederror', 'tool_sync', "[$username] $lastname $firstname ($idnumber)"));
 							$userserrors++;
@@ -340,6 +352,13 @@ class users_plugin_manager {
 						$userserrors++;
 					}
 				} else { // new user
+					
+					// pre check we have no username collision
+					if ($DB->get_record('user', array('mnethostid' => $user->mnethostid, 'username' => $user->username))){
+						tool_sync_report($CFG->tool_sync_userlog, get_string('usercollision', 'tool_sync', "$user->id , $user->username , $user->idnumber, $user->firstname, $user->lastname "));
+						continue;
+					}
+					
 					if ($user->id = $DB->insert_record('user', $user)) {
 						tool_sync_report($CFG->tool_sync_userlog, get_string('useraccountadded', 'tool_sync', "$user->id , $user->username "));
 						$CFG->userlog .= "$user->id , $user->username user added\n";
@@ -356,11 +375,37 @@ class users_plugin_manager {
 
 		                // save custom profile fields data from csv file
 		                profile_save_data($user);
+		                
+		                events_trigger('user_created', $user);
 					} else {
 						// Record not added -- possibly some other error
 						tool_sync_report($CFG->tool_sync_userlog, get_string('usernotaddederror', 'tool_sync', "[$username] $lastname $firstname ($idnumber)"));
 						$userserrors++;
 						continue;
+					}
+				}
+
+			// cohort (only system level) binding management //
+				if (@$user->cohort) {
+					$t = time();
+					if (!$cohort = $DB->get_record('cohort', array('name' => $user->cohort))){
+						$cohort = new StdClass();
+						$cohort->name = $user->cohort;
+						$cohort->idnumber = @$user->cohortid;
+						$cohort->descriptionformat = FORMAT_MOODLE;
+						$cohort->contextid = $systemcontext->id;
+						$cohort->timecreated = $t;
+						$cohort->timemodified = $t;
+						$cohort->id = $DB->insert_record('cohort', $cohort);
+					}
+					
+					// bind user to cohort
+					if (!$cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))){
+						$cohortmembership = new StdClass();
+						$cohortmembership->userid = $user->id;
+						$cohortmembership->cohortid = ''.@$cohort->id;
+						$cohortmembership->timeadded = $t;
+						$cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
 					}
 				}
 
@@ -523,13 +568,13 @@ class users_plugin_manager {
 		}
 		fclose($fp);
 
-		if (!empty($CFG->sync_filearchive)){
+		if (!empty($CFG->tool_sync_filearchive)){
 			$archivename = basename($filename);
 			$now = date('Ymd-hi', time());
 			$archivename = $CFG->dataroot."/sync/archives/{$now}_users_$archivename";
 			copy($filename, $archivename);
 		}
-		if (!empty($CFG->sync_filecleanup)){
+		if (!empty($CFG->tool_sync_filecleanup)){
 			@unlink($filename);
 		}		
 		return true;

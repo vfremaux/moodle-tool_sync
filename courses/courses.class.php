@@ -7,7 +7,9 @@
 include_once $CFG->dirroot.'/backup/backuplib.php';
 include_once $CFG->dirroot.'/backup/lib.php';
 include_once $CFG->dirroot.'/backup/restorelib.php';
-require_once($CFG->dirroot."/blocks/publishflow/backup/restore_automation.class.php");
+if (file_exists($CFG->dirroot."/blocks/publishflow/backup/restore_automation.class.php")){
+	require_once($CFG->dirroot."/blocks/publishflow/backup/restore_automation.class.php");
+}
 include_once $CFG->dirroot.'/admin/tool/sync/lib.php';
 include_once $CFG->dirroot.'/admin/tool/sync/courses/lib.php';
 
@@ -51,41 +53,46 @@ class courses_plugin_manager {
 	*/
 	function process_config($config) {
 		global $CFG;
-
-	    if (!isset($config->course_filedeletelocation)) {
-	        $config->course_filedeletelocation = 0;
+		
+	    if (!isset($config->tool_sync_course_filedeletelocation)) {
+	        $config->tool_sync_course_filedeletelocation = 0;
 	    }
-	    set_config('course_filedeletelocation', $config->course_filedeletelocation);
+	    set_config('tool_sync_course_filedeletelocation', $config->tool_sync_course_filedeletelocation);
 
-	    if (!isset($config->course_filedeleteidentifier)) {
-	        $config->course_filedeleteidentifier = 0;
+	    if (!isset($config->tool_sync_course_filedeleteidentifier)) {
+	        $config->tool_sync_course_filedeleteidentifier = 0;
 	    }
-	    set_config('course_filedeleteidentifier', $config->course_filedeleteidentifier);
+	    set_config('tool_sync_course_filedeleteidentifier', $config->tool_sync_course_filedeleteidentifier);
 
-	    if (!isset($config->course_fileuploadlocation)) {
-	        $config->course_fileuploadlocation = '';
+	    if (!isset($config->tool_sync_course_fileuploadlocation)) {
+	        $config->tool_sync_course_fileuploadlocation = '';
 	    }
-	    set_config('course_fileuploadlocation', $config->course_fileuploadlocation);
+	    set_config('tool_sync_course_fileuploadlocation', $config->tool_sync_course_fileuploadlocation);
 
-	    if (!isset($config->course_fileexistlocation)) {
-	        $config->course_fileexistlocation = '';
+	    if (!isset($config->tool_sync_course_fileexistlocation)) {
+	        $config->tool_sync_course_fileexistlocation = '';
 	    }
-	    set_config('course_fileexistlocation', $config->course_fileexistlocation);		
-	    if (!isset($config->course_existfileidentifier)) {
-	        $config->course_existfileidentifier = 0;
+	    set_config('tool_sync_course_fileexistlocation', $config->tool_sync_course_fileexistlocation);		
+	    if (!isset($config->tool_sync_course_existfileidentifier)) {
+	        $config->tool_sync_course_existfileidentifier = 0;
 	    }
-	    set_config('course_existfileidentifier', $config->course_existfileidentifier);
+	    set_config('tool_sync_course_existfileidentifier', $config->tool_sync_course_existfileidentifier);
 
 
-	    if (!isset($config->reset_course_file)) {
-	        $config->reset_course_file = '';
+	    if (!isset($config->tool_sync_reset_course_file)) {
+	        $config->tool_sync_reset_course_file = '';
 	    }
-	    set_config('reset_course_file', $config->reset_course_file);	
+	    set_config('tool_sync_reset_course_file', $config->tool_sync_reset_course_file);	
 
-	    if (!isset($config->sync_forcecourseupdate)) {
-	        $config->sync_forcecourseupdate = 0;
+	    if (!isset($config->tool_sync_course_resetfileidentifier)) {
+	        $config->tool_sync_course_resetfileidentifier = 1; // shortname as default
 	    }
-	    set_config('sync_forcecourseupdate', $config->sync_forcecourseupdate);	
+	    set_config('tool_sync_course_resetfileidentifier', $config->tool_sync_course_resetfileidentifier);
+
+	    if (!isset($config->tool_sync_forcecourseupdate)) {
+	        $config->tool_sync_forcecourseupdate = 0;
+	    }
+	    set_config('tool_sync_forcecourseupdate', $config->tool_sync_forcecourseupdate);	
 		
 	    return true;
 	}
@@ -105,7 +112,7 @@ class courses_plugin_manager {
 	    }
 		
 		if (empty($this->tool_sync_controlfiles->creation)){
-			if (empty($CFG->course_fileuploadlocation)) {
+			if (empty($CFG->tool_sync_course_fileuploadlocation)) {
 	            $this->controlfiles->creation = $CFG->dataroot.'/sync/makecourses.csv';  // Default location
 	        } else {
 	            $this->controlfiles->creation = $CFG->dataroot.'/'.$CFG->tool_sync_course_fileuploadlocation;
@@ -121,6 +128,8 @@ class courses_plugin_manager {
 	    }
 	    
 	/// process files
+
+		tool_sync_report($CFG->tool_sync_courselog, 'Starting...');
 
 		if(file_exists($this->controlfiles->check) && ($this->execute & SYNC_COURSE_CHECK)){
 
@@ -146,7 +155,7 @@ class courses_plugin_manager {
 						continue;
 					}
 					
-					$valueset = explode($CFG->tool_sync_sync_csvseparator, $text);
+					$valueset = explode($CFG->tool_sync_csvseparator, $text);
 
 					$size = count($valueset);
 
@@ -255,7 +264,6 @@ class courses_plugin_manager {
 	                            'password' => '',
 	                            'enrolperiod' => 0,
 	                            'groupmodeforce' => 0,
-	                            'metacourse' => 0,
 	                            'lang' => '',
 	                            'theme' => '',
 	                            'cost' => '',
@@ -293,7 +301,6 @@ class courses_plugin_manager {
 	                            'password' => array(1,50,0),
 	                            'enrolperiod' => array(2,4294967295,0),
 	                            'groupmodeforce' => array(4,'0,1'),
-	                            'metacourse' => array(4,'0,1'),
 	                            'lang' => array(1,50,0),
 	                            'theme' => array(1,50,0),
 	                            'cost' => array(1,10,0),
@@ -324,7 +331,7 @@ class courses_plugin_manager {
 					$i++;
 				}
 
-				$header = split($CFG->tool_sync_csvseparator, $text);
+				$header = explode($CFG->tool_sync_csvseparator, $text);
 
         		// check for valid field names
         		
@@ -336,7 +343,7 @@ class courses_plugin_manager {
         		
         		foreach ($header as $h) {
 		            if (empty($h)){
-		                tool_sync_report($CFG->tool_courselog, get_string('errornullcsvheader', 'tool_sync'));
+		                tool_sync_report($CFG->tool_sync_courselog, get_string('errornullcsvheader', 'tool_sync'));
 		                return;
 		            }
                     if (preg_match(TOPIC_FIELD, $h)) { // Regex defined header names
@@ -438,8 +445,10 @@ class courses_plugin_manager {
                 	$sourcetext["$i"] = $text; // Save text line for futher reference
             		$i++;
             	}
+        		fclose($fu);
+        	} else {
+    			tool_sync_report($CFG->tool_sync_courselog, get_string('erroropeningfile', 'tool_sync'));
         	}
-        	fclose($fu);
 
 	        if (empty($bulkcourses)){
     			tool_sync_report($CFG->tool_sync_courselog, get_string('errornocourses', 'tool_sync'));
@@ -459,6 +468,7 @@ class courses_plugin_manager {
 	        $cat_c = 0; // Created categories
 
 	        foreach ($bulkcourses as $i => $bulkcourse) {
+	        	$a = new StdClass;
             	$a->shortname = $bulkcourse['shortname'];
             	$a->fullname = $bulkcourse['fullname'];
 
@@ -484,6 +494,7 @@ class courses_plugin_manager {
 	                          	default:
 	                            	$cat_e += count($bulkcourse['category']) - $catindex;
 	                            	$coursetocategory = -1;
+	                            	$e = new StdClass;
 	                            	$e->catname = $catname;
 	                            	$e->failed = $cat_e;
 	                            	$e->i = $i;
@@ -500,6 +511,7 @@ class courses_plugin_manager {
 	                }
 	                
 	                if ($coursetocategory == -1) {
+	                	$e = new StdClass;
 	                	$e->i = $i;
 	                	$e->coursename = $bulkcourse['shortname'];
 						if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($this->controlfiles->creation, $sourcetext[$i], $header);
@@ -507,6 +519,7 @@ class courses_plugin_manager {
     					continue;
 	                } else {
 	                    $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $header, $validate);
+	                	$e = new StdClass;
 	                    $e->coursename = $bulkcourse['shortname'];
 	                    $e->i = $i;
 						switch ($result) {
@@ -573,6 +586,7 @@ class courses_plugin_manager {
 		                          	default:
 		                            	$cat_e += count($bulkcourse['category']) - $catindex;
 		                            	$coursetocategory = -1;
+	                					$e = new StdClass;
 		                            	$e->catname = $catname;
 		                            	$e->failed = $cat_e;
 		                            	$e->i = $i;
@@ -589,6 +603,7 @@ class courses_plugin_manager {
 		                }
 		                
 		                if ($coursetocategory == -1){
+	                		$e = new StdClass;
 		                	$e->i = $i;
 		                	$e->coursename = $oldcourse->shortname;
 							if (!empty($CFG->tool_sync_filefailed)) sync_feed_tryback_file($this->controlfiles->creation, $sourcetext[$i], $header);
@@ -604,10 +619,12 @@ class courses_plugin_manager {
 	            			}
 	            		}
 	            		if ($DB->update_record('course', $oldcourse)){
+	                		$e = new StdClass;
 	                    	$e->i = $i;
 	            			$e->shortname = $oldcourse->shortname;
 							tool_sync_report($CFG->tool_sync_courselog, get_string('courseupdated', 'tool_sync', $e));
 	            		} else {
+	                		$e = new StdClass;
 	                    	$e->i = $i;
 	            			$e->shortname = $oldcourse->shortname;
 							tool_sync_report($CFG->tool_sync_courselog, get_string('errorcourseupdated', 'tool_sync', $e));
@@ -734,6 +751,7 @@ class courses_plugin_manager {
 	        case 1: // String
 	            if (($maxlen = $format[1]) != 0){  // Max length?
 	                if (strlen($value) > $format[1]){
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 	                	$e->length = $format[1];
@@ -744,6 +762,7 @@ class courses_plugin_manager {
 
 	            if ($format[2] == 1){ // Not null?
 	                if (!$this->check_is_string($value)){
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 						tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationempty', 'tool_sync', $e));
@@ -754,6 +773,7 @@ class courses_plugin_manager {
 
 	        case 2: // Integer
                 if (!$this->check_is_in($value)){ 
+	                $e = new StdClass;
                 	$e->i = $lineno;
                 	$e->fieldname = $fieldname;
 					tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationintegercheck', 'tool_sync', $e));
@@ -762,6 +782,7 @@ class courses_plugin_manager {
                 
                 if (($max = $format[1]) != 0){  // Max value?
                     if ($value > $max){
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 	                	$e->max = $max;
@@ -773,6 +794,7 @@ class courses_plugin_manager {
                 if (isset($format[2]) && !is_null($format[2])){  // Min value
 	                $min = $format[2];
                     if ($value < $min){ 
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 	                	$e->min = $min;
@@ -785,6 +807,7 @@ class courses_plugin_manager {
 	        case 3: // Timestamp - validates and converts to Unix Time
 	        	$value = strtotime($value);
 	            if ($value == -1){ // failure
+					$e = new StdClass;
                 	$e->i = $lineno;
                 	$e->fieldname = $fieldname;
 					tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationtimecheck', 'tool_sync', $e));
@@ -795,6 +818,7 @@ class courses_plugin_manager {
 	        case 4: // Domain
 	            $validvalues = explode(',', $format[1]);
 	            if (array_search($value, $validvalues) === false){
+                	$e = new StdClass;
                 	$e->i = $lineno;
                 	$e->fieldname = $fieldname;
                 	$e->set = $format[1];
@@ -807,6 +831,7 @@ class courses_plugin_manager {
 	            if ($this->check_is_in($value)) {
 	              // It's a Category ID Number
 					if (!$DB->record_exists('course_categories', array('id' => $value))){
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 	                	$e->category = $value;
@@ -818,6 +843,7 @@ class courses_plugin_manager {
 	               	$value = trim(str_replace('\\','/',$value)," \t\n\r\0\x0B/");
 	               	// Clean path, ensuring all slashes are forward ones
 	               	if (strlen($value) <= 0){
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 						tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationcategoryunpathed', 'tool_sync', $e));
@@ -828,6 +854,7 @@ class courses_plugin_manager {
 	                $cats = explode('/', $value); // Break up path into array
 					
 	                if (count($cats) <= 0){
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 	                	$e->path = $value;
@@ -840,6 +867,7 @@ class courses_plugin_manager {
 	                  	$item = trim($item); // Remove outside whitespace
 	                	
 	                  	if (strlen($item) > 100){ 
+	                		$e = new StdClass;
 		                	$e->i = $lineno;
 		                	$e->fieldname = $fieldname;
 		                	$e->item = $item;
@@ -847,6 +875,7 @@ class courses_plugin_manager {
 	                      	return;
 	                    }
 	                  	if (!$this->check_is_string($item)){
+	                		$e = new StdClass;
 		                	$e->i = $lineno;
 		                	$e->fieldname = $fieldname;
 		                	$e->value = $value;
@@ -859,6 +888,7 @@ class courses_plugin_manager {
 	                $value = $cats; // Return the array
 	                unset ($cats);
 	            } else {
+                	$e = new StdClass;
                 	$e->i = $lineno;
                 	$e->fieldname = $fieldname;
 					tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationbadtype', 'tool_sync', $e));
@@ -870,6 +900,7 @@ class courses_plugin_manager {
 	            $value = trim($value);
 	            if ($this->check_is_in($value)) { // User ID
 	                if (!$DB->record_exists('user', array('id' => $value))){
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 	                	$e->value = $value;
@@ -881,6 +912,7 @@ class courses_plugin_manager {
 	                $usersearch = get_users_listing('lastaccess', 'ASC', 0, 99999, mysql_real_escape_string($value), '', '');
 	                if (isset($usersearch) and ($usersearch !== false) and is_array($usersearch) and (($ucountc = count($usersearch)) > 0)) {
 	                    if ($ucount > 1){
+	                		$e = new StdClass;
 		                	$e->i = $lineno;
 		                	$e->fieldname = $fieldname;
 	                    	$e->ucount = $ucount;
@@ -893,6 +925,7 @@ class courses_plugin_manager {
 	                    $uid = key($usersearch);
 
 	                    if (!$this->check_is_in($uid) || !$DB->record_exists('user', array('id' => $uid))){
+	                		$e = new StdClass;
 		                	$e->i = $lineno;
 		                	$e->fieldname = $fieldname;
 							tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationsearchmisses', 'tool_sync', $e));
@@ -902,6 +935,7 @@ class courses_plugin_manager {
 	                    $value = $uid; // Return found user id
 						
 	                } else {
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 						tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationsearchfails', 'tool_sync', $e));
@@ -909,6 +943,7 @@ class courses_plugin_manager {
 	                }
 	            } else {
 	              	if ($format[1] == 1){ // Not null?
+	                	$e = new StdClass;
 	                	$e->i = $lineno;
 	                	$e->fieldname = $fieldname;
 						tool_sync_report($CFG->tool_sync_courselog, get_string('errorvalidationempty', 'tool_sync', $e));
@@ -989,7 +1024,7 @@ class courses_plugin_manager {
 		}  
 
 		// trap when template not found
-		if(isset($course['template']) && $course['template'] != '') {			
+		if(!empty($course['template'])) {			
 			if(!($tempcourse = $DB->get_record('course', array('shortname' => $course['template'])))){
 				return -7;
 			}
@@ -998,11 +1033,14 @@ class courses_plugin_manager {
 		// Dynamically Create Query Based on number of headings excluding Teacher[1,2,...] and Topic[1,2,...]
         // Added for increased functionality with newer versions of moodle
 		// Author: Ashley Gooding & Cole Spicer
-		
+
+		$courserec = (object)$course;
 		$courserec->category = $hcategory;
+		unset($courserec->template);
+		
 		foreach ($header as $i => $col) {
 			$col = strtolower($col);
-			if(preg_match(TOPIC_FIELD, $col) || preg_match(TEACHER_FIELD, $col) || $col == 'category' || $col == 'template') {
+			if(preg_match(TOPIC_FIELD, $col) || preg_match(TEACHER_FIELD, $col) || $col == 'category') {
 				continue;
 			}
 			if($col == 'expirythreshold') {
@@ -1013,31 +1051,41 @@ class courses_plugin_manager {
 		}
 
 		if(!empty($course['template'])) {
-			
-			// get course template from publishflow backups.
-            if ($archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow')){
-	            $temp_file = $CFG->dataroot."/temp/backup/".basename($archive->get_filename());
-	            // actually locally copying archive
-	            if ($archive->copy_content_to($temp_file)){	
-					// and import
-		            if ($newcourse_id =  restore_automation::run_automated_restore(null, $temp_file, $courserec->category)){
 
-					    // add all changes from incoming courserec
-					    $newcourse = $DB->get_record('course', array('id' => $newcourse_id));
-					    foreach(array($courserec) as $field => $value){
-					    	if ($field == 'format' || $field == 'id' || $field == 'shortname') continue; // protect sensible identifying fields
-					    	$newcourse->$field = $value;
-					    }
-					    $DB->update_record('course', $newcourse);
-					} else {
-			        	return -2;
-					}
+            if (!$archive = tool_sync_locate_backup_file($tempcourse->id, 'course')){
+            				
+				// get course template from publishflow backups if publishflow installed.
+				if ($DB->get_record('blocks', array('name' => 'publishflow'))){
+		            $archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
+		            if (!$archive){
+		        		return -2;
+		            }
 		        } else {
 		        	return -2;
 		        }
-		    } else {
-			    return -2;
-			}
+		    }
+		        		        
+            $temp_file = $CFG->dataroot."/temp/backup/".basename($archive->get_filename());
+            // actually locally copying archive
+            if ($archive->copy_content_to($temp_file)){	
+				// and import
+	            if ($newcourse_id =  restore_automation::run_automated_restore(null, $temp_file, $courserec->category)){
+
+				    // add all changes from incoming courserec
+				    $newcourse = $DB->get_record('course', array('id' => $newcourse_id));
+				    foreach((array)$courserec as $field => $value){
+				    	if ($field == 'format' || $field == 'id') continue; // protect sensible identifying fields
+				    	$newcourse->$field = $value;
+				    }
+				    if (!$DB->update_record('course', $newcourse)){
+				    	mtrace('failed updating');
+				    }
+				} else {
+		        	return -2;
+				}
+	        } else {
+	        	return -2;
+	        }
 		} else {
 			// create default course
 			$newcourse = create_course($courserec);			

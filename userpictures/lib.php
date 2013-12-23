@@ -64,7 +64,7 @@ function sync_process_directory ($dir, $userfield, $overwrite, &$results) {
     global $OUTPUT, $CFG;
     
     if(!($handle = opendir($dir))) {
-    	enrol_sync_report($CFG->userpictureslog, get_string('uploadpicture_cannotprocessdir', 'tool_uploaduser'));
+    	tool_sync_report($CFG->userpictureslog, get_string('uploadpicture_cannotprocessdir', 'tool_uploaduser'));
         return;
     }
 
@@ -122,22 +122,22 @@ function sync_process_file ($file, $userfield, $overwrite) {
         $a = new StdClass();
         $a->userfield = clean_param($userfield, PARAM_CLEANHTML);
         $a->uservalue = clean_param($uservalue, PARAM_CLEANHTML);
-    	enrol_sync_report($CFG->userpictureslog, get_string('uploadpicture_usernotfound', 'tool_uploaduser', $a));
+    	tool_sync_report($CFG->userpictureslog, get_string('uploadpicture_usernotfound', 'tool_uploaduser', $a));
         return PIX_FILE_ERROR;
     }
 
     $haspicture = $DB->get_field('user', 'picture', array('id'=>$user->id));
     if ($haspicture && !$overwrite) {
-    	enrol_sync_report($CFG->userpictureslog, get_string('uploadpicture_userskipped', 'tool_uploaduser', $user->username));
+    	tool_sync_report($CFG->userpictureslog, get_string('uploadpicture_userskipped', 'tool_uploaduser', $user->username));
         return PIX_FILE_SKIPPED;
     }
 
     if (sync_my_save_profile_image($user->id, $file)) {
         $DB->set_field('user', 'picture', 1, array('id'=>$user->id));
-    	enrol_sync_report($CFG->userpictureslog, get_string('uploadpicture_userupdated', 'tool_uploaduser', $user->username));
+    	tool_sync_report($CFG->userpictureslog, get_string('uploadpicture_userupdated', 'tool_uploaduser', $user->username));
         return PIX_FILE_UPDATED;
     } else {
-    	enrol_sync_report($CFG->userpictureslog, get_string('uploadpicture_cannotsave', 'tool_uploaduser', $user->username));
+    	tool_sync_report($CFG->userpictureslog, get_string('uploadpicture_cannotsave', 'tool_uploaduser', $user->username));
         return PIX_FILE_ERROR;
     }
 }

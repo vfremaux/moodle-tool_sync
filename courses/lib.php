@@ -13,6 +13,47 @@
 		fputs($file, "$selection[$size]");
 		fclose($file);
 	}
+
+	/*
+	* Creates a default reinitialisation file with standard options
+	* File is generated in UTF8 only
+	* @param array $selection array of course IDs from selection form
+	*/
+	function create_course_reinitialisation_file($selection){	
+		global $CFG, $DB;
+
+		$filename = $CFG->dataroot.'/sync/resetcourses.csv';
+		$file = fopen($filename, 'wb');		
+		$size = count($selection);
+
+		$cols = array('shortname', 'roles', 'grades', 'groups', 'events', 'logs', 'notes', 'modules');
+		$rows[] = implode($CFG->tool_sync_csvseparator, $cols);
+
+		$identifieroptions = array('idnumber', 'shortname', 'id');
+		$identifiername = $identifieroptions[0 + @$CFG->tool_sync_course_resetfileidentifier];
+
+		for($i = 0 ; $i < $size - 1 ; $i++){
+
+			if (@$CFG->tool_sync_course_resetfileidentifier == 0 && $DB->count_records('course', array('idnumber' => $selection[$i]))){
+				tool_sync_report($CFG->tool_sync_resetlog, get_string('nonuniqueidentifierexception', 'tool_sync', $i));
+				continue;
+			}
+
+			$c = $DB->get_record('course', array($identifiername => $selection[$i]));
+			$values = array();
+			$values[] = $c->shortname;
+			$values[] = 'student teacher guest';
+			$values[] = 'grades';
+			$values[] = 'members';
+			$values[] = 'yes';
+			$values[] = 'yes';
+			$values[] = 'yes';
+			$values[] = 'all';
+			$rows[] = implode($CFG->tool_sync_csvseparator, $values);
+		}
+		if (!empty($rows)) fputs($file, implode("\n", $rows));
+		fclose($file);
+	}
 	
 	function sync_scan_empty_categories($parentcatid, &$scannedids, &$path){
 		global $CFG, $DB;
@@ -66,12 +107,12 @@
 	* @param reference $loopback variable given to setup an XMLRPC loopback message for testing
 	* @return boolean
 	*/
-	function enrol_sync_locate_backup_file($courseid, $filearea){
+	function tool_sync_locate_backup_file($courseid, $filearea){
 	    global $CFG, $DB;
 	  
 	    $fs = get_file_storage();
 	    $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
-	    $files = $fs->get_area_files($coursecontext->id,'backup', $filearea, 0, 'timecreated', false);
+	    $files = $fs->get_area_files($coursecontext->id, 'backup', $filearea, 0, 'timecreated', false);
 	    
 	    if(count($files) > 0)
 	    {

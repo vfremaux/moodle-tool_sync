@@ -39,22 +39,22 @@ class userpictures_plugin_manager {
 	    if (!isset($config->tool_sync_userpictures_fileprefix)) {
 	        $config->tool_sync_userpictures_fileprefix = 'userpictures_';
 	    }
-	    set_config('userpictures_fileprefix', $config->tool_sync_userpictures_fileprefix);
+	    set_config('tool_sync_userpictures_fileprefix', $config->tool_sync_userpictures_fileprefix);
 
 	    if (!isset($config->tool_sync_userpictures_userfield)) {
 	        $config->tool_sync_userpictures_userfield = 1;
 	    }
-	    set_config('userpictures_userfield', $config->tool_sync_userpictures_userfield);
+	    set_config('tool_sync_userpictures_userfield', $config->tool_sync_userpictures_userfield);
 
 	    if (!isset($config->tool_sync_userpictures_overwrite)) {
 	        $config->tool_sync_userpictures_overwrite = 1;
 	    }
-	    set_config('userpictures_overwrite', $config->tool_sync_userpictures_overwrite);
+	    set_config('tool_sync_userpictures_overwrite', $config->tool_sync_userpictures_overwrite);
 
 	    if (!isset($config->tool_sync_userpictures_forcedeletion)) {
 	        $config->tool_sync_userpictures_forcedeletion = 1;
 	    }
-	    set_config('userpictures_forcedeletion', $config->tool_sync_userpictures_forcedeletion);
+	    set_config('tool_sync_userpictures_forcedeletion', $config->tool_sync_userpictures_forcedeletion);
 
 	    return true;	
 	}	
@@ -63,7 +63,7 @@ class userpictures_plugin_manager {
         global $CFG;
         global $USER;
         
-		$filestoprocess = glob($CFG->dataroot.'/sync/'.$CFG->tool_sync_userpictures_fileprefix.'*.zip');		
+		$filestoprocess = glob($CFG->dataroot.'/'.$CFG->tool_sync_userpictures_fileprefix.'*.zip');		
         if (empty($filestoprocess)) {
 			tool_sync_report($CFG->tool_sync_userpictureslog, get_string('nofiletoprocess', 'tool_sync'));		
 			return;

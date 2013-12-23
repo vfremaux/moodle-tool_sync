@@ -34,11 +34,14 @@
 	echo $OUTPUT->heading(get_string('resettingcourses', 'tool_sync'));
 
 	sync_print_remote_tool_portlet('importfile', $CFG->wwwroot.'/admin/tool/sync/courses/resetcourses.php', 'resetcourse', 'upload');	
-	sync_print_local_tool_portlet(@$CFG->reset_course_file, 'commandfile', 'resetcourses.php');
+	sync_print_local_tool_portlet(@$CFG->tool_sync_reset_course_file, 'commandfile', 'resetcourses.php');
 	require_once($CFG->dirroot.'/lib/uploadlib.php');			 
 
 	// If there is a file to upload... do it... else do the rest of the stuff
 	$um = new upload_manager('resetcourses', false, false, null, false, 0);
+
+	$identifieroptions = array('idnumber', 'shortname', 'id');
+	$identifiername = $identifieroptions[0 + @$CFG->tool_sync_course_resetfileidentifier];
 
     if ($um->preprocess_files() || isset($_POST['uselocal'])) {
 		$now = date("m-d-y");
@@ -59,13 +62,13 @@
 		}
         if (file_exists($filename)) {
 			$required = array(
-					'shortname' => 1,
+					$identifiername => 1,
 					'events' => 1,
 					'logs' => 1,
 					'notes' => 1,
 					'grades' => 1,
 					'roles' => 1,
-					'groupes' => 1,
+					'groups' => 1,
 					'modules' => 1);
 			$optional = array(
 					'forum_all' => 1,
@@ -147,8 +150,15 @@
 					$record[$header[$key]] = trim($value);						
 				}		
 				$data['reset_start_date'] = 0;
-				// Traitement du shortname
-				if ($course = $DB->get_record('course', array('shortname' => $record['shortname'])) ) {		
+
+				// Adaptative identifier
+				
+				if (@$CFG->tool_sync_course_resetfileidentifier == 0 && $DB->count_records('course', array('idnumber' => $record['idnumber']))){
+					tool_sync_report($CFG->tool_sync_resetlog, get_string('nonuniqueidentifierexception', 'tool_sync', $i));
+					continue;
+				}
+
+				if ($course = $DB->get_record('course', array($identifiername => $record[$identifiername])) ) {		
 					$data['id'] = $course->id;
 					$data['reset_start_date_old'] = $course->startdate;
 				} else {
@@ -199,9 +209,9 @@
 					}
 				}
 				// processing groups
-				if ($record['groupes'] == 'groupes') {		
+				if ($record['groups'] == 'groups') {		
 					$data['reset_groups_remove'] = 1;
-				} else if ($record['groupes'] == 'members'){
+				} else if ($record['groups'] == 'members'){
 					$data['reset_groups_members'] = 1;
 				} else {
 					tool_sync_report($CFG->tool_sync_resetlog, get_string('nogrouptoprocess', 'tool_sync', $i), false);

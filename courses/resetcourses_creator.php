@@ -1,8 +1,8 @@
 <?php	   
 
 /**
-* @author Funck Thibaut
-* @package enrol
+* @author Valery Fremaux
+* @package admin/tool
 * @subpackage sync
 */
 
@@ -28,23 +28,23 @@
 
 	$selection = optional_param_array('selection', '', PARAM_TEXT);
 	if($selection) {
-		create_course_deletion_file($selection);
+		create_course_reinitialisation_file($selection);
 	}
 
-	$url = $CFG->wwwroot.'/admin/tool/sync/courses/deletecourses_creator.php';
+	$url = $CFG->wwwroot.'/admin/tool/sync/courses/resetcourses_creator.php';
 	$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
-	$PAGE->navigation->add(get_string('builddeletefile', 'tool_sync'));
+	$PAGE->navigation->add(get_string('buildresetfile', 'tool_sync'));
 	$PAGE->set_context(null);
 	$PAGE->set_url($url);
 	$PAGE->set_title("$site->shortname");
 	$PAGE->set_heading($site->fullname);
 	echo $OUTPUT->header();	
 
-	echo $OUTPUT->heading(get_string('deletefilebuilder', 'tool_sync'));
+	echo $OUTPUT->heading(get_string('resetfilebuilder', 'tool_sync'));
 	
 ?>
 
-<form name="form_exemple" method="post" action="#" onSubmit="return select_all(this)">
+<form name="form_reset" method="post" action="#" onSubmit="return select_all(this)">
 <center>
 <table class="generaltable" width="80%">
 	<tr class="r0" valign="top">
@@ -66,7 +66,7 @@
 		2 => 'id'
 	);
 
-	$sortorder = $COURSE_SORTS[0 + @$CFG->tool_sync_course_filedeleteidentifier];
+	$sortorder = $COURSE_SORTS[0 + @$CFG->tool_sync_course_resetfileidentifier];
 	
 	$courses = sync_get_all_courses($sortorder);	
 	$class = 'r0' ;
@@ -91,7 +91,7 @@
 		<td>
 		</td>
 		<td align="center">
-			<?php print_string('choosecoursetodelete', 'tool_sync') ?>
+			<?php print_string('choosecoursetoreset', 'tool_sync') ?>
 		</td>
 		<td align="center">
 			<?php print_string('selecteditems', 'tool_sync') ?>
@@ -102,7 +102,7 @@
 			<select style="height:200px" name="courselist" multiple OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >
 				<?php 
 				foreach ($distinctcourses as $c){
-					switch (0 + @$CFG->tool_sync_course_filedeleteidentifier){
+					switch (0 + @$CFG->tool_sync_course_resetfileidentifier){
 						case 0 : $cid = $c->idnumber; break;
 						case 1 : $cid = $c->shortname; break;
 						case 2 : $cid = $c->id; break;

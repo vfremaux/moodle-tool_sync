@@ -17,9 +17,9 @@
 			<td align="right"><?php print_string('deletefileidentifier', 'tool_sync') ?></td>
 			<td>
 			<?php
-			if (!isset($frm->tool_sync_course_filedeleteidentifier)) set_config('course_filedeleteidentifier', 0);
+			if (!isset($frm->tool_sync_course_filedeleteidentifier)) set_config('tool_sync_course_filedeleteidentifier', 0);
 			$identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
-			echo html_writer::select($identifieroptions, 'course_filedeleteidentifier', 0 + @$frm->tool_sync_course_filedeleteidentifier); 
+			echo html_writer::select($identifieroptions, 'tool_sync_course_filedeleteidentifier', @$frm->tool_sync_course_filedeleteidentifier); 
 			?>
 			</td>
 			<td>
@@ -50,9 +50,9 @@
 			<td align="right"><?php print_string('existfileidentifier', 'tool_sync') ?></td>
 			<td>
 			<?php
-			if (!isset($frm->tool_sync_course_existfileidentifier)) set_config('course_existfileidentifier', 0);
+			if (!isset($frm->tool_sync_course_existfileidentifier)) set_config('tool_sync_course_existfileidentifier', 0);
 			$identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
-			echo html_writer::select($identifieroptions, 'course_existfileidentifier', 0 + @$frm->tool_sync_course_existfileidentifier); 
+			echo html_writer::select($identifieroptions, 'tool_sync_course_existfileidentifier', @$frm->tool_sync_course_existfileidentifier); 
 			?>
 			</td>
 			<td>
@@ -68,6 +68,19 @@
 			<?php  print_string('location', 'enrol_flatfile') ?>
 			</td>
 		</tr>		
+
+		<tr valign="top">
+			<td align="right"><?php print_string('resetfileidentifier', 'tool_sync') ?></td>
+			<td>
+			<?php
+			if (!isset($frm->tool_sync_course_resetfileidentifier)) set_config('tool_sync_course_resetfileidentifier', 1);
+			$identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
+			echo html_writer::select($identifieroptions, 'tool_sync_course_existfileidentifier', @$frm->tool_sync_course_resetfileidentifier); 
+			?>
+			</td>
+			<td>
+			</td>
+		</tr>
 
 		<tr valign="top">
 			<td align="right"><?php print_string('syncforcecourseupdate', 'tool_sync') ?></td>

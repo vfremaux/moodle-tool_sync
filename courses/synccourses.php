@@ -52,6 +52,7 @@
 		// execron do everything a cron will do
 		echo($filename);
 		if (isset($filename) && file_exists($filename)){
+			$filestouse = new StdClass;
 			$filestouse->create = $filename;
 		    $coursesmanager = new courses_plugin_manager($filestouse, SYNC_COURSE_CREATE);
 
@@ -75,7 +76,7 @@
 		$filename = $CFG->dataroot."/sync/reports/CC_$today.txt";
 		
 		if($FILE = @fopen($filename,'w')){		
-			fputs($FILE, $CFG->tool_sync_courselog);
+			fputs($FILE, '' + @$CFG->tool_sync_courselog);
 		}
 		fclose($FILE);		
 	}

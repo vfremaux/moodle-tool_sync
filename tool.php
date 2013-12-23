@@ -41,137 +41,137 @@ class tool_plugin_sync {
 	function process_config($config) {
 		global $CFG;
 		
-		if (!isset($config->sync_coursescleanup)) {
-			$config->sync_coursescleanup = '';
+		if (!isset($config->tool_sync_coursescleanup)) {
+			$config->tool_sync_coursescleanup = '';
 		}
 		
-		set_config('sync_coursescleanup', $config->sync_coursescleanup);
+		set_config('tool_sync_coursescleanup', $config->tool_sync_coursescleanup);
 		
-		if (!isset($config->sync_userscleanup)) {
-			$config->sync_userscleanup = '';
+		if (!isset($config->tool_sync_userscleanup)) {
+			$config->tool_sync_userscleanup = '';
 		}
 		
-		set_config('sync_userscleanup', $config->sync_userscleanup);
+		set_config('tool_sync_userscleanup', $config->tool_sync_userscleanup);
 
-		if (!isset($config->sync_enrolcleanup)) {
-			$config->sync_enrolcleanup = '';
+		if (!isset($config->tool_sync_enrolcleanup)) {
+			$config->tool_sync_enrolcleanup = '';
 		}
 		
-		set_config('sync_enrolcleanup', $config->sync_enrolcleanup);	
+		set_config('tool_sync_enrolcleanup', $config->tool_sync_enrolcleanup);	
 		
-		if (!isset($config->sync_courseactivation)) {
-			$config->sync_courseactivation = '';
+		if (!isset($config->tool_sync_courseactivation)) {
+			$config->tool_sync_courseactivation = '';
 		}
 		
-		set_config('sync_courseactivation', $config->sync_courseactivation);
+		set_config('tool_sync_courseactivation', $config->tool_sync_courseactivation);
 		
-		if (!isset($config->sync_useractivation)) {
-			$config->sync_useractivation = '';
+		if (!isset($config->tool_sync_useractivation)) {
+			$config->tool_sync_useractivation = '';
 		}
 		
-		set_config('sync_useractivation', $config->sync_useractivation);
+		set_config('tool_sync_useractivation', $config->tool_sync_useractivation);
 
-		if (!isset($config->sync_userpicturesactivation)) {
-			$config->sync_userpicturesactivation = '';
+		if (!isset($config->tool_sync_userpicturesactivation)) {
+			$config->tool_sync_userpicturesactivation = '';
 		}
 		
-		set_config('sync_userpicturesactivation', $config->sync_userpicturesactivation);
+		set_config('tool_sync_userpicturesactivation', $config->tool_sync_userpicturesactivation);
 
-		if (!isset($config->sync_enrolactivation)) {
-			$config->sync_enrolactivation = '';
+		if (!isset($config->tool_sync_enrolactivation)) {
+			$config->tool_sync_enrolactivation = '';
 		}
 		
-		set_config('sync_enrolactivation', $config->sync_enrolactivation);			
+		set_config('tool_sync_enrolactivation', $config->tool_sync_enrolactivation);			
 
-		if (!isset($config->sync_Mon)) {
-			$config->sync_Mon = '';
+		if (!isset($config->tool_sync_Mon)) {
+			$config->tool_sync_Mon = '';
 		}
 		
-		set_config('sync_Mon', $config->sync_Mon);			
+		set_config('tool_sync_Mon', $config->tool_sync_Mon);			
 		
-		if (!isset($config->sync_Tue)) {
-			$config->sync_Tue = '';
+		if (!isset($config->tool_sync_Tue)) {
+			$config->tool_sync_Tue = '';
 		}
 		
-		set_config('sync_Tue', $config->sync_Tue);			
+		set_config('tool_sync_Tue', $config->tool_sync_Tue);			
 
-		if (!isset($config->sync_Wed)) {
-			$config->sync_Wed = '';
+		if (!isset($config->tool_sync_Wed)) {
+			$config->tool_sync_Wed = '';
 		}
 		
-		set_config('sync_Wed', $config->sync_Wed);		
+		set_config('tool_sync_Wed', $config->tool_sync_Wed);		
 
-		if (!isset($config->sync_Thu)) {
-			$config->sync_Thu = '';
+		if (!isset($config->tool_sync_Thu)) {
+			$config->tool_sync_Thu = '';
 		}
 		
-		set_config('sync_Thu', $config->sync_Thu);		
+		set_config('tool_sync_Thu', $config->tool_sync_Thu);		
 
-		if (!isset($config->sync_Fri)) {
-			$config->sync_Fri = '';
+		if (!isset($config->tool_sync_Fri)) {
+			$config->tool_sync_Fri = '';
 		}
 		
-		set_config('sync_Fri', $config->sync_Fri);		
+		set_config('tool_sync_Fri', $config->tool_sync_Fri);		
 
-		if (!isset($config->sync_Sat)) {
-			$config->sync_Sat = '';
+		if (!isset($config->tool_sync_Sat)) {
+			$config->tool_sync_Sat = '';
 		}
 		
-		set_config('sync_Sat', $config->sync_Sat);		
+		set_config('tool_sync_Sat', $config->tool_sync_Sat);		
 
-		if (!isset($config->sync_Sun)) {
-			$config->sync_Sun = '';
+		if (!isset($config->tool_sync_Sun)) {
+			$config->tool_sync_Sun = '';
 		}
 		
-		set_config('sync_Sun', $config->sync_Sun);		
+		set_config('tool_sync_Sun', $config->tool_sync_Sun);		
 
-		if (!isset($config->sync_h)) {
-			$config->sync_h = '';
+		if (!isset($config->tool_sync_h)) {
+			$config->tool_sync_h = '';
 		}
 		
-		set_config('sync_h', $config->sync_h);		
+		set_config('tool_sync_h', $config->tool_sync_h);		
 
-		if (!isset($config->sync_m)) {
-			$config->sync_m = '';
+		if (!isset($config->tool_sync_m)) {
+			$config->tool_sync_m = '';
 		}
 		
-		set_config('sync_m', $config->sync_m);		
+		set_config('tool_sync_m', $config->tool_sync_m);		
 
-		if (!isset($config->sync_ct)) {
-			$config->sync_ct = '';
+		if (!isset($config->tool_sync_ct)) {
+			$config->tool_sync_ct = '';
 		}
 		
-		set_config('sync_ct', $config->sync_ct);				
+		set_config('tool_sync_ct', $config->tool_sync_ct);				
 		
-		if (!isset($config->sync_filecleanup)) {
-			$config->sync_filecleanup = '';
+		if (!isset($config->tool_sync_filecleanup)) {
+			$config->tool_sync_filecleanup = '';
 		}
 		
-		set_config('sync_filecleanup', $config->sync_filecleanup);		
+		set_config('tool_sync_filecleanup', $config->tool_sync_filecleanup);		
 
-		if (!isset($config->sync_filearchive)) {
-			$config->sync_filearchive = '';
+		if (!isset($config->tool_sync_filearchive)) {
+			$config->tool_sync_filearchive = '';
 		}
 		
-		set_config('sync_filearchive', $config->sync_filearchive);		
+		set_config('tool_sync_filearchive', $config->tool_sync_filearchive);		
 
-		if (!isset($config->sync_filefailed)) {
-			$config->sync_filefailed = 0;
+		if (!isset($config->tool_sync_filefailed)) {
+			$config->tool_sync_filefailed = 0;
 		}
 		
-		set_config('sync_filefailed', $config->sync_filefailed);		
+		set_config('tool_sync_filefailed', $config->tool_sync_filefailed);		
 
-		if (!isset($config->sync_encoding)) {
-			$config->sync_encoding = '';
+		if (!isset($config->tool_sync_encoding)) {
+			$config->tool_sync_encoding = '';
 		}
 		
-		set_config('sync_encoding', $config->sync_encoding);			
+		set_config('tool_sync_encoding', $config->tool_sync_encoding);			
 
-		if (!isset($config->sync_csvseparator)) {
-			$config->sync_csvseparator = ';';
+		if (!isset($config->tool_sync_csvseparator)) {
+			$config->tool_sync_csvseparator = ';';
 		}
 		
-		set_config('sync_csvseparator', $config->sync_csvseparator);			
+		set_config('tool_sync_csvseparator', $config->tool_sync_csvseparator);			
 		
 		return true;
 	}		
@@ -186,18 +186,18 @@ class tool_plugin_sync {
 		// 1 pass hourtime
 		// 2 pass dayrun and daytime
 		
-		$cfgh = $CFG->sync_h;
-		$cfgm = $CFG->sync_m;
+		$cfgh = $CFG->tool_sync_h;
+		$cfgm = $CFG->tool_sync_m;
 		
 		$h = date('G');
 		$m = date('i');
 		
 		$day = date("D");
-		$var = 'sync_'.$day;
+		$var = 'tool_sync_'.$day;
 		
-		$last = 0 + @$CFG->sync_lastrun;
+		$last = 0 + @$CFG->tool_sync_lastrun;
 
-		if ($last == 0) set_config('sync_dayrun', 0); // failtrap when never run and sync_lastrun not initialized
+		if ($last == 0) set_config('tool_sync_dayrun', 0); // failtrap when never run and sync_lastrun not initialized
 
 		$now = time();
 		// $nextrun = $last + DAYSECS - 300; // assume we do it once a day
@@ -205,15 +205,15 @@ class tool_plugin_sync {
 		$nextdate = $last + DAYSECS;
 		$nextmidnight = mktime (0, 0, 0, date("n", $nextdate), date("j", $nextdate), date("Y", $nextdate));
 		
-		if (($now > $nextmidnight) && ($now > $last + $CFG->sync_ct)){
+		if (($now > $nextmidnight) && ($now > $last + $CFG->tool_sync_ct)){
 			echo "Reset ... as after $nextmidnight. \n";
-			set_config('sync_dayrun', 0);
+			set_config('tool_sync_dayrun', 0);
 		}
 
 		/*		
 		$done = 2;
 		if($now < $nextrun && !$debug && $last > 0){
-			if ($now > $last + $CFG->sync_ct){
+			if ($now > $last + $CFG->tool_sync_ct){
 				// after the critical run time, we force back dayrun to false so cron can be run again.
 				// the critical time ensures that previous cron has finished and a proper "sync_lastrun" date has been recorded.
 				set_config('sync_dayrun', 0);
@@ -228,10 +228,10 @@ class tool_plugin_sync {
 			return;
 		}
 		
-		if(($h == $cfgh) && ($m >= $cfgm) && !$CFG->sync_dayrun  || $debug){
+		if(($h == $cfgh) && ($m >= $cfgm) && !$CFG->tool_sync_dayrun  || $debug){
 
 			// we store that lock at start to lock any bouncing cron calls.
-			set_config('sync_dayrun', 1);
+			set_config('tool_sync_dayrun', 1);
 		
 			print_string('execstartsat', 'tool_sync', "$h:$m");
 			echo "\n";
@@ -242,9 +242,9 @@ class tool_plugin_sync {
 			if((file_exists($alock))||(file_exists($lockfile))){
 				$log = "Synchronisation report\n \n";
 				$log = $log . "Starting at: $h:$m \n";
-				if (empty($CFG->sync_ct)) {	
+				if (empty($CFG->tool_sync_ct)) {	
 				} else {
-					$ct = $CFG->sync_ct;
+					$ct = $CFG->tool_sync_ct;
 					$file = @fopen($lockfile, 'r');
 					$line = fgets($file);
 					fclose($file);
@@ -273,7 +273,7 @@ class tool_plugin_sync {
 				
 				/// COURSE SYNC
 				
-				if (empty($CFG->sync_courseactivation)) {
+				if (empty($CFG->tool_sync_courseactivation)) {
 					$str = get_string('coursesync', 'tool_sync');
 					$str .= ': ';
 					$str .= get_string('disabled', 'tool_sync');
@@ -301,7 +301,7 @@ class tool_plugin_sync {
 
 				/// USER ACCOUNTS SYNC
 				
-				if (empty($CFG->sync_useractivation)) {
+				if (empty($CFG->tool_sync_useractivation)) {
 					$str = get_string('usersync', 'tool_sync');
 					$str .= ': ';
 					$str .= get_string('disabled', 'tool_sync');
@@ -326,7 +326,7 @@ class tool_plugin_sync {
 
 				/// USER AVATARS SYNC
 
-				if (empty($CFG->sync_userpicturesactivation)) {
+				if (empty($CFG->tool_sync_userpicturesactivation)) {
 					$str = get_string('userpicturesync', 'tool_sync');
 					$str .= ': ';
 					$str .= get_string('disabled', 'tool_sync');
@@ -351,7 +351,7 @@ class tool_plugin_sync {
 
 				/// ENROLLMENT SYNC
 				
-				if (empty($CFG->sync_enrolactivation)) {
+				if (empty($CFG->tool_sync_enrolactivation)) {
 					$str = get_string('enrolcronprocessing', 'tool_sync');
 					$str .= ': ';
 					$str .= get_string('disabled', 'tool_sync');
@@ -376,7 +376,7 @@ class tool_plugin_sync {
 
 				/// GROUP CLEANUP
 				
-				if (empty($CFG->sync_enrolcleanup)) {
+				if (empty($CFG->tool_sync_enrolcleanup)) {
 					$str = get_string('group_clean', 'tool_sync');
 					$str .= ': ';
 					$str .= get_string('disabled', 'tool_sync');
@@ -415,12 +415,12 @@ class tool_plugin_sync {
 				fputs($reportfile, $log);
 				fclose($reportfile);
 
-				if (!empty($CFG->enrol_mailadmins)) {
+				if (!empty($CFG->tool_sync_enrol_mailadmins)) {
 		            email_to_user(get_admin(), get_admin(), $SITE->shortname." : Enrol Sync Log", $log);
 		        }
 			}
 		} else {
-			if (!$CFG->sync_dayrun){
+			if (!$CFG->tool_sync_dayrun){
 				echo "Course and user sync ... not yet. Waiting time ".sprintf('%02d', $cfgh).':'.sprintf('%02d', $cfgm) ."\n";
 			} else {
 				echo "Course and user sync ... already passed today, nothing to do. \n";

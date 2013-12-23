@@ -1,5 +1,10 @@
 <?php
 
+require_once('courses/courses.class.php');
+require_once('users/users.class.php');
+require_once('enrol/enrols.class.php');
+require_once('userpictures/userpictures.class.php');
+
 define('SYNC_COURSE_CHECK', 0x001);
 define('SYNC_COURSE_CREATE', 0x002);
 define('SYNC_COURSE_DELETE', 0x004);
@@ -29,14 +34,14 @@ function sync_is_empty_line_or_format(&$text, $resetfirst = false){
 	// we may have a risk the BOM is present on first line
 	if ($resetfirst) $first = true;	
 	if (!isset($textlib)) $textlib = new textlib(); // singleton
-	if ($first && $CFG->sync_encoding == 'UTF-8'){
+	if ($first && $CFG->tool_sync_encoding == 'UTF-8'){
 		$text = $textlib->trim_utf8_bom($text);					
 		$first = false;
 	}
 	
 	$text = preg_replace("/\n?\r?/", '', $text);			
 
-	if ($CFG->sync_encoding != 'UTF-8'){
+	if ($CFG->tool_sync_encoding != 'UTF-8'){
 		$text = utf8_encode($text);
 	}
 	
@@ -122,7 +127,7 @@ function sync_print_return_button(){
 * Get course and role assignations summary
 * TODO : Rework for PostGre compatibility.
 */
-function sync_get_all_courses(){
+function sync_get_all_courses($orderby = 'shortname'){
 	global $CFG, $DB;
 
 	$sql = "
@@ -131,6 +136,7 @@ function sync_get_all_courses(){
 			c.id,
 			c.shortname, 
 			c.fullname, 
+			c.idnumber,
 			count( DISTINCT ass.userid ) AS people, 
 			ass.rolename
 		FROM
@@ -154,7 +160,7 @@ function sync_get_all_courses(){
 		GROUP BY
 			recid
 		ORDER BY
-			c.shortname
+			c.$orderby
 	";
 	$results = $DB->get_records_sql($sql);
 	return $results;
@@ -187,7 +193,7 @@ function sync_feed_tryback_file($originfilename, $line, $header = ''){
 			if (is_string($header)){
 				fputs($TRYBACKFILE, $header."\n");
 			} else {
-				fputs($TRYBACKFILE, implode($CFG->sync_csvseparator, $header)."\n");
+				fputs($TRYBACKFILE, implode($CFG->tool_sync_csvseparator, $header)."\n");
 			}
 			fputs($TRYBACKFILE, '--------------------------------------------------'."\n");
 		}
@@ -212,8 +218,8 @@ function tool_sync_cron() {
 	// 1 pass hourtime
 	// 2 pass dayrun and daytime
 	
-	$cfgh = $CFG->tool_sync_h;
-	$cfgm = $CFG->tool_sync_m;
+	$cfgh = 0 + @$CFG->tool_sync_h;
+	$cfgm = 0 + @$CFG->tool_sync_m;
 	
 	$h = date('G');
 	$m = date('i');
@@ -231,7 +237,7 @@ function tool_sync_cron() {
 	$nextdate = $last + DAYSECS;
 	$nextmidnight = mktime (0, 0, 0, date("n", $nextdate), date("j", $nextdate), date("Y", $nextdate));
 	
-	if (($now > $nextmidnight) && ($now > $last + $CFG->tool_sync_ct)){
+	if (($now > $nextmidnight) && ($now > $last + @$CFG->tool_sync_ct) && !$debug){
 		echo "Reset ... as after $nextmidnight. \n";
 		set_config('tool_sync_dayrun', 0);
 	}
@@ -254,7 +260,7 @@ function tool_sync_cron() {
 		return;
 	}
 	
-	if(($h == $cfgh) && ($m >= $cfgm) && !$CFG->tool_sync_dayrun  || $debug){
+	if(($h == $cfgh) && ($m >= $cfgm) && !@$CFG->tool_sync_dayrun  || $debug){
 
 		// we store that lock at start to lock any bouncing cron calls.
 		set_config('tool_sync_dayrun', 1);
@@ -391,8 +397,8 @@ function tool_sync_cron() {
 				$log .= $str;
 				$enrolmanager = new enrol_plugin_manager;
 				$enrolmanager->cron();
-				if (!empty($CFG->enrollog)){
-					$log .= "$CFG->enrollog\n";
+				if (!empty($CFG->tool_sync_enrollog)){
+					$log .= "$CFG->tool_sync_enrollog\n";
 				}
 				$str = get_string('endofprocess', 'tool_sync');
 				$str .= "\n\n";
@@ -427,7 +433,7 @@ function tool_sync_cron() {
 			
 			unlink($lockfile);
 			$now = time();				
-			set_config('sync_lastrun', $now);
+			set_config('tool_sync_lastrun', $now);
 		}
 
 	/// creating and sending report
@@ -441,7 +447,7 @@ function tool_sync_cron() {
 			fputs($reportfile, $log);
 			fclose($reportfile);
 
-			if (!empty($CFG->enrol_mailadmins)) {
+			if (!empty($CFG->tool_sync_enrol_mailadmins)) {
 	            email_to_user(get_admin(), get_admin(), $SITE->shortname." : Enrol Sync Log", $log);
 	        }
 		}
@@ -452,7 +458,28 @@ function tool_sync_cron() {
 			echo "Course and user sync ... already passed today, nothing to do. \n";
 		}
 	}
-    mtrace('qeupgradehelper: tool_qeupgradehelper_cron() finished at ' . date('H:i:s'));
+    mtrace('sync: tool_sync_cron() finished at ' . date('H:i:s'));
+}
+
+/**
+* parses a YYYY-MM-DD hh:ii:ss
+*
+*
+*/
+function tool_sync_parsetime($time, $default = 0){
+
+	if (preg_match('/(\d\d\d\d)-(\d\d)-(\d\d)\s+(\d\d):(\d\d):(\d\d)/', $time, $matches)){
+		$Y = $matches[1];
+		$M = $matches[2];
+		$D = $matches[3];
+		$h = $matches[4];
+		$i = $matches[5];
+		$s = $matches[6];
+		return mktime($h , $i, $s, $M, $D, $Y);
+	} else {
+		return $default;
+	}
+	
 }
 
 ?>

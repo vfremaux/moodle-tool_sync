@@ -118,6 +118,7 @@
 	echo "<legend><strong>$utilitiesstr</strong></legend>";
 	echo '<center>';
 	echo "<a href=\"$CFG->wwwroot/admin/tool/sync/courses/deletecourses_creator.php\"> ". get_string('makedeletefile', 'tool_sync') .' </a><br/>';
+	echo "<a href=\"$CFG->wwwroot/admin/tool/sync/courses/resetcourses_creator.php\"> ". get_string('makeresetfile', 'tool_sync') .' </a><br/>';
 	echo "<a href=\"$CFG->wwwroot/admin/tool/sync/courses/checkcourses.php\">". get_string('testcourseexist', 'tool_sync') .'</a><br/>';	
 	echo '<br/>';
 	echo '</center></fieldset>';
@@ -167,6 +168,7 @@
 	$enrolmanager->config_form($frm);
 	$manualenrolmgtstr = get_string('enrolmgtmanual', 'tool_sync');
 	//$enrolmanager->cron();
+    echo "<p class=\"centerpara\"><input type=\"submit\" value=\" ". get_string('button', 'tool_sync')."\" /></p>\n";
 	echo "<fieldset><legend><strong>$manualenrolmgtstr</strong></legend>";		
 	echo "<center><br /> <a href=\"$CFG->wwwroot/admin/tool/sync/enrol/execcron.php\">". get_string('manualenrolrun', 'tool_sync') ." </a><br/></center>";
 	echo '<br />';

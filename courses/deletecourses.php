@@ -67,7 +67,7 @@
 		echo '<br/><br/>';
 			
 		sync_print_remote_tool_portlet('deletefromremote', $CFG->wwwroot.'/admin/tool/sync/courses/deletecourses.php', 'deletefileupload', 'upload');
-		sync_print_local_tool_portlet($CFG->tool_sync_course_filedeletelocation, 'deletefile', 'deletecourses.php');
+		sync_print_local_tool_portlet(@$CFG->tool_sync_course_filedeletelocation, 'deletefile', 'deletecourses.php');
 	
 		// If there is a file to upload... do it... else do the rest of the stuff
 		
