@@ -48,6 +48,8 @@
 	$userpicturesmanager = new userpictures_plugin_manager;
 	require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
     $enrolmanager = new enrol_plugin_manager;
+	require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
+    $cohortsmanager = new cohorts_plugin_manager;
 	
 	require_once("$CFG->dirroot/admin/tool/sync/tool.php");
 	$mainmanager = new tool_plugin_sync;
@@ -158,6 +160,19 @@
     echo "<p class=\"centerpara\"><input type=\"submit\" value=\" ". get_string('button', 'tool_sync')."\" /></p>\n";
 	echo "<fieldset><legend><strong>$manualuserpicturesmgtstr</strong></legend>";	
 	echo "<center><br/> <a href=\"$CFG->wwwroot/admin/tool/sync/userpictures/execcron.php\">". get_string('manualuserpicturesrun', 'tool_sync') ." </a><br/></center>";	
+	echo '<br />';
+	echo '</fieldset>';
+
+	echo '<br />';
+	echo '<br />';
+
+	echo $OUTPUT->heading_with_help(get_string('cohortsync', 'tool_sync'), 'cohortsync', 'tool_sync');
+	$cohortsmanager->config_form($frm);
+	$manualcohortmgtstr = get_string('cohortmgtmanual', 'tool_sync');
+	//$cohortmanager->cron();
+    echo "<p class=\"centerpara\"><input type=\"submit\" value=\" ". get_string('button', 'tool_sync')."\" /></p>\n";
+	echo "<fieldset><legend><strong>$manualcohortmgtstr</strong></legend>";		
+	echo "<center><br /> <a href=\"$CFG->wwwroot/admin/tool/sync/cohorts/execcron.php\">". get_string('manualcohortrun', 'tool_sync') ." </a><br/></center>";
 	echo '<br />';
 	echo '</fieldset>';
 

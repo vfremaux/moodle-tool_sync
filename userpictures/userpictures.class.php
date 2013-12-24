@@ -88,7 +88,7 @@ class userpictures_plugin_manager {
 	        // that we'll take longer, and that the process should be recycled soon
 	        // to free up memory.
 	        @set_time_limit(0);
-	        @raise_memory_limit("256M");
+	        @raise_memory_limit("512M");
 	        if (function_exists('apache_child_terminate')) {
 	            @apache_child_terminate();
 	        }

@@ -124,7 +124,7 @@ class cohorts_plugin_manager {
 			$patternized = implode('|', $patterns) . "\\d+";
 			$metapattern = implode('|', $metas);
 			if (!(isset($required[$h]) or isset($optionalDefaults[$h]) or isset($optional[$h]) or preg_match("/$patternized/", $h) or preg_match("/$metapattern/", $h))) {
-				tool_sync_report($CFG->tool_sync_userlog, get_string('invalidfieldname', 'error', $h));
+				tool_sync_report($CFG->tool_sync_cohortlog, get_string('invalidfieldname', 'error', $h));
 				return;
 			}
 
@@ -135,7 +135,7 @@ class cohorts_plugin_manager {
 		// check for required fields
 		foreach ($required as $key => $value) {
 			if ($value) { //required field missing
-				tool_sync_report($CFG->tool_sync_userlog, get_string('fieldrequired', 'error', $key));
+				tool_sync_report($CFG->tool_sync_cohortlog, get_string('fieldrequired', 'error', $key));
 				return;
 			}
 		}
@@ -162,20 +162,20 @@ class cohorts_plugin_manager {
 			}
 			
 			// find assignable items
-			if (empty(@$CFG->tool_sync_cohorts_useridentifier)){
+			if (empty($CFG->tool_sync_cohorts_useridentifier)){
 				$CFG->tool_sync_cohorts_useridentifier = 'idnumber';
 			}
 			$uid = $CFG->tool_sync_cohorts_useridentifier;
-			if (!$user = $DB->get_record('user', array( $uid => $record['userid'] ){
+			if (!$user = $DB->get_record('user', array( $uid => $record['userid'] ))){
 				// @TODO trak in log, push in runback file
 				continue;
 			}
 
-			if (empty(@$CFG->tool_sync_cohorts_cohortidentifier)){
+			if (empty($CFG->tool_sync_cohorts_cohortidentifier)){
 				$CFG->tool_sync_cohorts_cohortidentifier = 'idnumber';
 			}
 			$cid = $CFG->tool_sync_cohorts_cohortidentifier;
-			if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ){
+			if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))){
 				if (!$autocreatecohorts || empty($record['cohort'])){
 					// @TODO trak in log, push in runback file
 					continue;

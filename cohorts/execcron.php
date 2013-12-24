@@ -9,7 +9,6 @@
     require_once("../../../../config.php");
     require_once($CFG->libdir.'/adminlib.php');
 	require_once($CFG->libdir.'/moodlelib.php');
-	require_once($CFG->dirroot.'/course/lib.php');
 
 	require_login();
 
@@ -43,7 +42,7 @@
 
 	$cohortsmanager->process_config($CFG);
 	echo '<pre>';
-	$usersmanager->cron();
+	$cohortsmanager->cron();
 	echo '</pre>';
 	$address = $CFG->tool_sync_cohort_filelocation;
 

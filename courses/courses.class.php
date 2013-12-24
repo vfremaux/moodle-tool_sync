@@ -4,12 +4,6 @@
 // $CFG->course_fileuploadlocation:       where is the file which upload courses we are looking for?
 // author - Funck Thibaut !
 
-include_once $CFG->dirroot.'/backup/backuplib.php';
-include_once $CFG->dirroot.'/backup/lib.php';
-include_once $CFG->dirroot.'/backup/restorelib.php';
-if (file_exists($CFG->dirroot."/blocks/publishflow/backup/restore_automation.class.php")){
-	require_once($CFG->dirroot."/blocks/publishflow/backup/restore_automation.class.php");
-}
 include_once $CFG->dirroot.'/admin/tool/sync/lib.php';
 include_once $CFG->dirroot.'/admin/tool/sync/courses/lib.php';
 
@@ -246,36 +240,27 @@ class courses_plugin_manager {
 	        $optional = array(  'category' => $defaultcategory, // Default values for optional fields
 	                            'sortorder' => 0,
 	                            'summary' => get_string('coursedefaultsummary', 'tool_sync'),
-	                            'format' => 'weeks',
+	                            'format' => 'topics',
+	                            'idnumber' => '',
 	                            'showgrades' => 1,
 	                            'newsitems' => 5,
-	                            'teacher' => 'Teacher',
-	                            'teachers' => 'Teachers',
-	                            'student' => 'Student',
-	                            'students' => 'Students',
 	                            'startdate' => $defaultmtime,
-	                            'numsections' => 10,
+	                            'marker' => 0,
 	                            'maxbytes' => 2097152,
+	                            'legacyfiles' => 0,
+	                            'showreports' => 0,
 	                            'visible' => 1,
+	                            'visibleold' => 0,
 	                            'groupmode' => 0,
-	                            'timecreated' => $defaultmtime,
-	                            'timemodified' => $defaultmtime,
-	                            'idnumber' => '',
-	                            'password' => '',
-	                            'enrolperiod' => 0,
 	                            'groupmodeforce' => 0,
+	                            'defaultgroupingid' => 0,
 	                            'lang' => '',
 	                            'theme' => '',
-	                            'cost' => '',
-	                            'showreports' => 0,
-	                            'guest' => 0,
-								'enrollable' => 1,
-								'enrolstartdate' => $defaultmtime,
-								'enrolenddate' => $defaultmtime,
-								'notifystudents' => 0,
-								'template' => '',
-								'expirynotify' => 0,
-								'expirythreshold' => 10);
+	                            'timecreated' => $defaultmtime,
+	                            'timemodified' => $defaultmtime,
+	                            'self' => 0, // special processing adding a self enrollment plugin instance
+	                            'guest' => 0, // special processing adding a guest enrollment plugin instance
+								'template' => '');
 
 			// TODO : change default format from weeks to course default options
 	        $validate = array(  'fullname' => array(1,254,1), // Validation information - see validate_as function
@@ -283,36 +268,25 @@ class courses_plugin_manager {
 	                            'category' => array(5),
 	                            'sortorder' => array(2,4294967295,0),
 	                            'summary' => array(1,0,0),
-	                            'format' => array(4,'social,topics,weeks'),
+	                            'format' => array(4,'social,topics,weeks,page,flexpage,activity'),
 	                            'showgrades' => array(4,'0,1'),
 	                            'newsitems' => array(2,10,0),
-	                            'teacher' => array(1,100,1),
-	                            'teachers' => array(1,100,1),
-	                            'student' => array(1,100,1),
-	                            'students' => array(1,100,1),
+	                            'legacyfiles' => array(4,'0,1'),
+	                            'marker' => array(3),
 	                            'startdate' => array(3),
-	                            'numsections' => array(2,52,0),
 	                            'maxbytes' => array(2,$CFG->maxbytes,0),
 	                            'visible' => array(4,'0,1'),
+	                            'visibleold' => array(4,'0,1'),
 	                            'groupmode' => array(4,NOGROUPS.','.SEPARATEGROUPS.','.VISIBLEGROUPS),
 	                            'timecreated' => array(3),
 	                            'timemodified' => array(3),
 	                            'idnumber' => array(1,100,0),
-	                            'password' => array(1,50,0),
-	                            'enrolperiod' => array(2,4294967295,0),
 	                            'groupmodeforce' => array(4,'0,1'),
 	                            'lang' => array(1,50,0),
 	                            'theme' => array(1,50,0),
-	                            'cost' => array(1,10,0),
 	                            'showreports' => array(4,'0,1'),
-	                            'guest' => array(4,'0,1,2'),
-								'enrollable' => array(4,'0,1'),
-								'enrolstartdate' => array(3),
-								'enrolenddate' => array(3),
-								'notifystudents' => array(4,'0,1'),
+	                            'guest' => array(4,'0,1'),
 								'template' => array(1,0,0),
-								'expirynotify' => array(4,'0,1'),
-								'expirythreshold' => array(2,30,1), // Following ones cater for [something]N
 	                            'topic' => array(1,0,0),
 	                            'teacher_account' => array(6,0),
 	                            'teacher_role' => array(1,40,0));
@@ -466,7 +440,7 @@ class courses_plugin_manager {
         	
 	        $cat_e = 0; // Errored categories
 	        $cat_c = 0; // Created categories
-
+	        
 	        foreach ($bulkcourses as $i => $bulkcourse) {
 	        	$a = new StdClass;
             	$a->shortname = $bulkcourse['shortname'];
@@ -979,7 +953,7 @@ class courses_plugin_manager {
         global $CFG, $USER, $DB;
 
         // Check if a category with the same name and parent ID already exists
-        if ($cat = $DB->get_field_select('course_categories', 'id', " name = '$hname' AND parent = $hparent ")){
+        if ($cat = $DB->get_field_select('course_categories', 'id', " name = ? AND parent = ? ", array($hname, $hparent))){
 			$hstatus = 1;
         	return $cat;
         } else {
@@ -1024,7 +998,7 @@ class courses_plugin_manager {
 		}  
 
 		// trap when template not found
-		if(!empty($course['template'])) {			
+		if(isset($course['template']) && $course['template'] != '') {			
 			if(!($tempcourse = $DB->get_record('course', array('shortname' => $course['template'])))){
 				return -7;
 			}
@@ -1052,24 +1026,55 @@ class courses_plugin_manager {
 
 		if(!empty($course['template'])) {
 
-            if (!$archive = tool_sync_locate_backup_file($tempcourse->id, 'course')){
+            if (!$archivefile = tool_sync_locate_backup_file($tempcourse->id, 'course')){
             				
 				// get course template from publishflow backups if publishflow installed.
 				if ($DB->get_record('blocks', array('name' => 'publishflow'))){
-		            $archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
-		            if (!$archive){
+		            $archivefile = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
+		            if (!$archivefile){
 		        		return -2;
 		            }
 		        } else {
 		        	return -2;
 		        }
 		    }
+
+			$uniq = uniqid();
 		        		        
-            $temp_file = $CFG->dataroot."/temp/backup/".basename($archive->get_filename());
+            $tempdir = $CFG->dataroot."/temp/backup/$uniq";
+            if (!is_dir($tempdir)){
+	            mkdir($tempdir, 0777, true);
+	        }
+			// unzip all content in temp dir
+
             // actually locally copying archive
-            if ($archive->copy_content_to($temp_file)){	
+            $contextid = context_system::instance()->id;
+            $component = 'tool_sync';
+            $filearea = 'temp';
+            $itemid = $uniq;
+            if ($archivefile->extract_to_storage(new zip_packer(), $contextid, $component, $filearea, $itemid, $tempdir, $USER->id)){	
+
+				// Transaction
+				$transaction = $DB->start_delegated_transaction();
+				 
+				// Create new course
+				$folder                 = $tempdir; // as found in: $CFG->dataroot . '/temp/backup/' 
+				$categoryid             = $hcategory->id; // e.g. 1 == Miscellaneous
+				$user_doing_the_restore = $USER->id; // e.g. 2 == admin
+				$newcourse_id           = restore_dbops::create_new_course('', '', $hcategory->id );
+				 
+				// Restore backup into course
+				$controller = new restore_controller($folder, $newcourse_id, 
+				        backup::INTERACTIVE_NO, backup::MODE_SAMESITE, $user_doing_the_restore,
+				        backup::TARGET_NEW_COURSE );
+				$controller->execute_precheck();
+				$controller->execute_plan();
+				 
+				// Commit
+				$transaction->allow_commit();
+
 				// and import
-	            if ($newcourse_id =  restore_automation::run_automated_restore(null, $temp_file, $courserec->category)){
+	            if ($newcourse_id){
 
 				    // add all changes from incoming courserec
 				    $newcourse = $DB->get_record('course', array('id' => $newcourse_id));
@@ -1088,18 +1093,33 @@ class courses_plugin_manager {
 	        }
 		} else {
 			// create default course
-			$newcourse = create_course($courserec);			
+			$newcourse = create_course($courserec);
+	        $format = (!isset($course['format'])) ? 'topics' : $course['format'] ; // maybe useless
 	        if (isset($course['topics'])) { // Any topic headings specified ?
+	        	$maxfilledtopics = 1;
 	            foreach($course['topics'] as $dtopicno => $dtopicname){
-		            if ($dtopicno <= $course['numsections']) { // Avoid overflowing topic headings
+	            	if (!empty($dtopicname)) $maxfilledtopics = $dtopicno; // we guess the max declared topic
+			        if (strstr($dtopicname, '|') === false){
+						$sectionname = $dtopicname;
+						$sectionsummary = '';
+			        } else {				        	
+						list($sectionname, $sectionsummary) = explode('|', $dtopicname);
+			        }
+			        
+		            if (!$sectiondata = $DB->get_record('course_sections', array('section' => $dtopicno, 'course' => $newcourse->id))) { // Avoid overflowing topic headings
 				        $csection = new StdClass;
 				        $csection->course = $newcourse->id;
 				        $csection->section = $dtopicno;
-				        $csection->summary = $dtopicname;
+				        $csection->name = $sectionname;
+				        $csection->summary = $sectionsummary;
 				        $csection->sequence = '';
 				        $csection->visible = 1;
 				        if (!$DB->insert_record('course_sections', $csection)){
 				        }
+		            } else {
+				        $sectiondata->summary = $sectionname;
+				        $sectiondata->name = $sectionsummary;
+				        $DB->update_record('course_sections', $sectiondata);
 		            }
 		        }
 		        if (!isset($course['topics'][0])) {
@@ -1107,6 +1127,7 @@ class courses_plugin_manager {
 				        $csection = new StdClass;
 				        $csection->course = $newcourse->id;
 				        $csection->section = 0;
+				        $csection->name = '';
 				        $csection->summary = '';
 				        $csection->sequence = '';
 				        $csection->visible = 1;
@@ -1115,6 +1136,23 @@ class courses_plugin_manager {
 				        }
 				    }
 		        }
+		        
+		        // finally we can bind the course to have $maxfilledtopics topics
+		        $new = 0;
+				if (!$formatoptions = $DB->get_record('course_format_options', array('courseid' => $newcourse->id, 'name' => 'numsections', 'format' => $format))){
+			        $formatoptions = new StdClass();
+			        $new = 1;
+			    }
+		        $formatoptions->courseid = $newcourse->id;
+		        $formatoptions->format = $format;
+		        $formatoptions->name = 'numsections';
+		        $formatoptions->section = 0;
+		        $formatoptions->value = $maxfilledtopics;
+		        if ($new){
+			        $DB->insert_record('course_format_options', $formatoptions);
+			    } else {
+			        $DB->update_record('course_format_options', $formatoptions);
+			    }
 	        } else {
 	        	$numsections = get_config('numsections', 'moodlecourse');
 	        	for ($i = 1 ; $i < $numsections ; $i++) {
@@ -1122,14 +1160,15 @@ class courses_plugin_manager {
 			        $csection = new StdClass;
 			        $csection->course = $newcourse->id;
 			        $csection->section = $i;
+			        $csection->name = '';
 			        $csection->summary = '';
 			        $csection->sequence = '';
 			        $csection->visible = 1;
 			        if (!$DB->insert_record('course_sections', $csection)){
-
 			        }
 			    }
 			}
+        	rebuild_course_cache($newcourse->id, true);
 		}
 		if (!$context = context_course::instance($newcourse->id)) {
         	return -6;
@@ -1151,9 +1190,7 @@ class courses_plugin_manager {
 					}
                 }
             }
-        }       
-        
+        }               
         return 1;
-    }	
-	
+    }		
 }

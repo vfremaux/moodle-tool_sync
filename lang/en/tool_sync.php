@@ -15,6 +15,13 @@ $string['checkingcourse'] = 'Checking courses';
 $string['choosecoursetodelete'] = 'Choose courses to be deleted : ';
 $string['choosecoursetoreset'] = 'Choose courses to be reinitialized : ';
 $string['cleancategories'] = 'Clean empty categories';
+$string['cohortsync'] = 'Cohorts synchonisation';
+$string['cohortuseridentifier'] = 'Cohort user identifier';
+$string['cohortcohortidentifier'] = 'Cohort identifier';
+$string['cohortsconfig'] = 'Cohorts synchonisation configuration';
+$string['cohortfilelocation'] = 'Cohorts file location';
+$string['cohortmanualsync'] = 'Manual execution of cohort synchronisation processes';
+$string['cohortmgtmanual'] = 'Manual management for cohorts';
 $string['commandfile'] = 'Control file';
 $string['communicationerror'] = 'Communication error with remote. Errors : {$a}';
 $string['configdefaultcmd'] = 'Default value for the command column';
@@ -185,6 +192,7 @@ $string['makedeletefile'] = 'Create a file for course deletion';
 $string['makeresetfile'] = 'Create a file for course reinitialisation';
 $string['makefailedfile'] = 'Generate a tryback file';
 $string['manualcleancategories'] = 'Manually clean up empty categories';
+$string['manualcohortrun'] = 'Run this script manually from the stored command file';
 $string['manualdeleterun'] = 'Run manually course deletion';
 $string['manualenrolrun'] = 'Run this script manually from the stored command file';
 $string['manualhandling'] = 'Manual handling of operations';
@@ -304,8 +312,12 @@ automation capability.
 ';
 
 $string['enrolsync_help'] = '
-<p>This service allows synchornising user\'s pictures using a Zip file with images. It extends the standard pictures upload script with
+<p>This service allows synchronising user\'s pictures using a Zip file with images. It extends the standard pictures upload script with
 automation capability.
+';
+
+$string['cohortsync_help'] = '
+<p>This service allows synchronising cohort definitions using a CSV file.
 ';
 
 $string['syncconfig_help'] = '
