@@ -30,5 +30,5 @@ $plugin->requires  = 2011092100;        // Requires this Moodle version
 $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics)
 $plugin->cron      = 5;
 $plugin->maturity = MATURITY_BETA;
-$plugin->dependancies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
+$plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
 $plugin->release = '2.2.0 (Build 2012102200)';
