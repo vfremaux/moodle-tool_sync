@@ -1,4 +1,18 @@
-<?php	   
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
 * @package enrol
@@ -13,420 +27,304 @@ require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php
 
 class tool_plugin_sync {
 
-	/// Override the base config_form() function
-	function config_form($frm) {
-		global $CFG, $DB;
+    function form_elements(&$frm) {
+        $frm->addElement('header', 'globalconf1', get_string('configuration', 'tool_sync'));
 
-		$vars = array('sync_coursescleanup', 'sync_userscleanup', 'sync_enrolcleanup', 'sync_Mon', 'sync_Tue', 'sync_Wed', 'sync_Thu', 'sync_Fri', 'sync_Sat', 'sync_Sun', 'sync_courseactivation', 'sync_useractivation', 'sync_enrolactivation', 'sync_h', 'sync_m', 'sync_ct');
-		foreach ($vars as $var) {
-			if (!isset($frm->$var)) {
-				$frm->$var = '';
-			}
-		}
+        $frm->addElement('checkbox', 'tool_sync/courseactivation', get_string('synccourses', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/useractivation', get_string('syncusers', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/userpicturesactivation', get_string('syncuserpictures', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/enrolactivation', get_string('syncenrols', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/cohortactivation', get_string('synccohorts', 'tool_sync'));
+        
+        $encodings = array('UTF-8' => 'UTF-8', 'ISO-8859-1' => 'ISO-8859-1');
+        $frm->addElement('select', 'tool_sync/encoding', get_string('encoding', 'tool_sync'), $encodings);
+        $separators = array(',' => ', (coma)', ';' => '; (semicolon)');
+        $frm->addElement('select', 'tool_sync/csvseparator', get_string('csvseparator', 'tool_sync'), $separators);
 
-		$roles = $DB->get_records('role', null, '', 'id, name, shortname');
-		$ffconfig = get_config('course');
+        $frm->addElement('header', 'globalconf2', get_string('run', 'tool_sync'));
+        
+        $frm->addElement('checkbox', 'tool_sync/mon', get_string('day_mon', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/tue', get_string('day_tue', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/wed', get_string('day_wed', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/thu', get_string('day_thu', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/fri', get_string('day_fri', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/sat', get_string('day_sat', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/sun', get_string('day_sun', 'tool_sync'));
 
-		$frm->enrol_flatfilemapping = array();
-		foreach($roles as $id => $record) {
+        for ($i = 0 ; $i < 24 ; $i++) {
+            $houroptions[$i] = $i;
+        }
 
-			$frm->enrol_flatfilemapping[$id] = array(
-				$record->name,
-				isset($ffconfig->{"map_{$record->shortname}"}) ? $ffconfig->{"map_{$record->shortname}"} : $record->shortname
-			);
-		}		
-		include ($CFG->dirroot.'/admin/tool/sync/config.html');    
-	}
+        for ($i = 0 ; $i < 60 ; $i += 10) {
+            $minoptions[$i] = $i;
+        }
 
-	function process_config($config) {
-		global $CFG;
-		
-		if (!isset($config->tool_sync_coursescleanup)) {
-			$config->tool_sync_coursescleanup = '';
-		}
-		
-		set_config('tool_sync_coursescleanup', $config->tool_sync_coursescleanup);
-		
-		if (!isset($config->tool_sync_userscleanup)) {
-			$config->tool_sync_userscleanup = '';
-		}
-		
-		set_config('tool_sync_userscleanup', $config->tool_sync_userscleanup);
+        $sarr = array();
+        $sarr[] =& $frm->createElement('select', 'tool_sync/h', get_string('hour', 'tool_sync'), $houroptions);
+        $sarr[] =& $frm->createElement('select', 'tool_sync/m', get_string('minute', 'tool_sync'), $minoptions);
+        $frm->addGroup($sarr, 'runtimegroup', get_string('runtime', 'tool_sync'), array(''), false);
 
-		if (!isset($config->tool_sync_enrolcleanup)) {
-			$config->tool_sync_enrolcleanup = '';
-		}
-		
-		set_config('tool_sync_enrolcleanup', $config->tool_sync_enrolcleanup);	
-		
-		if (!isset($config->tool_sync_courseactivation)) {
-			$config->tool_sync_courseactivation = '';
-		}
-		
-		set_config('tool_sync_courseactivation', $config->tool_sync_courseactivation);
-		
-		if (!isset($config->tool_sync_useractivation)) {
-			$config->tool_sync_useractivation = '';
-		}
-		
-		set_config('tool_sync_useractivation', $config->tool_sync_useractivation);
+        for ($i = 0 ; $i < 60 ; $i += 10) {
+            $criticalduration[$i] = $i;
+        }
 
-		if (!isset($config->tool_sync_userpicturesactivation)) {
-			$config->tool_sync_userpicturesactivation = '';
-		}
-		
-		set_config('tool_sync_userpicturesactivation', $config->tool_sync_userpicturesactivation);
+        $frm->addElement('select', 'tool_sync/ct', get_string('criticaltime', 'tool_sync'), $criticalduration);
+        
+        $frm->addElement('header', 'globalconf3', get_string('final_action', 'tool_sync'));
 
-		if (!isset($config->tool_sync_enrolactivation)) {
-			$config->tool_sync_enrolactivation = '';
-		}
-		
-		set_config('tool_sync_enrolactivation', $config->tool_sync_enrolactivation);			
+        $frm->addElement('checkbox', 'tool_sync/enrolcleanup', get_string('group_clean', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/filearchive', get_string('filearchive', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/filefailed', get_string('failedfile', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/filecleanup', get_string('filecleanup', 'tool_sync'));
+    }
 
-		if (!isset($config->tool_sync_Mon)) {
-			$config->tool_sync_Mon = '';
-		}
-		
-		set_config('tool_sync_Mon', $config->tool_sync_Mon);			
-		
-		if (!isset($config->tool_sync_Tue)) {
-			$config->tool_sync_Tue = '';
-		}
-		
-		set_config('tool_sync_Tue', $config->tool_sync_Tue);			
-
-		if (!isset($config->tool_sync_Wed)) {
-			$config->tool_sync_Wed = '';
-		}
-		
-		set_config('tool_sync_Wed', $config->tool_sync_Wed);		
-
-		if (!isset($config->tool_sync_Thu)) {
-			$config->tool_sync_Thu = '';
-		}
-		
-		set_config('tool_sync_Thu', $config->tool_sync_Thu);		
-
-		if (!isset($config->tool_sync_Fri)) {
-			$config->tool_sync_Fri = '';
-		}
-		
-		set_config('tool_sync_Fri', $config->tool_sync_Fri);		
-
-		if (!isset($config->tool_sync_Sat)) {
-			$config->tool_sync_Sat = '';
-		}
-		
-		set_config('tool_sync_Sat', $config->tool_sync_Sat);		
-
-		if (!isset($config->tool_sync_Sun)) {
-			$config->tool_sync_Sun = '';
-		}
-		
-		set_config('tool_sync_Sun', $config->tool_sync_Sun);		
-
-		if (!isset($config->tool_sync_h)) {
-			$config->tool_sync_h = '';
-		}
-		
-		set_config('tool_sync_h', $config->tool_sync_h);		
-
-		if (!isset($config->tool_sync_m)) {
-			$config->tool_sync_m = '';
-		}
-		
-		set_config('tool_sync_m', $config->tool_sync_m);		
-
-		if (!isset($config->tool_sync_ct)) {
-			$config->tool_sync_ct = '';
-		}
-		
-		set_config('tool_sync_ct', $config->tool_sync_ct);				
-		
-		if (!isset($config->tool_sync_filecleanup)) {
-			$config->tool_sync_filecleanup = '';
-		}
-		
-		set_config('tool_sync_filecleanup', $config->tool_sync_filecleanup);		
-
-		if (!isset($config->tool_sync_filearchive)) {
-			$config->tool_sync_filearchive = '';
-		}
-		
-		set_config('tool_sync_filearchive', $config->tool_sync_filearchive);		
-
-		if (!isset($config->tool_sync_filefailed)) {
-			$config->tool_sync_filefailed = 0;
-		}
-		
-		set_config('tool_sync_filefailed', $config->tool_sync_filefailed);		
-
-		if (!isset($config->tool_sync_encoding)) {
-			$config->tool_sync_encoding = '';
-		}
-		
-		set_config('tool_sync_encoding', $config->tool_sync_encoding);			
-
-		if (!isset($config->tool_sync_csvseparator)) {
-			$config->tool_sync_csvseparator = ';';
-		}
-		
-		set_config('tool_sync_csvseparator', $config->tool_sync_csvseparator);			
-		
-		return true;
-	}		
-
-    function cron() {
+    function cron($syncconfig) {
         global $CFG, $USER, $SITE;
-		
-		if (debugging()){
-			$debug = optional_param('cronsyncdebug', 0, PARAM_INT); // ensures production platform cannot be attacked in deny of service that way
-		}
-		// 0 no debug
-		// 1 pass hourtime
-		// 2 pass dayrun and daytime
-		
-		$cfgh = $CFG->tool_sync_h;
-		$cfgm = $CFG->tool_sync_m;
-		
-		$h = date('G');
-		$m = date('i');
-		
-		$day = date("D");
-		$var = 'tool_sync_'.$day;
-		
-		$last = 0 + @$CFG->tool_sync_lastrun;
 
-		if ($last == 0) set_config('tool_sync_dayrun', 0); // failtrap when never run and sync_lastrun not initialized
+        if (debugging()) {
+            $debug = optional_param('cronsyncdebug', 0, PARAM_INT); // ensures production platform cannot be attacked in deny of service that way
+        }
+        // 0 no debug
+        // 1 pass hourtime
+        // 2 pass dayrun and daytime
+        
+        $cfgh = $syncconfig->h;
+        $cfgm = $syncconfig->m;
 
-		$now = time();
-		// $nextrun = $last + DAYSECS - 300; // assume we do it once a day
-		
-		$nextdate = $last + DAYSECS;
-		$nextmidnight = mktime (0, 0, 0, date("n", $nextdate), date("j", $nextdate), date("Y", $nextdate));
-		
-		if (($now > $nextmidnight) && ($now > $last + $CFG->tool_sync_ct)){
-			echo "Reset ... as after $nextmidnight. \n";
-			set_config('tool_sync_dayrun', 0);
-		}
+        $h = date('G');
+        $m = date('i');
 
-		/*		
-		$done = 2;
-		if($now < $nextrun && !$debug && $last > 0){
-			if ($now > $last + $CFG->tool_sync_ct){
-				// after the critical run time, we force back dayrun to false so cron can be run again.
-				// the critical time ensures that previous cron has finished and a proper "sync_lastrun" date has been recorded.
-				set_config('sync_dayrun', 0);
-			}
-			echo "Course and user sync ... nothing to do. Waiting time ".sprintf('%02d', $cfgh).':'.sprintf('%02d', $cfgm) ."\n";
-			return;
-		}
-		*/
-		
-		if (empty($CFG->$var) && !$debug){
-			echo "Course and user sync ... not valid day, nothing to do. \n";
-			return;
-		}
-		
-		if(($h == $cfgh) && ($m >= $cfgm) && !$CFG->tool_sync_dayrun  || $debug){
+        $day = date("D");
 
-			// we store that lock at start to lock any bouncing cron calls.
-			set_config('tool_sync_dayrun', 1);
-		
-			print_string('execstartsat', 'tool_sync', "$h:$m");
-			echo "\n";
-			
-			$lockfile = "$CFG->dataroot/sync/locked.txt";
-			$alock = "$CFG->dataroot/sync/alock.txt";
-			
-			if((file_exists($alock))||(file_exists($lockfile))){
-				$log = "Synchronisation report\n \n";
-				$log = $log . "Starting at: $h:$m \n";
-				if (empty($CFG->tool_sync_ct)) {	
-				} else {
-					$ct = $CFG->tool_sync_ct;
-					$file = @fopen($lockfile, 'r');
-					$line = fgets($file);
-					fclose($file);
-					$i = time();
-					
-					$field = explode(':', $line);
-					
-					$last = $field[1] + 60 * $ct;
-					
-					if($now > $last){
-						$str = get_string('errortoooldlock', 'tool_sync');
-						$log .= $str;
-						email_to_user(get_admin(), get_admin(), $SITE->shortname." : Synchronisation critical error", $str);						
-					}
-				}
-			} else {
-				$log = "Synchronisation report\n\n";
-				$log .= "Starting at: $h:$m \n";
+        $last = 0 + @$syncconfig->lastrun;
 
-				// Setting antibounce lock
-				$file = @fopen($lockfile,'w');
-				fputs($file,"M:".time());
-				fclose($file);
+        if ($last == 0) { 
+            set_config('dayrun', 0, 'tool_sync'); // failtrap when never run and sync_lastrun not initialized
+            $syncconfig->dayrun = 0;
+        }
 
-				$log .= "- - - - - - - - - - - - - - - - - - - -\n \n";
-				
-				/// COURSE SYNC
-				
-				if (empty($CFG->tool_sync_courseactivation)) {
-					$str = get_string('coursesync', 'tool_sync');
-					$str .= ': ';
-					$str .= get_string('disabled', 'tool_sync');
-					$str .= "\n";
-					$log .= $str;
-					echo $str;
-				} else {
-					$str = get_string('coursecronprocessing', 'tool_sync');
-					$str .= "\n";
-					$log .= $str;
-					echo $str;
-					$coursesmanager = new courses_plugin_manager;
-					$coursesmanager->cron();
-					if(!empty($CFG->checkfilename)){
-						$log .= "$CFG->checkfilename\n";
-					}
-					if(!empty($CFG->courselog)){
-						$log .= "$CFG->courselog\n";
-					}
-					$str = get_string('endofprocess', 'tool_sync');	
-					$str .= "\n\n";
-					echo $str;
-					$log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";					
-				}
+        $now = time();
+        // $nextrun = $last + DAYSECS - 300; // assume we do it once a day
 
-				/// USER ACCOUNTS SYNC
-				
-				if (empty($CFG->tool_sync_useractivation)) {
-					$str = get_string('usersync', 'tool_sync');
-					$str .= ': ';
-					$str .= get_string('disabled', 'tool_sync');
-					$str .= "\n";
-					$log .= $str;
-					echo $str;
-				} else {				
-					$str = get_string('usercronprocessing', 'tool_sync');
-					$str .= "\n";
-					$log .= $str;
-					echo $str;
-					$userpicturemanager = new users_plugin_manager;
-					$userpicturemanager->cron();
-					if (!empty($CFG->userlog)){
-						$log .= "$CFG->userlog\n";
-					}
-					$str = get_string('endofprocess', 'tool_sync');	
-					$str .= "\n\n";
-					echo $str;
-					$log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";					
-				}
+        $nextdate = $last + DAYSECS;
+        $nextmidnight = mktime (0, 0, 0, date("n", $nextdate), date("j", $nextdate), date("Y", $nextdate));
 
-				/// USER AVATARS SYNC
+        if (($now > $nextmidnight) && ($now > $last + $syncconfig->ct)){
+            echo "Reset ... as after $nextmidnight. \n";
+            set_config('dayrun', 0, 'tool_sync');
+            $syncconfig->dayrun = 0;
+        }
 
-				if (empty($CFG->tool_sync_userpicturesactivation)) {
-					$str = get_string('userpicturesync', 'tool_sync');
-					$str .= ': ';
-					$str .= get_string('disabled', 'tool_sync');
-					$str .= "\n";
-					$log .= $str;
-					echo $str;
-				} else {				
-					$str = get_string('userpicturescronprocessing', 'tool_sync');
-					$str .= "\n";
-					$log .= $str;
-					echo $str;	
-					$usersmanager = new userpictures_plugin_manager;
-					$usersmanager->cron();
-					if (!empty($CFG->userpictureslog)){
-						$log .= "$CFG->userpictureslog\n";
-					}
-					$str = get_string('endofprocess', 'tool_sync');	
-					$str .= "\n\n";
-					echo $str;
-					$log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";					
-				}
+        /*
+        $done = 2;
+        if($now < $nextrun && !$debug && $last > 0){
+            if ($now > $last + $syncconfig->ct){
+                // after the critical run time, we force back dayrun to false so cron can be run again.
+                // the critical time ensures that previous cron has finished and a proper "sync_lastrun" date has been recorded.
+                set_config('dayrun', 0, 'tool_sync');
+            }
+            echo "Course and user sync ... nothing to do. Waiting time ".sprintf('%02d', $cfgh).':'.sprintf('%02d', $cfgm) ."\n";
+            return;
+        }
+        */
+        
+        if (empty($syncconfig->$day) && !$debug){
+            echo "Course and user sync ... not valid day, nothing to do. \n";
+            return;
+        }
+        
+        if(($h == $cfgh) && ($m >= $cfgm) && !$syncconfig->dayrun  || $debug){
 
-				/// ENROLLMENT SYNC
-				
-				if (empty($CFG->tool_sync_enrolactivation)) {
-					$str = get_string('enrolcronprocessing', 'tool_sync');
-					$str .= ': ';
-					$str .= get_string('disabled', 'tool_sync');
-					$str .= "\n";
-					echo $str;
-					$log .= $str;
-				} else {		
-					$str = get_string('enrolcronprocessing', 'tool_sync');	
-					$str .= "\n";
-					echo $str;
-					$log .= $str;
-					$enrolmanager = new enrol_plugin_manager;
-					$enrolmanager->cron();
-					if (!empty($CFG->enrollog)){
-						$log .= "$CFG->enrollog\n";
-					}
-					$str = get_string('endofprocess', 'tool_sync');
-					$str .= "\n\n";
-					echo $str;
-					$log .= $str."- - - - - - - - - - - - - - - - - - - -\n\n";
-				}		
+            // We store that lock at start to lock any bouncing cron calls.
+            set_config('dayrun', 1, 'tool_sync');
+            $syncconfig->dayrun = 1;
 
-				/// GROUP CLEANUP
-				
-				if (empty($CFG->tool_sync_enrolcleanup)) {
-					$str = get_string('group_clean', 'tool_sync');
-					$str .= ': ';
-					$str .= get_string('disabled', 'tool_sync');
-					$str .= "\n";
-					$log .= $str;
-					echo $str;
-				} else {
-					foreach($CFG->coursesg as $courseid){						
-						$groups = groups_get_all_groups($courseid, 0, 0, 'g.*'); 						
-						foreach($groups as $g){						
-							$groupid = $g->id;
-							if(!groups_get_members($groupid, $fields='u.*', $sort='lastname ASC')){
-								groups_delete_group($groupid);
-							}
-						}
-					}
-					$str = get_string('emptygroupsdeleted', 'tool_sync');
-					$str .= "\n\n";
-					echo $str;
-					$log .= $str;
-				}
-				
-				unlink($lockfile);
-				$now = time();				
-				set_config('sync_lastrun', $now);
-			}
+            print_string('execstartsat', 'tool_sync', "$h:$m");
+            echo "\n";
 
-		/// creating and sending report
+            $lockfile = "$CFG->dataroot/sync/locked.txt";
+            $alock = "$CFG->dataroot/sync/alock.txt";
 
-			if(!empty($log)){
-				if (!is_dir($CFG->dataroot.'/sync/reports')){
-					mkdir($CFG->dataroot.'/sync/reports', 0777);
-				}
-				$reportfilename = $CFG->dataroot.'/sync/reports/report-'.date('Ymd-Hi').'.txt';
-				$reportfile = @fopen($reportfilename, 'wb');
-				fputs($reportfile, $log);
-				fclose($reportfile);
+            if ((file_exists($alock))||(file_exists($lockfile))) {
+                $log = "Synchronisation report\n \n";
+                $log = $log . "Starting at: $h:$m \n";
+                if (empty($syncconfig->ct)) {
+                } else {
+                    $ct = $syncconfig->ct;
+                    $file = @fopen($lockfile, 'r');
+                    $line = fgets($file);
+                    fclose($file);
+                    $i = time();
 
-				if (!empty($CFG->tool_sync_enrol_mailadmins)) {
-		            email_to_user(get_admin(), get_admin(), $SITE->shortname." : Enrol Sync Log", $log);
-		        }
-			}
-		} else {
-			if (!$CFG->tool_sync_dayrun){
-				echo "Course and user sync ... not yet. Waiting time ".sprintf('%02d', $cfgh).':'.sprintf('%02d', $cfgm) ."\n";
-			} else {
-				echo "Course and user sync ... already passed today, nothing to do. \n";
-			}
-		}
-    } 
-} 
+                    $field = explode(':', $line);
 
-?>
+                    $last = $field[1] + 60 * $ct;
+
+                    if ($now > $last) {
+                        $str = get_string('errortoooldlock', 'tool_sync');
+                        $log .= $str;
+                        email_to_user(get_admin(), get_admin(), $SITE->shortname." : Synchronisation critical error", $str);                        
+                    }
+                }
+            } else {
+                $log = "Synchronisation report\n\n";
+                $log .= "Starting at: $h:$m \n";
+
+                // Setting antibounce lock
+                $file = @fopen($lockfile,'w');
+                fputs($file,"M:".time());
+                fclose($file);
+
+                $log .= "- - - - - - - - - - - - - - - - - - - -\n \n";
+
+                /// COURSE SYNC
+
+                if (empty($syncconfig->courseactivation)) {
+                    $str = get_string('coursesync', 'tool_sync');
+                    $str .= ': ';
+                    $str .= get_string('disabled', 'tool_sync');
+                    $str .= "\n";
+                    $log .= $str;
+                    echo $str;
+                } else {
+                    $str = get_string('coursecronprocessing', 'tool_sync');
+                    $str .= "\n";
+                    $log .= $str;
+                    echo $str;
+                    $coursesmanager = new course_sync_manager;
+                    $coursesmanager->cron($syncconfig);
+                    if (!empty($CFG->checkfilename)) {
+                        $log .= "$CFG->checkfilename\n";
+                    }
+                    if (!empty($coursesmanager->log)) {
+                        $log .= $coursesmanager->log."\n";
+                    }
+                    $str = get_string('endofprocess', 'tool_sync');
+                    $str .= "\n\n";
+                    echo $str;
+                    $log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";
+                }
+
+                /// USER ACCOUNTS SYNC
+                
+                if (empty($syncconfig->useractivation)) {
+                    $str = get_string('usersync', 'tool_sync');
+                    $str .= ': ';
+                    $str .= get_string('disabled', 'tool_sync');
+                    $str .= "\n";
+                    $log .= $str;
+                    echo $str;
+                } else {
+                    $str = get_string('usercronprocessing', 'tool_sync');
+                    $str .= "\n";
+                    $log .= $str;
+                    echo $str;
+                    $userpicturemanager = new users_plugin_manager;
+                    $userpicturemanager->cron($syncconfig);
+                    if (!empty($userpicturemanager->log)){
+                        $log .= $userpicturemanager->log."\n";
+                    }
+                    $str = get_string('endofprocess', 'tool_sync');
+                    $str .= "\n\n";
+                    echo $str;
+                    $log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";
+                }
+
+                /// USER AVATARS SYNC
+
+                if (empty($syncconfig->userpicturesactivation)) {
+                    $str = get_string('userpicturesync', 'tool_sync');
+                    $str .= ': ';
+                    $str .= get_string('disabled', 'tool_sync');
+                    $str .= "\n";
+                    $log .= $str;
+                    echo $str;
+                } else {
+                    $str = get_string('userpicturescronprocessing', 'tool_sync');
+                    $str .= "\n";
+                    $log .= $str;
+                    echo $str;    
+                    $usersmanager = new userpictures_plugin_manager;
+                    $usersmanager->cron($syncconfig);
+                    if (!empty($usersmanager->log)){
+                        $log .= $usersmanager->log."\n";
+                    }
+                    $str = get_string('endofprocess', 'tool_sync');
+                    $str .= "\n\n";
+                    echo $str;
+                    $log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";                    
+                }
+
+                /// ENROLLMENT SYNC
+
+                if (empty($syncconfig->enrolactivation)) {
+                    $str = get_string('enrolcronprocessing', 'tool_sync');
+                    $str .= ': ';
+                    $str .= get_string('disabled', 'tool_sync');
+                    $str .= "\n";
+                    echo $str;
+                    $log .= $str;
+                } else {        
+                    $str = get_string('enrolcronprocessing', 'tool_sync');
+                    $str .= "\n";
+                    echo $str;
+                    $log .= $str;
+                    $enrolmanager = new enrol_plugin_manager;
+                    $enrolmanager->cron($syncconfig);
+                    if (!empty($enrolmanager->log)){
+                        $log .= $enrolmanager->log."\n";
+                    }
+                    $str = get_string('endofprocess', 'tool_sync');
+                    $str .= "\n\n";
+                    echo $str;
+                    $log .= $str."- - - - - - - - - - - - - - - - - - - -\n\n";
+                }
+
+                /// GROUP CLEANUP
+
+                if (empty($syncconfig->enrolcleanup)) {
+                    $str = get_string('group_clean', 'tool_sync');
+                    $str .= ': ';
+                    $str .= get_string('disabled', 'tool_sync');
+                    $str .= "\n";
+                    $log .= $str;
+                    echo $str;
+                } else {
+                    foreach ($CFG->coursesg as $courseid) {
+                        $groups = groups_get_all_groups($courseid, 0, 0, 'g.*');
+                        foreach ($groups as $g) {
+                            $groupid = $g->id;
+                            if(!groups_get_members($groupid, $fields='u.*', $sort='lastname ASC')){
+                                groups_delete_group($groupid);
+                            }
+                        }
+                    }
+                    $str = get_string('emptygroupsdeleted', 'tool_sync');
+                    $str .= "\n\n";
+                    echo $str;
+                    $log .= $str;
+                }
+
+                unlink($lockfile);
+                $now = time();
+                set_config('sync_lastrun', $now);
+            }
+
+            // processing aggregated log
+
+            if (!empty($log)) {
+                $reportfilename = 'report-'.date('Ymd-Hi').'.txt';
+
+                if (!empty($syncconfig->enrol_mailadmins)) {
+                    email_to_user(get_admin(), get_admin(), $SITE->shortname." : Enrol Sync Log", $log);
+                }
+            }
+        } else {
+            if (!$syncconfig->dayrun) {
+                echo "Course and user sync ... not yet. Waiting time ".sprintf('%02d', $cfgh).':'.sprintf('%02d', $cfgm) ."\n";
+            } else {
+                echo "Course and user sync ... already passed today, nothing to do. \n";
+            }
+        }
+    }
+}

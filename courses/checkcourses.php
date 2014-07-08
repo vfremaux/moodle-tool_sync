@@ -1,155 +1,107 @@
-<?php	   // author - Funck Thibaut
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-	require_once('../../../../config.php');
-	require_once($CFG->dirroot.'/course/lib.php');
-	require_once($CFG->libdir.'/adminlib.php');
-	require_once($CFG->libdir.'/moodlelib.php');
-	require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
-	require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
+/**
+ * @author Funck Thibaut
+ * @package tool-sync
+ */
 
-	if (!is_siteadmin()) {
-        print_error('erroradminrequired', 'tool_sync');
+require_once('../../../../config.php');
+require_once($CFG->dirroot.'/course/lib.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/moodlelib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
+
+$systemcontext = context_system::instance();
+$PAGE->set_context($systemcontext);
+require_login();
+
+// Security.
+if (!is_siteadmin()) {
+    print_error('erroradminrequired', 'tool_sync');
+}
+
+$url = $CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php';
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$PAGE->navigation->add(get_string('coursecheck', 'tool_sync'), null);
+$PAGE->set_url($url);
+$PAGE->set_title("$SITE->shortname");
+$PAGE->set_heading($SITE->fullname);
+
+$renderer = $PAGE->get_renderer('tool_sync');
+$syncconfig = get_config('tool_sync');
+$form = new InputFileLoadForm($url, array('localfile' => $syncconfig->course_fileexistlocation));
+
+$canprocess = false;
+
+if ($data = $form->get_data()) {
+
+    if (!empty($data->uselocal)) {
+        $coursesmanager = new course_sync_manager(SYNC_COURSE_CHECK);
+        $canprocess = true;
+        $processedfile = $syncconfig->course_fileexistlocation;
+    } else {
+        $usercontext = context_user::instance($USER->id);
+
+        $fs = get_file_storage();
+
+        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
+
+            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
+            $uploadedfile = array_pop($areafiles);
+
+            $manualfilerec = new StdClass();
+            $manualfilerec->contextid = $usercontext->id;
+            $manualfilerec->component = 'user';
+            $manualfilerec->filearea = 'draft';
+            $manualfilerec->itemid = $data->inputfile;
+            $manualfilerec->filepath = $uploadedfile->get_filepath();
+            $manualfilerec->filename = $uploadedfile->get_filename();
+            $processedfile = $manualfilerec->filename;
+
+            $coursesmanager = new course_sync_manager(SYNC_COURSE_CHECK, $manualfilerec);
+            $canprocess = true;
+        } else {
+            $errormes = "Failed loading a file";
+        }
     }
-	if (! $site = get_site()) {
-        print_error('errornosite', 'tool_sync');
-    }
-	if (!$adminuser = get_admin()) {
-        print_error('errornoadmin', 'tool_sync');
-    }
+}
 
-	$url = $CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php';
-	$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
-	$PAGE->navigation->add(get_string('coursecheck', 'tool_sync'), null);
-	$PAGE->set_url($url);
-	$PAGE->set_context(null);
-	$PAGE->set_title("$site->shortname");
-	$PAGE->set_heading($site->fullname);
-	echo $OUTPUT->header();
-	echo $OUTPUT->heading(get_string('checkingcourse', 'tool_sync'));
-	sync_print_remote_tool_portlet('importfile', $CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php', 'checkcourse', 'upload');	
-	sync_print_local_tool_portlet($CFG->tool_sync_course_fileexistlocation, 'commandfile', 'checkcourses.php');
-	require_once($CFG->dirroot.'/lib/uploadlib.php');			 
+echo $OUTPUT->header();
 
-	// If there is a file to upload... do it... else do the rest of the stuff
-	$um = new upload_manager('checkcourse', false, false, null, false, 0);
+echo $OUTPUT->heading(get_string('checkingcourse', 'tool_sync'));
 
-    if ($um->preprocess_files() || isset($_POST['uselocal'])) {
-		// All file processing stuff will go here. ID=2...
-		
-        if (isset($um->files['checkcourse'])) {
-  			echo $OUTPUT->notification(get_string('parsingfile', 'tool_sync'), 'notifysuccess');
-			$filename = $um->files['checkcourse']['tmp_name'];
-		}
+$form->display();
 
-		$uselocal = optional_param('uselocal', false, PARAM_BOOL);
-		if(!empty($uselocal)){
-			$filename = $CFG->tool_sync_course_fileexistlocation;
-			$filename = $CFG->dataroot.'/'.$filename;
-		}
-		
-		// execron do everything a cron will do
-		if (isset($filename) && file_exists($filename)){
-			$filestouse->check = $filename;
-		    $coursesmanager = new courses_plugin_manager($filestouse, SYNC_COURSE_CHECK);
+if ($canprocess) {
+    echo '<pre>';
+    $coursesmanager->cron($syncconfig);
+    echo '</pre>';
 
-			echo '<pre>';
-			$coursesmanager->cron();
-			echo '</pre>';
-			
-			sync_save_check_report();
-		}
-	}
+    $usermgtmanual = get_string('checkingcourse', 'tool_sync');
+    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
+    
+    echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
+    echo "<center>$cronrunmsg</center>";
+    echo '</fieldset>';
+}
 
-	/**
-	* writes an operation report file telling about all course tested
-	*
-	*/		
-	function sync_save_check_report(){
-		global $CFG;
+// always return to main tool view.
+echo $renderer->print_return_button();
 
-		$t = time();
-		$today = date("Y-m-d_H-i-s",$t);
-		
-		$filename = $CFG->dataroot."/sync/reports/UC_$today.txt";
-		
-		if($FILE = @fopen($filename,'w')){		
-			fputs($FILE, $CFG->tool_sync_courselog);
-		}
-		fclose($FILE);		
-	}
-		
-	if ($del = optional_param('del', 0, PARAM_BOOL)){
-		$filename = optional_param('delname', '', PARAM_TEXT);
-		if($filename){
-			@unlink($filename);
-		}
-	}	
-
-	if ($purge = optional_param('purge', false, PARAM_TEXT)){
-		$reports = glob($CFG->dataroot.'/sync/reports/UC_*');
-		if (!empty($reports)){
-			foreach($reports as $report){
-				@unlink($report);
-			}
-		}
-	}	
-
-	echo '<br/><br/><fieldset><legend><strong>'.get_string('displayoldreport', 'tool_sync').'</strong></legend>';
-	$entries = glob($CFG->dataroot."/sync/reports/UC_*");
-	$filecabinetstr = get_string('filecabinet', 'tool_sync');
-	$filenameformatstr = get_string('filenameformatuc', 'tool_sync');
-	echo "<br/><strong>$filecabinetstr</strong>: $CFG->dataroot/sync/reports<br/>";
-	echo "$filenameformatstr<br/><br/>";
-	echo '<ul>';
-	foreach($entries as $entry){
-		echo '<li> '.basename($entry).'</li>';
-	}
-	echo '</ul>';
-	echo '<br/>';
-	
-	$loadstr = get_string('load', 'tool_sync');
-	$purgestr = get_string('purge', 'tool_sync');
-	echo '<center>';
-	echo '<form method="post" action="checkcourses.php" style="display:inline">';
-	echo '<input type="hidden" name="sesskey" value="'.$USER->sesskey.'">';
-	print_string('enterfilename', 'tool_sync');
-	echo '<input type="text" name="filename" size="30"> <input type="submit" value="'.$loadstr.'">';
-	echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-	echo '</form>';	
-
-	echo '<form method="post" action="checkcourses.php" style="display:inline">';
-	echo '<input type="hidden" name="sesskey" value="'.$USER->sesskey.'">';
-	echo '<input type="submit" name="purge" value="'.$purgestr.'">';
-	echo '</form>';	
-	echo '</center>';
-	 
-	echo '<br/>';
-
-	$name = optional_param('filename', '', PARAM_TEXT);
-	if(!empty($name)){
-		$filename = "$CFG->dataroot/sync/reports/$name";
-		
-		if ($file = file($filename)){
-			echo '<pre>';
-			echo implode("\n", $file);
-			echo '</pre>';
-		}
-
-		echo '<center>';
-		echo '<form method="post" action="checkcourses.php">';
-		echo '<input type="hidden" name="sesskey" value="'.$USER->sesskey.'">';
-		echo '<input type="hidden" name="delname" value="'.$filename.'">';
-		print_string('deletethisreport', 'tool_sync');
-		echo '<input type=radio name="del" value="1" /> '.get_string('yes').' <input type=radio name="del" value="0" checked/> '.get_string('no').'<br/>';
-		echo '<input type="submit" value="'.get_string('delete').'">';
-		echo '</form>';			
-		echo '</center>';
-	}
-		
-	echo '</fieldset>';
-
-	// always return to main tool view.
-	sync_print_return_button();
-
-	echo $OUTPUT->footer();
-?>
+echo $OUTPUT->footer();

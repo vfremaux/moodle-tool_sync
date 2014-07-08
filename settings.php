@@ -28,5 +28,5 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
     //--- general settings -----------------------------------------------------------------------------------
-	$ADMIN->add('root', new admin_externalpage('toolsync', get_string('pluginname', 'tool_sync'), "{$CFG->wwwroot}/admin/tool/sync/index.php"));
+    $ADMIN->add('root', new admin_externalpage('toolsync', get_string('pluginname', 'tool_sync'), "{$CFG->wwwroot}/admin/tool/sync/index.php"));
 }

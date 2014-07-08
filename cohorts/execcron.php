@@ -1,61 +1,70 @@
 <?php
-	/**
-	* @package tool
-	* @subpackage @sync
-	*
-	* 
-	*/
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-    require_once("../../../../config.php");
-    require_once($CFG->libdir.'/adminlib.php');
-	require_once($CFG->libdir.'/moodlelib.php');
+/**
+* @package tool
+* @subpackage @sync
+*
+*/
 
-	require_login();
+require_once("../../../../config.php");
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/moodlelib.php');
+require_once("$CFG->dirroot/admin/tool/sync/cohorts/cohorts.class.php");
 
-	if (!is_siteadmin()) {
-        print_error('erroradminrequired', 'tool_sync');
-    }
-	if (! $site = get_site()) {
-        print_error('errornosite', 'tool_sync');
-    }
-	if (!$adminuser = get_admin()) {
-        print_error('errornoadmin', 'tool_sync');
-    }
+$systemcontext = context_system::instance();
+$PAGE->set_context($systemcontext);
 
-	set_time_limit(1800);
-	raise_memory_limit('512M');	
+require_login();
 
-	require_once("$CFG->dirroot/admin/tool/sync/cohorts/cohorts.class.php");
-	$cohortssmanager = new cohorts_plugin_manager;
+if (!is_siteadmin()) {
+    print_error('erroradminrequired', 'tool_sync');
+}
 
-	$url = $CFG->wwwroot.'/admin/tool/sync/cohorts/execron.php';
-	$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
-	$PAGE->navigation->add(get_string('cohortmgtmanual', 'tool_sync'));
-	$PAGE->set_url($url);
-	$PAGE->set_context(null);
-	$PAGE->set_title("$site->shortname");
-	$PAGE->set_heading($site->fullname);
+set_time_limit(1800);
+raise_memory_limit('512M');
 
-	echo $OUTPUT->header();
+$renderer = $PAGE->get_renderer('tool_sync');
+$cohortssmanager = new cohorts_plugin_manager();
+$syncconfig = get_config('tool_sync');
 
-	echo $OUTPUT->heading_with_help(get_string('cohortmgtmanual', 'tool_sync'), 'cohortsync', 'tool_sync');
+$url = $CFG->wwwroot.'/admin/tool/sync/cohorts/execcron.php';
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$PAGE->navigation->add(get_string('cohortmgtmanual', 'tool_sync'));
+$PAGE->set_url($url);
+$PAGE->set_title("$SITE->shortname");
+$PAGE->set_heading($SITE->fullname);
 
-	$cohortsmanager->process_config($CFG);
-	echo '<pre>';
-	$cohortsmanager->cron();
-	echo '</pre>';
-	$address = $CFG->tool_sync_cohort_filelocation;
+echo $OUTPUT->header();
 
-	$cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
-	$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $address);
+echo $OUTPUT->heading_with_help(get_string('cohortmgtmanual', 'tool_sync'), 'cohortsync', 'tool_sync');
 
-	echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";
-	echo "<center>$cronrunmsg</center>";
-	echo '</fieldset>';
+echo '<pre>';
+$cohortssmanager->cron($syncconfig);
+echo '</pre>';
+$address = $syncconfig->cohorts_filelocation;
 
-	// always return to main tool view.
-	sync_print_return_button();
+$cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
+$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $address);
 
-	echo $OUTPUT->footer();
-///    exit;
+echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";
+echo "<center>$cronrunmsg</center>";
+echo '</fieldset>';
 
+// always return to main tool view.
+echo $renderer->print_return_button();
+
+echo $OUTPUT->footer();

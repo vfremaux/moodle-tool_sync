@@ -57,7 +57,7 @@ class enrolment_plugin_sync {
 		$filechecker = new file_checker;	
 		$filechecker->transform_users_file($CFG->tool_sync_users_filelocation);
 		$filechecker->transform_enrol_file($CFG->tool_sync_enrol_filelocation);
-		$coursesmanager = new courses_plugin_manager;
+		$coursesmanager = new course_sync_manager;
 		$coursesmanager->cron();
 		$usersmanager = new users_plugin_manager;
 		$usersmanager->cron();

@@ -1,124 +1,125 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-	function create_course_deletion_file($selection){	
-		global $CFG;
-		$filename = $CFG->dataroot.'/sync/deletecourses.txt';
-		$file = fopen($filename, 'wb');		
-		$size = count($selection);
-		for($i = 0 ; $i < $size - 1 ; $i++){
-			fputs($file, "$selection[$i]");
-			fputs($file, "\n");
-		}		
-		$size = $size - 1;
-		fputs($file, "$selection[$size]");
-		fclose($file);
-	}
+function tool_sync_create_course_deletion_file($selection) {
+    global $CFG;
 
-	/*
-	* Creates a default reinitialisation file with standard options
-	* File is generated in UTF8 only
-	* @param array $selection array of course IDs from selection form
-	*/
-	function create_course_reinitialisation_file($selection){	
-		global $CFG, $DB;
+    $filename = 'deletecourses.txt';
 
-		$filename = $CFG->dataroot.'/sync/resetcourses.csv';
-		$file = fopen($filename, 'wb');		
-		$size = count($selection);
+    $fs = get_file_storage();
+    $content = '';
 
-		$cols = array('shortname', 'roles', 'grades', 'groups', 'events', 'logs', 'notes', 'modules');
-		$rows[] = implode($CFG->tool_sync_csvseparator, $cols);
+    $size = count($selection);
+    for ($i = 0 ; $i < $size - 1 ; $i++) {
+        $content .= "$selection[$i]";
+        $content .= "\n";
+    }
+    $size = $size - 1;
+    $content .= "$selection[$size]";
 
-		$identifieroptions = array('idnumber', 'shortname', 'id');
-		$identifiername = $identifieroptions[0 + @$CFG->tool_sync_course_resetfileidentifier];
+    $filerec = new StdClass();
+    $filerec->contextid = context_system::instance()->id;
+    $filerec->component = 'tool_sync';
+    $filerec->filearea = 'syncfiles';
+    $filerec->itemid = 0;
+    $filerec->filepath = '/';
+    $filerec->filename = $filename;
 
-		for($i = 0 ; $i < $size - 1 ; $i++){
+    // Ensure no collisions
+    if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
+        $oldfile->delete();
+    }
 
-			if (@$CFG->tool_sync_course_resetfileidentifier == 0 && $DB->count_records('course', array('idnumber' => $selection[$i]))){
-				tool_sync_report($CFG->tool_sync_resetlog, get_string('nonuniqueidentifierexception', 'tool_sync', $i));
-				continue;
-			}
+    $fs->create_file_from_string($filerec, $content);
+}
 
-			$c = $DB->get_record('course', array($identifiername => $selection[$i]));
-			$values = array();
-			$values[] = $c->shortname;
-			$values[] = 'student teacher guest';
-			$values[] = 'grades';
-			$values[] = 'members';
-			$values[] = 'yes';
-			$values[] = 'yes';
-			$values[] = 'yes';
-			$values[] = 'all';
-			$rows[] = implode($CFG->tool_sync_csvseparator, $values);
-		}
-		if (!empty($rows)) fputs($file, implode("\n", $rows));
-		fclose($file);
-	}
-	
-	function sync_scan_empty_categories($parentcatid, &$scannedids, &$path){
-		global $CFG, $DB;
+function tool_sync_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
+    global $CFG, $DB;
 
-		// get my subs
-		$sql = "
-			SELECT DISTINCT
-				cc.id,
-				cc.parent,
-				cc.name,
-				count(c.id) as courses
-			FROM
-				{course_categories} cc
-			LEFT JOIN
-				{course} c
-			ON 
-				cc.id = c.category
-			WHERE 
-				cc.parent = ?
-			GROUP BY 
-				cc.id
-		";
-		$cats = $DB->get_records_sql($sql, array($parentcatid));
-		if ($parentcatid != 0){
-			$countcourses = $DB->count_records('course', array('category' => $parentcatid));
-		} else {
-			$countcourses = 0;
-		}
+    // get my subs
+    $sql = "
+        SELECT DISTINCT
+            cc.id,
+            cc.parent,
+            cc.name,
+            count(c.id) as courses
+        FROM
+            {course_categories} cc
+        LEFT JOIN
+            {course} c
+        ON 
+            cc.id = c.category
+        WHERE 
+            cc.parent = ?
+        GROUP BY 
+            cc.id
+    ";
+    $cats = $DB->get_records_sql($sql, array($parentcatid));
+    if ($parentcatid != 0) {
+        $countcourses = $DB->count_records('course', array('category' => $parentcatid));
+    } else {
+        $countcourses = 0;
+    }
 
-		if (!empty($cats)){			
-			foreach($cats as $ec){
+    if (!empty($cats)) {
+        foreach($cats as $ec) {
 
-				$mempath = $path;
-				$path .= ' / '.$ec->name;
-				$subcountcourses = sync_scan_empty_categories($ec->id, $scannedids, $path);
-				$path = $mempath;
+            $mempath = $path;
+            $path .= ' / '.$ec->name;
+            $subcountcourses = sync_scan_empty_categories($ec->id, $scannedids, $path);
+            $path = $mempath;
 
-				if ($subcountcourses == 0){
-					// this is a really empty cat
-					echo "<tr><td align=\"left\"><b>{$ec->name}</b></td><td align=\"left\">$path</td></tr>";
-					$scannedids[] = $ec->id;
-				}
-				$countcourses += $subcountcourses;
-			}
-		}
-		return $countcourses;
-	}
+            if ($subcountcourses == 0) {
+                // this is a really empty cat
+                echo "<tr><td align=\"left\"><b>{$ec->name}</b></td><td align=\"left\">$path</td></tr>";
+                $scannedids[] = $ec->id;
+            }
+            $countcourses += $subcountcourses;
+        }
+    }
+    return $countcourses;
+}
 
-	/**
-	* checks locally if a deployable/publishable backup is available
-	* @param reference $loopback variable given to setup an XMLRPC loopback message for testing
-	* @return boolean
-	*/
-	function tool_sync_locate_backup_file($courseid, $filearea){
-	    global $CFG, $DB;
-	  
-	    $fs = get_file_storage();
-	    $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
-	    $files = $fs->get_area_files($coursecontext->id, 'backup', $filearea, 0, 'timecreated', false);
-	    
-	    if(count($files) > 0)
-	    {
-	        return array_pop($files);
-	    }
-	    
-	    return false;
-	}
-?>
+/**
+* checks locally if a deployable/publishable backup is available
+* @param reference $loopback variable given to setup an XMLRPC loopback message for testing
+* @return boolean
+*/
+function tool_sync_locate_backup_file($courseid, $filearea) {
+
+    $fs = get_file_storage();
+
+    $coursecontext = context_course::instance($courseid);
+    $files = $fs->get_area_files($coursecontext->id, 'backup', $filearea, 0, 'timecreated', false);
+
+    if (count($files) > 0) {
+        return array_pop($files);
+    }
+
+    return false;
+}
+
+function tool_sync_config_add_sync_prefix($cfg){
+    
+    $formobj = new StdClass();
+    
+    foreach($cfg as $key => $value){
+        $fullkey = 'tool_sync/'.$key;
+        $formobj->$fullkey = $value;
+    }
+    
+    return $formobj;
+}
