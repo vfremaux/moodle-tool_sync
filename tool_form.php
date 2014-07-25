@@ -9,10 +9,10 @@ require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
 require_once("$CFG->dirroot/admin/tool/sync/tool.php");
 
 class ToolForm extends moodleform {
-    
+
     function definition() {
         global $CFG;
-        
+
         $coursemanager = new course_sync_manager();
         $usermanager = new users_plugin_manager();
         $userpicturemanager = new userpictures_plugin_manager();
@@ -21,13 +21,13 @@ class ToolForm extends moodleform {
         $mainmanager = new tool_plugin_sync();
 
         $fileoptions = array('context' => context_system::instance());
-        
+
         $mform = $this->_form;
-        
+
         $mform->addElement('header', 'h1', get_string('filemanager', 'tool_sync'));
-        
+
         $mform->addElement('static', 'files', '<a href="'.$CFG->wwwroot.'/admin/tool/sync/filearea.php">'.get_string('filemanager2', 'tool_sync').'</a>'); 
-        
+
         $mform->addElement('header', 'h2', get_string('coursesync', 'tool_sync'));
         $coursemanager->form_elements($mform);
 

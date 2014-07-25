@@ -117,6 +117,7 @@ $string['errornouser'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->m
 $string['errornullcourseidentifier'] = 'Erreur ligne {$a} : Identifiant de cours vide ou nul.';
 $string['errornullcourseidentifier'] = 'Identifiant de cours nul ou invalide à la ligne {$a}.';
 $string['errornullcsvheader'] = 'Erreur ; Les colonnes du fichier CSV doivent toutes être nommées';
+$string['erroropeningfile'] = 'Erreur d\'ouverture de fichier';
 $string['errorrequiredcolumn'] = 'Erreur : colonne requise : {$a}';
 $string['errorrestoringtemplate'] = 'Erreur ligne {$a->i} : Erreur de restauration pour le cours {$a->coursename}';
 $string['errorrestoringtemplatesql'] = 'Erreur ligne {$a->i} : Erreur SQL pour le gabarit {$a->template}. Le cours {$a->coursename} n\'a pas pu être créé.';

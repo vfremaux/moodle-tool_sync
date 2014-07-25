@@ -67,6 +67,9 @@ if ($data = $form->get_data()) {
     if (!confirm_sesskey()) {
         print_error('confirmsesskeybad', 'error');
     }
+    
+    // Erase all configs
+    $DB->delete_records('config_plugins', array('plugin' => 'tool_sync'));
 
     foreach ($data as $key => $value) {
         if (strpos($key, '/') > 0) {

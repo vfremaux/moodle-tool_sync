@@ -113,6 +113,7 @@ $string['errorgcmdvalue'] = 'Error at line {$a->i} : {$a->mycmd} {$a->myrole} {$
 $string['errorinvalidcolumnname'] = 'Error: column name as n{$a} is invalid';
 $string['errorinvalidfieldname'] = 'Error: invalide field name "{$a}"';
 $string['errorline'] = 'Line';
+$string['erroropeningfile'] = 'Error opening file';
 $string['errornoadmin'] = 'Could not find site admin';
 $string['errornocourse'] = 'Error at line {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : No such course';
 $string['errornocourses'] = 'Error : No courses were parsed from CSV';

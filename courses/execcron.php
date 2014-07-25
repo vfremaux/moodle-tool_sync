@@ -20,8 +20,10 @@
 
 require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->dirroot."/course/lib.php");
+require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
+
+$action = optional_param('action', SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE, PARAM_INT);
 
 set_time_limit(1800);
 raise_memory_limit('512M');
@@ -35,7 +37,7 @@ if (!is_siteadmin()) {
     print_error('erroradminrequired', 'tool_sync');
 }
 
-$url = $CFG->wwwroot.'/admin/tool/sync/courses/execcron.php';
+$url = new moodle_url('/admin/tool/sync/courses/execcron.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
 $PAGE->navigation->add(get_string('coursesync', 'tool_sync'));
 $PAGE->set_url($url);
@@ -48,19 +50,25 @@ echo $OUTPUT->heading_with_help(get_string('coursesync', 'tool_sync'), 'coursesy
 
 // execron do everything a cron will do
 $syncconfig = get_config('tool_sync');
-$coursesmanager = new course_sync_manager(null, SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE);
+$coursesmanager = new course_sync_manager($action);
 $renderer = $PAGE->get_renderer('tool_sync');
 
 echo $OUTPUT->heading(get_string('coursemanualsync', 'tool_sync'), 3);
 
-$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_fileexistlocation);
-echo "<center>$cronrunmsg</center>";
+if ($action & SYNC_COURSE_CHECK) {
+    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_fileexistlocation);
+    echo "<center>$cronrunmsg</center>";
+}
 
-$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_filedeletelocation);
-echo "<center>$cronrunmsg</center>";
+if ($action & SYNC_COURSE_DELETE) {
+    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_filedeletelocation);
+    echo "<center>$cronrunmsg</center>";
+}
 
-$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_fileuploadlocation);
-echo "<center>$cronrunmsg</center>";
+if ($action & SYNC_COURSE_CREATE) {
+    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_fileuploadlocation);
+    echo "<center>$cronrunmsg</center>";
+}
 
 echo $OUTPUT->heading(get_string('processresult', 'tool_sync'), 3);
 

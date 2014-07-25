@@ -225,8 +225,8 @@ class enrol_plugin_manager extends sync_manager {
 
             $syncconfig->coursesg[$i - 1] = $course->id;
             $context = context_course::instance($course->id);
-            
-            // get enrolment plugin and method
+
+            // Get enrolment plugin and method.
             if ($enrolments = enrol_get_instances($course->id, true)){
                 $enrol = array_pop($enrolments);
                 $enrolcomponent = 'enrol_'.$enrol->enrol;
@@ -235,7 +235,7 @@ class enrol_plugin_manager extends sync_manager {
                 $enrolcomponent = '';
                 $enrolinstance = 0;
             }
-            
+
             $enrol = enrol_get_plugin('manual');
 
             if (!$enrols = $DB->get_records('enrol', array('enrol' => $record['enrol'], 'courseid' => $course->id, 'status' => ENROL_INSTANCE_ENABLED), 'sortorder ASC')) {
@@ -260,26 +260,26 @@ class enrol_plugin_manager extends sync_manager {
                     }
 
                 } else {
-                    if($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
+                    if($role = $DB->get_record('role', array('shortname' => $record['rolename']))) {
                         // avoids weird behaviour of role assignement in other assignement admin
                         $enrolcomponent = '';
                         $enrolinstance = 0;
-                        if(!role_unassign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, time())){
+                        if(!role_unassign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, time())) {
                             $this->report(get_string('errorunassign', 'tool_sync', $e));
                         } else {
                             $this->report(get_string('unassign', 'tool_sync', $e));
                         }
                     } else {
-                        if(!role_unassign(null, $user->id, $context->id, $enrolcomponent, $enrolinstance)){
+                        if(!role_unassign(null, $user->id, $context->id, $enrolcomponent, $enrolinstance)) {
                             $this->report(get_string('errorunassign', 'tool_sync', $e));
                         } else {
                             $this->report(get_string('unassignall', 'tool_sync', $e));
-                        }                                    
+                        }
                     }
                 }
-                
+
             } elseif ($record['cmd'] == 'add'){
-                if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
+                if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))) {
 
                     if (!empty($record['enrol'])){
                         // Uses manual enrolment plugin to enrol AND assign role properly
@@ -291,10 +291,12 @@ class enrol_plugin_manager extends sync_manager {
                             $this->report(get_string('errorenrol', 'tool_sync', $e));
                         }
                     } else {
-                        if (!$DB->get_record('role_assignments', array('roleid' => $role->id, 'contextid' => $context->id, 'userid' => $user->id, 'component' => ''))){
-                            if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])){
+                        if (!$DB->get_record('role_assignments', array('roleid' => $role->id, 'contextid' => $context->id, 'userid' => $user->id, 'component' => ''))) {
+                            if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])) {
                             // if(!role_assign($role->id, $user->id, $context->id)){
-                                if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                                if (!empty($syncconfig->filefailed)) {
+                                    $this->feed_tryback($text);
+                                }
                                 $this->report(get_string('errorline', 'tool_sync')." $i : $mycmd $myrole $myuser $mycourse : $user->lastname $user->firstname == $role->shortname ==> $course->shortname");
                             } else {
                                 $this->report(get_string('assign', 'tool_sync', $e));
@@ -305,16 +307,18 @@ class enrol_plugin_manager extends sync_manager {
                     }
 
                 } else {
-                    if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                    if (!empty($syncconfig->filefailed)) {
+                        $this->feed_tryback($text);
+                    }
                     $this->report(get_string('errornorole', 'tool_sync', $e));
                 }
-            } elseif ($record['cmd'] == 'shift'){
+            } elseif ($record['cmd'] == 'shift') {
 
-                // check this role exists in this moodle
-                if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))){
+                // Check this role exists in this moodle.
+                if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))) {
 
                     // unenrol also unassign all roles
-                    if (!empty($record['enrol'])){
+                    if (!empty($record['enrol'])) {
                         try {
                             $enrolplugin->unenrol_user($enrol, $user->id);
                             $this->report(get_string('unenrolled', 'tool_sync', $e));
@@ -323,11 +327,11 @@ class enrol_plugin_manager extends sync_manager {
                         }
                     } else {
                         if ($roles = get_user_roles($context, $user->id)) {
-                            foreach ($roles as $r){
-                                // weird behaviour 
+                            foreach ($roles as $r) {
+                                // Weird behaviour
                                 $enrolcomponent = '';
                                 $enrolinstance = 0;
-                                if (!role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent, $enrolinstance)){
+                                if (!role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent, $enrolinstance)) {
                                     $this->report(get_string('unassignerror', 'tool_sync', $e));
                                 } else {
                                     $this->report(get_string('unassign', 'tool_sync', $e));
@@ -338,7 +342,7 @@ class enrol_plugin_manager extends sync_manager {
 
                     // maybe we need enrol this user (if first time in shift list)
                     // enrolement does perform role_assign
-                    if (!empty($record['enrol'])){
+                    if (!empty($record['enrol'])) {
                         try {
                             $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'], $record['endtime'], ENROL_USER_ACTIVE);
                             $this->report(get_string('enrolled', 'tool_sync', $e));
@@ -346,8 +350,10 @@ class enrol_plugin_manager extends sync_manager {
                             $this->report(get_string('errorenrol', 'tool_sync', $e));
                         }
                     } else {
-                        if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])){
-                            if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                        if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])) {
+                            if (!empty($syncconfig->filefailed)) {
+                                $this->feed_tryback_file($text);
+                            }
                             $this->report(get_string('errorassign', 'tool_sync', $e));
                         } else {
                             $this->report(get_string('assign', 'tool_sync', $e));
@@ -355,13 +361,17 @@ class enrol_plugin_manager extends sync_manager {
                     }
 
                 } else {
-                    if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                    if (!empty($syncconfig->filefailed)) {
+                        $this->feed_tryback($text);
+                    }
                     $this->report(get_string('errornorole', 'tool_sync', $e));
                     $i++;
                     continue;
                 }
             } else {
-                if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($text);
+                }
                 $this->report(get_string('errorbadcmd', 'tool_sync', $e));
             }
             
@@ -447,6 +457,10 @@ class enrol_plugin_manager extends sync_manager {
             $i++;
         }
         fclose($filereader);
+
+        if (!empty($syncconfig->filefailed)) {
+            $this->write_tryback($filerec);
+        }
 
         if (!empty($syncconfig->filearchive)) {
             $this->archive_input_file($filerec);

@@ -58,7 +58,7 @@ class sync_manager {
 
         $fs = get_file_storage();
 
-        $path_parts = pathinfo($originalname);
+        $path_parts = pathinfo($originalfilerec->filename);
         $trybackfilename = $path_parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$path_parts['extension'];
 
         $buffer = $this->trybackhead."\n";
@@ -71,6 +71,8 @@ class sync_manager {
             $oldfile->delete();
         }
 
+        echo "Creating tryback";
+        print_object($filerec);
         $fs->create_file_from_string($filerec, $buffer);
     }
     
