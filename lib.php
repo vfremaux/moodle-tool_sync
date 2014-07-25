@@ -120,7 +120,7 @@ function tool_sync_cron() {
     $syncconfig = get_config('tool_sync');
 
     if (debugging()){ // ensures production platform cannot be attacked in deny of service that way
-        $debug = optional_param('cronsyncdebug', 0, PARAM_INT); 
+        $debug = optional_param('cronsyncdebug', 0, PARAM_INT);
     }
     // 0 no debug
     // 1 pass hourtime
@@ -174,7 +174,7 @@ function tool_sync_cron() {
         return;
     }
 
-    if (($h == $cfgh) && ($m >= $cfgm) && !@$syncconfig->dayrun  || $debug){
+    if ((($h * 60 + $m) > ($cfgh * 60 + $cfgm)) && !@$syncconfig->dayrun  || $debug){
 
         // we store that lock at start to lock any bouncing cron calls.
         set_config('dayrun', 1, 'tool_sync');
@@ -189,7 +189,7 @@ function tool_sync_cron() {
         if ((file_exists($alock))||(file_exists($lockfile))) {
             $log = "Synchronisation report\n \n";
             $log = $log . "Starting at: $h:$m \n";
-            if (empty($syncconfig->ct)) {    
+            if (empty($syncconfig->ct)) {
             } else {
                 $ct = $syncconfig->ct;
                 $file = @fopen($lockfile, 'r');
@@ -234,13 +234,13 @@ function tool_sync_cron() {
                 echo $str;
                 $coursesmanager = new course_sync_manager;
                 $coursesmanager->cron($syncconfig);
-                if(!empty($syncconfig->checkfilename)){
+                if (!empty($syncconfig->checkfilename)) {
                     $log .= "$CFG->tool_sync_checkfilename\n";
                 }
                 if(!empty($coursesmanager->log)){
                     $log .= $coursesmanager->log."\n";
                 }
-                $str = get_string('endofprocess', 'tool_sync');    
+                $str = get_string('endofprocess', 'tool_sync');
                 $str .= "\n\n";
                 echo $str;
                 $log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";                    
@@ -265,7 +265,7 @@ function tool_sync_cron() {
                 if (!empty($userpicturemanager->log)){
                     $log .= $userpicturemanager->log."\n";
                 }
-                $str = get_string('endofprocess', 'tool_sync');    
+                $str = get_string('endofprocess', 'tool_sync');
                 $str .= "\n\n";
                 echo $str;
                 $log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";                    
@@ -287,10 +287,10 @@ function tool_sync_cron() {
                 echo $str;
                 $userpicturesmanager = new userpictures_plugin_manager;
                 $userpicturesmanager->cron($syncconfig);
-                if (!empty($userpicturesmanager->log)){
+                if (!empty($userpicturesmanager->log)) {
                     $log .= $userpicturesmanager."\n";
                 }
-                $str = get_string('endofprocess', 'tool_sync');    
+                $str = get_string('endofprocess', 'tool_sync');
                 $str .= "\n\n";
                 echo $str;
                 $log .= $str."- - - - - - - - - - - - - - - - - - - -\n \n";
@@ -386,9 +386,9 @@ function tool_sync_cron() {
             $filerec->itemid = 0;
             $filerec->filename = 'report-'.date('Ymd-Hi').'.txt';
             $filerec->filepath = '/reports/';
-            
+
             $fs = get_file_storage();
-            
+
             $fs->create_file_from_string($filerec, $log);
 
             if (!empty($CFG->tool_sync_enrol_mailadmins)) {
@@ -440,7 +440,7 @@ function tool_sync_capture_input_files($interactive = false) {
     if (!is_dir($syncinputdir)) {
         mkdir($syncinputdir, 0777);
     }
-    
+
     $lockfile = $CFG->dataroot.'/sync/lock.txt';
     if (file_exists($lockfile)) {
         $fileinfo = stat($lockfile);

@@ -17,11 +17,11 @@
 require_once $CFG->dirroot.'/lib/formslib.php';
 
 class InputFileLoadForm extends moodleform {
-    
+
     public function definition() {
-        
+
         $form = $this->_form;
-        
+
         $fileoptions = array('maxfiles' => 1);
 
         if (!empty($this->_customdata['localfile'])) {

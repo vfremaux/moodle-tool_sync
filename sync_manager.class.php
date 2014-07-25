@@ -135,14 +135,14 @@ class sync_manager {
             $oldfile->delete();
         }
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemdi, $filerec->filepath, $filerec->filename);
-        $fs->create_file_from_storedfile($archiverec, $storedfile);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
+        $fs->create_file_from_storedfile($archiverec, $inputfile);
     }
     
     protected function cleanup_input_file($filerec) {
         $fs = get_file_storage();
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemdi, $filerec->filepath, $filerec->filename);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
         $inputfile->delete();
     }
 }

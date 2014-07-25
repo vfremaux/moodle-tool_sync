@@ -64,8 +64,7 @@ if ($data = $form->get_data()) {
         $fs = get_file_storage();
         $usercontext = context_user::instance($USER->id);
 
-        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)){
-
+        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
 
             $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
 

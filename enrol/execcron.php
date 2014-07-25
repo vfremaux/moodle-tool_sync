@@ -1,53 +1,98 @@
-<?PHP  	   // author - Funck Thibaut
+<?php
 
-    require_once("../../../../config.php");
-    require_once($CFG->libdir.'/adminlib.php');
-	require_once($CFG->dirroot.'/course/lib.php');
+/**
+ * author - Funck Thibaut
+ */
 
-	require_login();
+require('../../../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/enrollib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
-	if (!is_siteadmin()) {
-        print_error('erroradminrequired', 'tool_sync');
+$systemcontext = context_system::instance();
+$PAGE->set_context($systemcontext);
+require_login();
+
+if (!is_siteadmin()) {
+    print_error('erroradminrequired', 'tool_sync');
+}
+
+set_time_limit(1800);
+raise_memory_limit('512M');
+
+$renderer = $PAGE->get_renderer('tool_sync');
+$syncconfig = get_config('tool_sync');
+
+$url = $CFG->wwwroot.'/admin/tool/sync/enrol/execcron.php';
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$PAGE->navigation->add(get_string('enrolmgtmanual', 'tool_sync'));
+$PAGE->set_url($url);
+$PAGE->set_title("$SITE->shortname");
+$PAGE->set_heading($SITE->fullname);
+
+$form = new InputfileLoadform($url, array('localfile' => $syncconfig->enrol_filelocation));
+
+$canprocess = false;
+
+if ($data = $form->get_data()) {
+
+    if (!empty($data->uselocal)) {
+        // Use the server side stored file.
+        $usersmanager = new enrol_plugin_manager();
+        $processedfile = $syncconfig->enrol_filelocation;
+        $canprocess = true;
+    } else {
+        // Use the just uploaded file.
+
+        $fs = get_file_storage();
+        $usercontext = context_user::instance($USER->id);
+
+        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
+
+            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
+
+            // Take last as former is the / directory
+            $uploadedfile = array_pop($areafiles);
+
+            $manualfilerec = new StdClass();
+            $manualfilerec->contextid = $usercontext->id;
+            $manualfilerec->component = 'user';
+            $manualfilerec->filearea = 'draft';
+            $manualfilerec->itemid = $data->inputfile;
+            $manualfilerec->filepath = $uploadedfile->get_filepath();
+            $manualfilerec->filename = $uploadedfile->get_filename();
+            $processedfile = $manualfilerec->filename;
+    
+            $usersmanager = new users_plugin_manager($manualfilerec);
+            $canprocess = true;
+        } else {
+            $errormes = "Failed loading a file";
+        }
     }
-	if (! $site = get_site()) {
-        print_error('errornosite', 'tool_sync');
-    }
-	if (!$adminuser = get_admin()) {
-        print_error('errornoadmin', 'tool_sync');
-    }
+}
 
-	set_time_limit(1800);
-	raise_memory_limit('512M');		
+echo $OUTPUT->header();
 
-	$url = $CFG->wwwroot.'/admin/tool/sync/enrol/execcron.php';
-	$PAGE->set_url($url);
-	$PAGE->set_context(null);
-	$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
-	$PAGE->navigation->add(get_string('enrolmgtmanual', 'tool_sync'));
-	$PAGE->set_title("$site->shortname");
-	$PAGE->set_heading($site->fullname);
-	echo $OUTPUT->header();
-	echo $OUTPUT->heading_with_help(get_string('enrolsync', 'tool_sync'), 'enrolsync', 'tool_sync');
+echo $OUTPUT->heading_with_help(get_string('usermgtmanual', 'tool_sync'), 'usersync', 'tool_sync');
 
-	require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
-    $enrolmanager = new enrol_plugin_manager;
+$form->display();
 
-	$enrolmanager->process_config($CFG);
+if ($canprocess) {
+    echo '<pre>';
+    $usersmanager->cron($syncconfig);
+    echo '</pre>';
 
-	echo $OUTPUT->heading(get_string('enrolmanualsync', 'tool_sync'), 3);
+    $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
+    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
 
-	$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $CFG->tool_sync_enrol_filelocation);
-	echo "<center>$cronrunmsg</center>";
+    echo "<br/><fieldset><legend><strong>$enrolmgtmanual</strong></legend>";
+    echo "<center>$cronrunmsg</center>";
+    echo '</fieldset>';
+}
 
-	echo $OUTPUT->heading(get_string('processresult', 'tool_sync'), 3);
 
-	echo "<pre>";
-	$enrolmanager->cron();
-	echo "</pre>";
+// always return to main tool view.
+echo $renderer->print_return_button();
 
-	sync_print_return_button();
-
-	echo $OUTPUT->footer();
-
-///    exit;
-?>
+echo $OUTPUT->footer();

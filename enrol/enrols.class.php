@@ -70,12 +70,14 @@ class enrol_plugin_manager extends sync_manager {
             $csv_delimiter2 = ";";
         }
 
-        $filerec = $this->get_input_file($syncconfig->enrol_filelocation, 'enrols.csv');
+        if (empty($this->manualfilerec)) {
+            $filerec = $this->get_input_file($syncconfig->enrol_filelocation, 'enrols.csv');
+        } else {
+            $filerec = $this->manualfilerec;
+        }
         if (!($filereader = $this->open_input_file($filerec))) {
             return;
         }
-
-        $this->report(get_string('flatfilefoundforenrols', 'tool_sync').$filepath.$filename."\n");
 
         $required = array(
                 'rolename' => 1,
@@ -143,7 +145,7 @@ class enrol_plugin_manager extends sync_manager {
             $record = array();
 
             $text = fgets($filereader, 1024);
-            if (sync_is_empty_line_or_format($text, false)) {
+            if (tool_sync_is_empty_line_or_format($text, false)) {
                 $i++;
                 continue;
             }
@@ -195,7 +197,9 @@ class enrol_plugin_manager extends sync_manager {
             if (!$user = $DB->get_record('user', array($uidentifiername => $record['uid'])) ) {
                 $this->report(get_string('errornouser', 'tool_sync', $e));
                 $i++;
-                if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($text);
+                }
                 continue;
             }
 
@@ -204,14 +208,18 @@ class enrol_plugin_manager extends sync_manager {
             if (empty($record['cid'])){
                 $this->report(get_string('errornullcourseidentifier', 'tool_sync', $i));
                 $i++;
-                if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($text);
+                }
                 continue;
             }
 
             if (!$course = $DB->get_record('course', array($cidentifiername => $record['cid'])) ) {
                 $this->report(get_string('errornocourse', 'tool_sync', $e));
                 $i++;
-                if (!empty($syncconfig->filefailed)) sync_feed_tryback_file($filename, $text, $headers);
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($text);
+                }
                 continue;
             }
 
