@@ -22,7 +22,7 @@ class tool_sync_renderer {
         $str = '<center>';
         $str .= '<hr/>';
         $str .= '<br/>';
-        $url = new moodle_url($CFG->wwwroot.'/admin/tool/sync/index.php', array('sesskey' => sesskey()));
+        $url = new moodle_url('/admin/tool/sync/index.php', array('sesskey' => sesskey()));
         $text = get_string('returntotools', 'tool_sync');
         $single_button = new single_button($url, $text, 'get');
         $str .= $OUTPUT->render($single_button);

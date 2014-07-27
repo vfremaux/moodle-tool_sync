@@ -45,14 +45,14 @@ class userpictures_plugin_manager extends sync_manager {
         $frm->addElement('select', 'tool_sync/userpictures_userfield', get_string('existfileidentifier', 'tool_sync'), $this->get_userfields());
 
         $rarr1 = array();
-        $rarr1[] =& $frm->createElement('radio', 'tool_sync/userpictures_overwrite', get_string('yes'), 1);
-        $rarr1[] =& $frm->createElement('radio', 'tool_sync/userpictures_overwrite', get_string('no'), 0);
-        $frm->addGroup($rarr1, 'overwritearray', get_string('userpicturesoverwrite', 'tool_sync'), array(''), false);
+        $rarr1[] =& $frm->createElement('radio', 'tool_sync/userpictures_overwrite', '', get_string('yes').' ', 1);
+        $rarr1[] =& $frm->createElement('radio', 'tool_sync/userpictures_overwrite', '', get_string('no'), 0);
+        $frm->addGroup($rarr1, 'overwritearray', get_string('userpicturesoverwrite', 'tool_sync'), array(' '), false);
 
         $rarr2 = array();
-        $rarr2[] =& $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', get_string('yes'), 1);
-        $rarr2[] =& $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', get_string('no'), 0);
-        $frm->addGroup($rarr2, 'forcedeletearray', get_string('userpicturesforcedeletion', 'tool_sync'), array(''), false);
+        $rarr2[] =& $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', '', get_string('yes').' ', 1);
+        $rarr2[] =& $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', '', get_string('no'), 0);
+        $frm->addGroup($rarr2, 'forcedeletearray', get_string('userpicturesforcedeletion', 'tool_sync'), array(' '), false);
 
         $frm->addElement('static', 'userpicturesst1', '<hr>');
 

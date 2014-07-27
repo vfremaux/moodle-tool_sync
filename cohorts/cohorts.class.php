@@ -39,7 +39,7 @@ class cohorts_plugin_manager extends sync_manager {
 
         $frm->addElement('text', 'tool_sync/cohorts_filelocation', get_string('cohortfilelocation', 'tool_sync'));
         $frm->setType('tool_sync/cohorts_filelocation', PARAM_TEXT);
-        
+
         $identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
         $frm->addElement('select', 'tool_sync/cohorts_useridentifier', get_string('cohortuseridentifier', 'tool_sync'), $identifieroptions);
 
@@ -74,7 +74,11 @@ class cohorts_plugin_manager extends sync_manager {
             return;
         }
 
-        $filerec = $this->get_input_file($syncconfig->cohorts_filelocation, 'cohorts.csv');
+        if (empty($this->manualfilerec)) {
+            $filerec = $this->get_input_file($syncconfig->cohorts_filelocation, 'cohorts.csv');
+        } else {
+            $filerec = $this->manualfilerec;
+        }
         if (!($filereader = $this->open_input_file($filerec))) {
             return;
         }
@@ -117,7 +121,7 @@ class cohorts_plugin_manager extends sync_manager {
         $text = fgets($filereader, 1024);
         $i = 0;
         while (tool_sync_is_empty_line_or_format($text, $i == 0)) {
-            $text = fgets($filereader, 1024);
+            $text = tool_sync_read($filereader, 1024, $syncconfig);
             $i++;
         }
 
@@ -153,12 +157,12 @@ class cohorts_plugin_manager extends sync_manager {
         while (!feof ($filereader)) {
 
             //Note: semicolon within a field should be encoded as &#59 (for semicolon separated csv files)
-            $text = fgets($filereader, 1024);
+            $text = tool_sync_read($filereader, 1024, $syncconfig);
             if (tool_sync_is_empty_line_or_format($text, false)) {
                 $i++;
                 continue;
             }
-            $valueset = explode($csv_delimiter2, $text);                
+            $valueset = explode($csv_delimiter2, $text);
 
             $record = array();
             foreach ($valueset as $key => $value) {
@@ -198,7 +202,7 @@ class cohorts_plugin_manager extends sync_manager {
                 $cohort->contextid = $systemcontext->id;
                 $cohort->timecreated = $t;
                 $cohort->timemodified = $t;
-                $cohort->id = $DB->insert_record('cohort', $cohort);                
+                $cohort->id = $DB->insert_record('cohort', $cohort);
             }
 
             // bind user to cohort

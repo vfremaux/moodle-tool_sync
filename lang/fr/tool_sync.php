@@ -198,6 +198,7 @@ $string['manualuserpicturesrun'] = 'Exécuter manuellement le rechargement d\'av
 $string['manualuserrun'] = 'Exécuter manuellement ce script à partir du fichier de commande';
 $string['manualuserrun2'] = 'Exécuter manuellement ce script à partir d\'un fichier distant';
 $string['minute'] = 'minute';
+$string['missingidentifier'] = 'L\'identifiant {$a} requis par la configuration est manquant dans le fichier';
 $string['ncategoriesdeleted'] = '{$a} catégories supprimées';
 $string['noeventstoprocess'] = 'Pas d\'événements à la ligne {$a}';
 $string['nofile'] = 'Aucun fichier disponible'; 

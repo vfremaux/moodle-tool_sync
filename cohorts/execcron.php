@@ -20,10 +20,10 @@
 *
 */
 
-require_once("../../../../config.php");
+require_once('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php');
-require_once("$CFG->dirroot/admin/tool/sync/cohorts/cohorts.class.php");
+require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);

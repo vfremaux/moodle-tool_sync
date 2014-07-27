@@ -1,7 +1,22 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * sync.php - allows admin to create or delete courses,users,enrol from csv files
- * author - Funck Thibaut
+ * @author Funck Thibaut
  */
 
 require('../../../config.php');
@@ -59,7 +74,7 @@ if (!isset($syncconfig->userpictures_overwrite)) {
     $syncconfig->userpictures_overwrite = 1;
 }
 
-/// If data submitted, then process and store.
+// If data submitted, then process and store.
 
 $form = new ToolForm();
 
@@ -68,12 +83,12 @@ if ($data = $form->get_data()) {
         print_error('confirmsesskeybad', 'error');
     }
     
-    // Erase all configs
+    // Erase all configs.
     $DB->delete_records('config_plugins', array('plugin' => 'tool_sync'));
 
     foreach ($data as $key => $value) {
         if (strpos($key, '/') > 0) {
-            // Is a configuration key
+            // Is a configuration key.
             list($plugin, $datakey) = explode('/', $key);
             set_config($datakey, $value, 'tool_sync');
             // Refresh the currently loaded config for reflecting in form.
@@ -86,7 +101,7 @@ if ($data = $form->get_data()) {
 
 // Print current courses type description.
 
-$url = $CFG->wwwroot."/admin/tool/sync/index.php";
+$url = new moodle_url('/admin/tool/sync/index.php');
 // $PAGE->set_title(format_string($SITE->fullname));
 $PAGE->set_url($url);
 $PAGE->set_title($SITE->fullname);

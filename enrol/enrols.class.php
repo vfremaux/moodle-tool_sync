@@ -45,7 +45,7 @@ class enrol_plugin_manager extends sync_manager {
         $identifieroptions = array('0' => 'idnumber', '1' => 'username', '2' => 'email', '3' => 'id');
         $frm->addElement('select', 'tool_sync/enrol_useridentifier', get_string('enroluseridentifier', 'tool_sync'), $identifieroptions);
 
-        $frm->addElement('checkbox', 'tool_sync/enrol_mailadmins', get_string('enrolemailcourseadmins', 'tool_sync'), 1);
+        $frm->addElement('advcheckbox', 'tool_sync/enrol_mailadmins', get_string('enrolemailcourseadmins', 'tool_sync'), '', array('group' => 1), array(0, 1));
 
         $frm->addElement('static', 'enrolsst1', '<hr>');
 
@@ -101,7 +101,7 @@ class enrol_plugin_manager extends sync_manager {
                 'g9' => 1);
 
         // jump any empty or comment line
-        $text = fgets($filereader, 1024);
+        $text = tool_sync_read($filereader, 1024, $syncconfig);
 
         $i = 0;
 
@@ -144,7 +144,7 @@ class enrol_plugin_manager extends sync_manager {
 
             $record = array();
 
-            $text = fgets($filereader, 1024);
+            $text = tool_sync_read($filereader, 1024, $syncconfig);
             if (tool_sync_is_empty_line_or_format($text, false)) {
                 $i++;
                 continue;

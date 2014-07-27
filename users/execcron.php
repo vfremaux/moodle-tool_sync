@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package tool-sync
- * @author - Funck Thibaut
+ * @package tool_sync
+ * @author Funck Thibaut
  */
 
 require_once('../../../../config.php');
@@ -68,7 +68,7 @@ if ($data = $form->get_data()) {
 
             $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
 
-            // Take last as former is the / directory
+            // Take last as former is the / directory.
             $uploadedfile = array_pop($areafiles);
 
             $manualfilerec = new StdClass();
@@ -108,7 +108,7 @@ if ($canprocess) {
 }
 
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

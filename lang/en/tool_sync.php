@@ -201,6 +201,7 @@ $string['manualuploadrun'] = 'Run manually a course sync';
 $string['manualuserpicturesrun'] = 'Run user pictures resync manually';
 $string['manualuserrun'] = 'Run user sync manually from the stored command file';
 $string['manualuserrun2'] = 'Run user sync manually from a file upload';
+$string['missingidentifier'] = 'Required identifier {$a} is missing in input data';
 $string['minute'] = 'minute';
 $string['ncategoriesdeleted'] = '{$a} categories deleted';
 $string['noeventstoprocess'] = 'No event at line {$a}';

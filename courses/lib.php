@@ -123,3 +123,12 @@ function tool_sync_config_add_sync_prefix($cfg){
     
     return $formobj;
 }
+
+function tool_sync_read($filereader, $length, &$config){
+    $input = fgets($filereader, 1024);
+    
+    if ($config->encoding != 'UTF-8') {
+        return utf8_encode($input);
+    }
+    return $input;
+}

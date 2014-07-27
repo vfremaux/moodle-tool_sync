@@ -1,8 +1,8 @@
 <?php
-// The following flags are set in the configuration
-// $CFG->course_filedeletelocation:       where is the file which delete courses we are looking for?
-// $CFG->course_fileuploadlocation:       where is the file which upload courses we are looking for?
-// author - Funck Thibaut !
+/**
+ * @author Funck Thibaut
+ *
+ */
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
@@ -147,13 +147,13 @@ class course_sync_manager extends sync_manager {
                     }
                 }
 
-                $text = fgets($filereader, 1024);
+                $text = tool_sync_read($filereader, 1024, $syncconfig);
 
                 $i = 0;
 
                 // Skip comments and empty lines.
                 while (tool_sync_is_empty_line_or_format($text, $i == 0)) {
-                    $text = fgets($filereader, 1024);
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
                     $i++;
                     continue;
                 }
@@ -181,7 +181,7 @@ class course_sync_manager extends sync_manager {
                     }
                 }
                 while (!feof ($filereader)) {
-                    $text = fgets($filereader, 1024);
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
 
                     if (tool_sync_is_empty_line_or_format($text, false)) {
                         continue;
@@ -195,6 +195,13 @@ class course_sync_manager extends sync_manager {
                     $data['reset_start_date'] = 0;
 
                     // Adaptative identifier
+                    $identifieroptions = array('idnumber', 'shortname', 'id');
+                    $identifiername = $identifieroptions[0 + @$syncconfig->course_resetfileidentifier];
+                    
+                    if (!array_key_exists($identifiername, $record)) {
+                        $this->report(get_string('missingidentifier', 'tool_sync', $identifiername));
+                        return;
+                    }
 
                     if (@$syncconfig->course_resetfileidentifier == 0 && $DB->count_records('course', array('idnumber' => $record['idnumber']))) {
                         $this->report(get_string('nonuniqueidentifierexception', 'tool_sync', $i));
@@ -435,7 +442,7 @@ class course_sync_manager extends sync_manager {
 
                 while (!feof($filereader)) {
 
-                    $text = fgets($filereader, 1024);
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
 
                     // skip comments and empty lines
                     if (tool_sync_is_empty_line_or_format($text, $i == 0)) {
@@ -481,7 +488,7 @@ class course_sync_manager extends sync_manager {
                 $shortnames = array();
 
                 while (!feof($filereader)) {
-                    $text = fgets($filereader);
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
                     // Skip comments and empty lines.
                     if (tool_sync_is_empty_line_or_format($text, $i)) {
                         continue;
@@ -601,7 +608,7 @@ class course_sync_manager extends sync_manager {
                 $i = 0;
 
                 while (!feof($filereader)) {
-                    $text = fgets($filereader, 1024);
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
                     if (!tool_sync_is_empty_line_or_format($text, $i == 0)) {
                         break;
                     }
@@ -656,7 +663,7 @@ class course_sync_manager extends sync_manager {
                 // start processing lines
 
                 while (!feof($filereader)) {
-                    $text = fgets($filereader, 1024);
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
 
                     if (tool_sync_is_empty_line_or_format($text)) {
                         $i++;
@@ -1576,16 +1583,19 @@ class course_sync_manager extends sync_manager {
         $filename = 'resetcourses.csv';
         $size = count($selection);
 
-        $rows = array();
-        $cols = array('shortname', 'roles', 'grades', 'groups', 'events', 'logs', 'notes', 'modules');
-        $rows[] = implode($syncconfig->csvseparator, $cols);
-
         $identifieroptions = array('idnumber', 'shortname', 'id');
         $identifiername = $identifieroptions[0 + @$syncconfig->course_resetfileidentifier];
 
+        $rows = array();
+        $cols = array('shortname', 'roles', 'grades', 'groups', 'events', 'logs', 'notes', 'modules');
+        if (!in_array($identifiername, $cols)) {
+            $cols[] = $identifiername;
+        }
+        $rows[] = implode($syncconfig->csvseparator, $cols);
+
         for ($i = 0 ; $i < count($selection) ; $i++) {
 
-            if (@$syncconfig->course_resetfileidentifier == 0 && $DB->count_records('course', array('idnumber' => $selection[$i]))) {
+            if (@$syncconfig->course_resetfileidentifier == 0 && ($DB->count_records('course', array('idnumber' => $selection[$i])) > 1)) {
                 $this->report(get_string('nonuniqueidentifierexception', 'tool_sync', $i));
                 continue;
             }
