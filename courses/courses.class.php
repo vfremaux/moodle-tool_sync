@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * @author Funck Thibaut
  *
@@ -1368,21 +1383,52 @@ class course_sync_manager extends sync_manager {
 
         if (!empty($course['template'])) {
 
-            if (!$archivefile = tool_sync_locate_backup_file($tempcourse->id, 'course')) {
-
-                // Get course template from publishflow backups if publishflow installed.
-                if ($DB->get_record('blocks', array('name' => 'publishflow'))) {
-                    $archivefile = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
-                    if (!$archivefile) {
+            if (tool_sync_is_course_identifier($course['template'])) {
+                // Template is NOT a real path and thus designates a course shortname.
+                if (!$archive = tool_sync_locate_backup_file($tempcourse->id, 'course')) {
+    
+                    // Get course template from publishflow backups if publishflow installed.
+                    if ($DB->get_record('blocks', array('name' => 'publishflow'))){
+                        $archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
+                        if (!$archive){
+                            return -2;
+                        }
+                    } else {
                         return -2;
                     }
-                } else {
+                }
+            } else {
+                if (!preg_match('/^\/|[a-zA-Z]\:/', $course['template'])) {
+                    // If relative path we expect finding those files somewhere in the distribution. Not in dataroot that may be a fresh installed one).
+                    $course['template'] = $CFG->dirroot.'/'.$course['template'];
+                }
+
+                // Template is a real path. Integrate in a draft filearea of current user (defaults to admin) and get an archive stored_file for it.
+                if (!file_exists($course['template'])) {
                     return -2;
                 }
+
+                // Now create a draft file from this.
+                $fs = get_file_storage();
+
+                $contextid = context_user::instance($USER->id)->id;
+
+                $fs->delete_area_files($contextid, 'user', 'draft', 0);
+
+                $filerec = new StdClass;
+                $filerec->contextid = $contextid;
+                $filerec->component = 'user';
+                $filerec->filearea = 'draft';
+                $filerec->itemid = 0;
+                $filerec->filepath = '/';
+                $filerec->filename = basename($course['template']);
+                $archive = $fs->create_file_from_pathname($filerec, $course['template']);
             }
 
+            tool_sync_report($CFG->tool_sync_courselog, "Creating course with ".$archive->get_filename()."\n");
+
             $uniq = uniqid();
-                                
+
             $tempdir = $CFG->dataroot."/temp/backup/$uniq";
             if (!is_dir($tempdir)) {
                 mkdir($tempdir, 0777, true);
@@ -1394,7 +1440,7 @@ class course_sync_manager extends sync_manager {
             $component = 'tool_sync';
             $filearea = 'temp';
             $itemid = $uniq;
-            if ($archivefile->extract_to_storage(new zip_packer(), $contextid, $component, $filearea, $itemid, $tempdir, $USER->id)) {    
+            if ($archive->extract_to_storage(new zip_packer(), $contextid, $component, $filearea, $itemid, $tempdir, $USER->id)) {    
 
                 // Transaction
                 $transaction = $DB->start_delegated_transaction();

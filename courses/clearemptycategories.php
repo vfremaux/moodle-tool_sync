@@ -18,7 +18,7 @@
  * A moodle addon to quickly remove all empty categories and cleanup category tree
  *
  * @author Valery Fremaux (valery.fremaux@gmail.com);
- * @package tool-sync
+ * @package tool_sync
  *
  */
 
@@ -57,15 +57,15 @@ echo $OUTPUT->heading_with_help(get_string('cleancategories', 'tool_sync'), 'cle
 
 // Page controller
 
-if(!isset($_POST['ids'])) {
+if (!isset($_POST['ids'])) {
 
     echo '<center>';
     echo '<table width="70%">';
     $path = '';
-    sync_scan_empty_categories(0, $catids, $path);
+    tool_sync_scan_empty_categories(0, $catids, $path);
     echo '</table>';
 
-    if (!empty($catids)){
+    if (!empty($catids)) {
         $deleteids = implode(',', $catids);
 
         echo '<form method="post" action="clearemptycategories.php">';
@@ -77,10 +77,10 @@ if(!isset($_POST['ids'])) {
     }
     echo '</center>';
 } else {
-    // We got passed a list of id's to delete... they pressed the confirm button. Go ahead and delete the courses
-    
+    // We got passed a list of id's to delete... they pressed the confirm button. Go ahead and delete the courses.
+
     $ids = optional_param('ids', '', PARAM_TEXT);
-    if (!empty($ids)){
+    if (!empty($ids)) {
         $coursemanager->clear_empty_categories($ids);
     }
 }

@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * @author Funck Thibaut
  *
@@ -37,7 +52,7 @@ sync_print_remote_tool_portlet('importfile', $CFG->wwwroot.'/admin/tool/sync/cou
 sync_print_local_tool_portlet($CFG->tool_sync_course_fileuploadlocation, 'commandfile', 'synccourses.php');
 require_once($CFG->dirroot.'/lib/uploadlib.php');
 
-// If there is a file to upload... do it... else do the rest of the stuff
+// If there is a file to upload... do it... else do the rest of the stuff.
 $um = new upload_manager('createcourse', false, false, null, false, 0);
 
 if ($um->preprocess_files() || isset($_POST['uselocal'])) {
@@ -53,7 +68,7 @@ if ($um->preprocess_files() || isset($_POST['uselocal'])) {
         $filename = $CFG->dataroot.'/'.$filename;
     }
     
-    // execron do everything a cron will do
+    // execron do everything a cron will do.
     echo($filename);
     if (isset($filename) && file_exists($filename)){
         $filestouse = new StdClass;
@@ -69,10 +84,10 @@ if ($um->preprocess_files() || isset($_POST['uselocal'])) {
 }
 
 /**
-* writes an operation report file telling about all course tested
+* writes an operation report file telling about all course tested.
 *
 */
-function sync_save_check_report(){
+function sync_save_check_report() {
     global $CFG;
 
     $t = time();

@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * An helper function to create the course deletion file from a selection
+ */
 function tool_sync_create_course_deletion_file($selection) {
     global $CFG;
 
@@ -46,7 +49,7 @@ function tool_sync_create_course_deletion_file($selection) {
     $fs->create_file_from_string($filerec, $content);
 }
 
-function tool_sync_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
+function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
     global $CFG, $DB;
 
     // get my subs
@@ -79,7 +82,7 @@ function tool_sync_sync_scan_empty_categories($parentcatid, &$scannedids, &$path
 
             $mempath = $path;
             $path .= ' / '.$ec->name;
-            $subcountcourses = sync_scan_empty_categories($ec->id, $scannedids, $path);
+            $subcountcourses = tool_sync_scan_empty_categories($ec->id, $scannedids, $path);
             $path = $mempath;
 
             if ($subcountcourses == 0) {
@@ -94,10 +97,10 @@ function tool_sync_sync_scan_empty_categories($parentcatid, &$scannedids, &$path
 }
 
 /**
-* checks locally if a deployable/publishable backup is available
-* @param reference $loopback variable given to setup an XMLRPC loopback message for testing
-* @return boolean
-*/
+ * checks locally if a deployable/publishable backup is available
+ * @param reference $loopback variable given to setup an XMLRPC loopback message for testing
+ * @return boolean
+ */
 function tool_sync_locate_backup_file($courseid, $filearea) {
 
     $fs = get_file_storage();
@@ -113,22 +116,38 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
 }
 
 function tool_sync_config_add_sync_prefix($cfg){
-    
+
     $formobj = new StdClass();
     
     foreach($cfg as $key => $value){
         $fullkey = 'tool_sync/'.$key;
         $formobj->$fullkey = $value;
     }
-    
+
     return $formobj;
 }
 
+/**
+ * Reads a line in a stream converting to utf8 if necessary
+ * @param resource $filereader the opened stream
+ * @param int $length max length of read
+ * @param objectref $config the surrounding configuration
+ * @return a string or false if no more data
+ */
 function tool_sync_read($filereader, $length, &$config){
     $input = fgets($filereader, 1024);
-    
+
     if ($config->encoding != 'UTF-8') {
         return utf8_encode($input);
     }
     return $input;
+}
+
+/**
+ * Checks if the token is a path to an archive (.mbz)
+ * If not, should be s course shortname.
+ * @return true is a shortname, false elsewhere
+ */
+function tool_sync_is_course_identifier($str) {
+    return (!preg_match('/\.mbz/', $str));
 }
