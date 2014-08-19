@@ -25,10 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2013011800;
-$plugin->requires  = 2011092100;        // Requires this Moodle version
+$plugin->version  = 2014081800;
+$plugin->requires  = 2013110500;        // Requires this Moodle version
 $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics)
 $plugin->cron      = 5;
-$plugin->maturity = MATURITY_BETA;
-$plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
-$plugin->release = '2.2.0 (Build 2012102200)';
+$plugin->maturity = MATURITY_RC;
+// $plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
+$plugin->release = '2.7.0 (Build 2012102200)';

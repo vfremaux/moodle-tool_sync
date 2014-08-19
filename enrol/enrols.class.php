@@ -100,7 +100,7 @@ class enrol_plugin_manager extends sync_manager {
                 'g8' => 1,
                 'g9' => 1);
 
-        // jump any empty or comment line
+        // Jump any empty or comment line.
         $text = tool_sync_read($filereader, 1024, $syncconfig);
 
         $i = 0;
