@@ -39,7 +39,7 @@ if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $usersmanager = new enrol_plugin_manager();
+        $enrolsmanager = new enrol_plugin_manager();
         $processedfile = $syncconfig->enrol_filelocation;
         $canprocess = true;
     } else {
@@ -64,7 +64,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
     
-            $usersmanager = new users_plugin_manager($manualfilerec);
+            $enrolsmanager = new enrol_plugin_manager($manualfilerec);
             $canprocess = true;
         } else {
             $errormes = "Failed loading a file";
@@ -74,13 +74,13 @@ if ($data = $form->get_data()) {
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading_with_help(get_string('usermgtmanual', 'tool_sync'), 'usersync', 'tool_sync');
+echo $OUTPUT->heading_with_help(get_string('enrolmgtmanual', 'tool_sync'), 'enrolsync', 'tool_sync');
 
 $form->display();
 
 if ($canprocess) {
     echo '<pre>';
-    $usersmanager->cron($syncconfig);
+    $enrolsmanager->cron($syncconfig);
     echo '</pre>';
 
     $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
