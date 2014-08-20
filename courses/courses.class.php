@@ -22,6 +22,7 @@
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
+require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
 
 class course_sync_manager extends sync_manager {
 
@@ -787,7 +788,7 @@ class course_sync_manager extends sync_manager {
                         $curstatus = 0;
         
                         foreach ($bulkcourse['category'] as $catindex => $catname) {
-                              $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent);
+                            $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent);
                             switch ($curstatus) {
                                   case 1: // Skipped the category, already exists.
                                       break;
@@ -1345,10 +1346,11 @@ class course_sync_manager extends sync_manager {
         }
     }
 
-    // Edited by Ashley Gooding & Cole Spicer to fix problems with 1.7.1 and make easier to dynamically add new columns
-    // We keep that old code till next work.
-    function fast_create_course_ex($hcategory, $course, $headers, $validate) { 
-        global $CFG, $DB;
+    /**
+     * create a course.
+     */
+    function fast_create_course_ex($hcategoryid, $course, $headers, $validate) { 
+        global $CFG, $DB, $USER;
 
         if (!is_array($course) || !is_array($headers) || !is_array($validate)) {
             return -2;
@@ -1366,7 +1368,7 @@ class course_sync_manager extends sync_manager {
         // Author: Ashley Gooding & Cole Spicer
 
         $courserec = (object)$course;
-        $courserec->category = $hcategory;
+        $courserec->category = $hcategoryid;
         unset($courserec->template);
 
         foreach ($headers as $i => $col) {
@@ -1388,7 +1390,7 @@ class course_sync_manager extends sync_manager {
                 if (!$archive = tool_sync_locate_backup_file($tempcourse->id, 'course')) {
     
                     // Get course template from publishflow backups if publishflow installed.
-                    if ($DB->get_record('blocks', array('name' => 'publishflow'))){
+                    if ($DB->get_record('block', array('name' => 'publishflow'))){
                         $archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
                         if (!$archive){
                             return -2;
@@ -1427,7 +1429,7 @@ class course_sync_manager extends sync_manager {
 
             tool_sync_report($CFG->tool_sync_courselog, "Creating course with ".$archive->get_filename()."\n");
 
-            $uniq = uniqid();
+            $uniq = rand(1, 9999);
 
             $tempdir = $CFG->dataroot."/temp/backup/$uniq";
             if (!is_dir($tempdir)) {
@@ -1440,16 +1442,16 @@ class course_sync_manager extends sync_manager {
             $component = 'tool_sync';
             $filearea = 'temp';
             $itemid = $uniq;
-            if ($archive->extract_to_storage(new zip_packer(), $contextid, $component, $filearea, $itemid, $tempdir, $USER->id)) {    
+            if ($archive->extract_to_storage(new zip_packer(), $contextid, $component, $filearea, $itemid, $tempdir, $USER->id)) {
 
                 // Transaction
                 $transaction = $DB->start_delegated_transaction();
 
                 // Create new course
                 $folder                 = $tempdir; // as found in: $CFG->dataroot . '/temp/backup/' 
-                $categoryid             = $hcategory->id; // e.g. 1 == Miscellaneous
+                $categoryid             = $hcategoryid; // e.g. 1 == Miscellaneous
                 $user_doing_the_restore = $USER->id; // e.g. 2 == admin
-                $newcourse_id           = restore_dbops::create_new_course('', '', $hcategory->id );
+                $newcourse_id           = restore_dbops::create_new_course('', '', $hcategoryid );
 
                 // Restore backup into course
                 $controller = new restore_controller($folder, $newcourse_id, 
@@ -1482,13 +1484,17 @@ class course_sync_manager extends sync_manager {
                 return -2;
             }
         } else {
-            // create default course
+            // Create default course.
             $newcourse = create_course($courserec);
-            $format = (!isset($course['format'])) ? 'topics' : $course['format'] ; // maybe useless
-            if (isset($course['topics'])) { // Any topic headings specified ?
+            $format = (!isset($course['format'])) ? 'topics' : $course['format'] ; // may be useless
+            if (isset($course['topics'])) {
+                // Any topic headings specified ?
                 $maxfilledtopics = 1;
                 foreach ($course['topics'] as $dtopicno => $dtopicname) {
-                    if (!empty($dtopicname)) $maxfilledtopics = $dtopicno; // we guess the max declared topic
+                    if (!empty($dtopicname)) {
+                        // We guess the max declared topic.
+                        $maxfilledtopics = $dtopicno;
+                    }
                     if (strstr($dtopicname, '|') === false) {
                         $sectionname = $dtopicname;
                         $sectionsummary = '';
