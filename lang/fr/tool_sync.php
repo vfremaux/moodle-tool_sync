@@ -90,6 +90,8 @@ $string['enrolscronconfig'] = 'Activer la synchronisation par cron des inscripti
 $string['enrolsync'] = 'Synchronisation des enrôlements';
 $string['enroluseridentifier'] = 'Identifiant pour désigner les utilisateurs';
 $string['enterfilename'] = 'Entrez le nom du fichier rapport à visualiser :';
+$string['errorbackupfile'] = 'Une erreur s\'est produite en rapport à l\'archive de cours (Code erreur: {$a->error}).';
+$string['errorinputconditions'] = 'Mauvaises conditions d\'entée dans la fonction de création de cours.';
 $string['errorbadcmd'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : erreur de valeur dans la colonne cmd.';
 $string['errorbadcount'] = 'Erreur ligne {$a->i} : {$a->count} valeurs trouvées. {$a->expected} attendues.';
 $string['errorcategorycontextdeletion'] = 'Erreur de suppression du contexte : catégorie {$a}';
@@ -299,6 +301,7 @@ $string['usersupdated'] = 'Utilisateurs mis à jour ';
 $string['usersync'] = 'Synchronisation des utilisateurs';
 $string['userunknownremotely'] = 'L\'utilisateur {$a} n\'existe pas sur le distant';
 $string['utilities'] = 'Utilitaires';
+$string['toolindex'] = 'Index des outils';
 
 $string['coursesync_help'] = '
 ';

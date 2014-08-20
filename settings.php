@@ -26,7 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
+if ($hassiteconfig and empty($CFG->disableonclickaddoninstall)) {
+
     //--- general settings -----------------------------------------------------------------------------------
     $ADMIN->add('root', new admin_externalpage('toolsync', get_string('pluginname', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php')));
 }

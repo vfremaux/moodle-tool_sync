@@ -829,11 +829,32 @@ class course_sync_manager extends sync_manager {
                         $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $validate);
                         $e = new StdClass;
                         $e->coursename = $bulkcourse['shortname'];
+                        $e->shortname = $bulkcourse['shortname'];
+                        $e->fullname = $bulkcourse['fullname'];
                         $e->i = $i;
+                        $e->error = $result;
                         switch ($result) {
                             case 1:
-                                $this->report(get_string('coursecreated', 'tool_sync', $a));
+                                $this->report(get_string('coursecreated', 'tool_sync', $e));
                                 $n++; // Succeeded
+                            break;
+                            case -1:
+                                $this->report(get_string('errorinputconditions', 'tool_sync', $e));
+                                if (!empty($syncconfig->filefailed)) {
+                                    $this->feed_tryback($sourcetext[$i]);
+                                }
+                                $p++;
+                            break;
+                            case -20:
+                            case -21:
+                            case -22:
+                            case -23:
+                            case -24:
+                                $this->report(get_string('errorbackupfile', 'tool_sync', $e));
+                                if (!empty($syncconfig->filefailed)) {
+                                    $this->feed_tryback($sourcetext[$i]);
+                                }
+                                $p++;
                             break;
                             case -3:
                                 $this->report(get_string('errorsectioncreate', 'tool_sync', $e));
@@ -1353,7 +1374,7 @@ class course_sync_manager extends sync_manager {
         global $CFG, $DB, $USER;
 
         if (!is_array($course) || !is_array($headers) || !is_array($validate)) {
-            return -2;
+            return -1;
         }
 
         // trap when template not found
@@ -1393,10 +1414,10 @@ class course_sync_manager extends sync_manager {
                     if ($DB->get_record('block', array('name' => 'publishflow'))){
                         $archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
                         if (!$archive){
-                            return -2;
+                            return -20;
                         }
                     } else {
-                        return -2;
+                        return -21;
                     }
                 }
             } else {
@@ -1407,7 +1428,7 @@ class course_sync_manager extends sync_manager {
 
                 // Template is a real path. Integrate in a draft filearea of current user (defaults to admin) and get an archive stored_file for it.
                 if (!file_exists($course['template'])) {
-                    return -2;
+                    return -22;
                 }
 
                 // Now create a draft file from this.
@@ -1442,7 +1463,7 @@ class course_sync_manager extends sync_manager {
             $component = 'tool_sync';
             $filearea = 'temp';
             $itemid = $uniq;
-            if ($archive->extract_to_storage(new zip_packer(), $contextid, $component, $filearea, $itemid, $tempdir, $USER->id)) {
+            if ($archive->extract_to_pathname(new zip_packer(), $tempdir)) {
 
                 // Transaction
                 $transaction = $DB->start_delegated_transaction();
@@ -1477,14 +1498,16 @@ class course_sync_manager extends sync_manager {
                         }
                         $newcourse->$field = $value;
                     }
-                    if (!$DB->update_record('course', $newcourse)) {
+                    try {
+                        $DB->update_record('course', $newcourse);
+                    } catch(Exception $e) {
                         mtrace('failed updating');
                     }
                 } else {
-                    return -2;
+                    return -23;
                 }
             } else {
-                return -2;
+                return -24;
             }
         } else {
             // Create default course.
@@ -1564,12 +1587,15 @@ class course_sync_manager extends sync_manager {
                     $csection->summary = '';
                     $csection->sequence = '';
                     $csection->visible = 1;
-                    if (!$DB->insert_record('course_sections', $csection)) {
+                    try {
+                        $DB->insert_record('course_sections', $csection);
+                    } catch(Exception $e) {
                     }
                 }
             }
             rebuild_course_cache($newcourse->id, true);
         }
+
         if (!$context = context_course::instance($newcourse->id)) {
             return -6;
         }

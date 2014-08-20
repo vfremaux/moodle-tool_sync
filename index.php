@@ -102,10 +102,10 @@ if ($data = $form->get_data()) {
 // Print current courses type description.
 
 $url = new moodle_url('/admin/tool/sync/index.php');
-// $PAGE->set_title(format_string($SITE->fullname));
 $PAGE->set_url($url);
 $PAGE->set_title($SITE->fullname);
 $PAGE->set_heading($SITE->fullname);
+$PAGE->navbar->add(get_string('toolindex', 'tool_sync'));
 $PAGE->set_pagelayout('admin');
 echo $OUTPUT->header();
 
