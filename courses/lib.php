@@ -106,7 +106,7 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
     $fs = get_file_storage();
 
     $coursecontext = context_course::instance($courseid);
-    $files = $fs->get_area_files($coursecontext->id, 'backup', $filearea, 0, 'timecreated', false);
+    $files = $fs->get_area_files($coursecontext->id, 'backup', $filearea, 0, 'timecreated DESC', false);
 
     if (count($files) > 0) {
         return array_pop($files);

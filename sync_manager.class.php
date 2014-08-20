@@ -72,7 +72,7 @@ class sync_manager {
         }
 
         echo "Creating tryback";
-        print_object($filerec);
+        // print_object($filerec);
         $fs->create_file_from_string($filerec, $buffer);
     }
     

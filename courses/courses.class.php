@@ -669,7 +669,7 @@ class course_sync_manager extends sync_manager {
                 }
 
                 // Header is validated
-                $this->init_tryback($headers);
+                $this->init_tryback(implode($syncconfig->csvseparator, $headers));
 
                 $fieldcount = count($headers);
 
@@ -1431,7 +1431,7 @@ class course_sync_manager extends sync_manager {
 
             $uniq = rand(1, 9999);
 
-            $tempdir = $CFG->dataroot."/temp/backup/$uniq";
+            $tempdir = $CFG->tempdir . '/backup/' . $uniq;
             if (!is_dir($tempdir)) {
                 mkdir($tempdir, 0777, true);
             }
@@ -1448,13 +1448,16 @@ class course_sync_manager extends sync_manager {
                 $transaction = $DB->start_delegated_transaction();
 
                 // Create new course
-                $folder                 = $tempdir; // as found in: $CFG->dataroot . '/temp/backup/' 
                 $categoryid             = $hcategoryid; // e.g. 1 == Miscellaneous
                 $user_doing_the_restore = $USER->id; // e.g. 2 == admin
                 $newcourse_id           = restore_dbops::create_new_course('', '', $hcategoryid );
 
-                // Restore backup into course
-                $controller = new restore_controller($folder, $newcourse_id, 
+                /*
+                 * Restore backup into course.
+                 * folder needs being a relative path from $CFG->tempdir.'/backup/'.
+                 * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
+                 */
+                $controller = new restore_controller($uniq, $newcourse_id, 
                         backup::INTERACTIVE_NO, backup::MODE_SAMESITE, $user_doing_the_restore,
                         backup::TARGET_NEW_COURSE );
                 $controller->execute_precheck();
