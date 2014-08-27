@@ -48,8 +48,8 @@ $url = $CFG->wwwroot.'/admin/tool/sync/courses/deletecourses_creator.php';
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
 $PAGE->navigation->add(get_string('builddeletefile', 'tool_sync'));
 $PAGE->set_url($url);
-$PAGE->set_title("$site->shortname");
-$PAGE->set_heading($site->fullname);
+$PAGE->set_title("$SITE->shortname");
+$PAGE->set_heading($SITE->fullname);
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('deletefilebuilder', 'tool_sync'));
