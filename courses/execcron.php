@@ -22,14 +22,18 @@ require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
-$action = optional_param('action', SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE, PARAM_INT);
+$action = optional_param('action', SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE_DELETE, PARAM_INT);
 
 set_time_limit(1800);
 raise_memory_limit('512M');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context(null);
+
+$renderer = $PAGE->get_renderer('tool_sync');
+$syncconfig = get_config('tool_sync');
 
 require_login();
 
@@ -44,16 +48,50 @@ $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
+$form = new InputfileLoadform($url, array('localfile' => $syncconfig->course_fileuploadlocation));
+
+$canprocess = false;
+
+if ($data = $form->get_data()) {
+
+    if (!empty($data->uselocal)) {
+        // Use the server side stored file.
+        $enrolsmanager = new course_plugin_manager($action);
+        $processedfile = $syncconfig->course_fileuploadlocation;
+        $canprocess = true;
+    } else {
+        // Use the just uploaded file.
+
+        $fs = get_file_storage();
+        $usercontext = context_user::instance($USER->id);
+
+        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
+
+            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
+
+            // Take last as former is the / directory
+            $uploadedfile = array_pop($areafiles);
+
+            $manualfilerec = new StdClass();
+            $manualfilerec->contextid = $usercontext->id;
+            $manualfilerec->component = 'user';
+            $manualfilerec->filearea = 'draft';
+            $manualfilerec->itemid = $data->inputfile;
+            $manualfilerec->filepath = $uploadedfile->get_filepath();
+            $manualfilerec->filename = $uploadedfile->get_filename();
+            $processedfile = $manualfilerec->filename;
+    
+            $coursesmanager = new course_sync_manager($action, $manualfilerec);
+            $canprocess = true;
+        } else {
+            $errormes = "Failed loading a file";
+        }
+    }
+}
+
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading_with_help(get_string('coursesync', 'tool_sync'), 'coursesync', 'tool_sync');
-
-// execron do everything a cron will do
-$syncconfig = get_config('tool_sync');
-$coursesmanager = new course_sync_manager($action);
-$renderer = $PAGE->get_renderer('tool_sync');
-
-echo $OUTPUT->heading(get_string('coursemanualsync', 'tool_sync'), 3);
 
 if ($action & SYNC_COURSE_CHECK) {
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_fileexistlocation);
@@ -65,17 +103,29 @@ if ($action & SYNC_COURSE_DELETE) {
     echo "<center>$cronrunmsg</center>";
 }
 
-if ($action & SYNC_COURSE_CREATE) {
+if ($action & SYNC_COURSE_CREATE_DELETE) {
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $syncconfig->course_fileuploadlocation);
     echo "<center>$cronrunmsg</center>";
 }
 
-echo $OUTPUT->heading(get_string('processresult', 'tool_sync'), 3);
+$form->display();
 
-echo '<pre>';
-$coursesmanager->cron($syncconfig);
-echo '</pre>';
+if ($canprocess) {
+    echo '<pre>';
+    $enrolsmanager->cron($syncconfig);
+    echo '</pre>';
 
+    $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
+    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
+
+    echo "<br/><fieldset><legend><strong>$enrolmgtmanual</strong></legend>";
+    echo "<center>$cronrunmsg</center>";
+    echo '</fieldset>';
+}
+
+
+// always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();
+

@@ -20,12 +20,12 @@
  * @subpackage sync
  */
 
-require_once '../../../../config.php';
-require_once $CFG->dirroot.'/course/lib.php';
-require_once $CFG->libdir.'/adminlib.php';	
-require_once $CFG->dirroot.'/admin/tool/sync/courses/lib.php';
-require_once $CFG->dirroot.'/admin/tool/sync/courses/courses.class.php';
-require_once $CFG->dirroot.'/admin/tool/sync/lib.php';
+require('../../../../config.php');
+require_once($CFG->dirroot.'/course/lib.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
@@ -46,8 +46,8 @@ if ($selection) {
     $coursesmanager->create_course_reinitialisation_file($selection, $syncconfig);
 }
 
-$url = $CFG->wwwroot.'/admin/tool/sync/courses/resetcourses_creator.php';
-$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$url = new moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('buildresetfile', 'tool_sync'));
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");

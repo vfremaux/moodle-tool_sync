@@ -73,6 +73,7 @@ class course_sync_manager extends sync_manager {
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/resetcourses_creator.php\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('makeresetfile', 'tool_sync'), $attribs);
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CHECK.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('testcourseexist', 'tool_sync'), $attribs);
         $frm->addGroup($barr, 'utilities', get_string('utilities', 'tool_sync'), array('&nbsp;&nbsp;'), false);
 
@@ -80,8 +81,9 @@ class course_sync_manager extends sync_manager {
 
         $barr = array();
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/resetcourses.php\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_RESET.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CREATE.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CREATE_DELETE.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('manualuploadrun', 'tool_sync'), $attribs);
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_DELETE.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('manualdeleterun', 'tool_sync'), $attribs);
@@ -127,9 +129,14 @@ class course_sync_manager extends sync_manager {
                         'events' => 1,
                         'logs' => 1,
                         'notes' => 1,
+                        'completion' => 1,
                         'grades' => 1,
                         'roles' => 1,
+                        'local_roles' => 1,
                         'groups' => 1,
+                        'groupings' => 1,
+                        'blog_associations' => 1,
+                        'comments' => 1,
                         'modules' => 1);
                 $optional = array(
                         'forum_all' => 1,
@@ -140,6 +147,7 @@ class course_sync_manager extends sync_manager {
                         'slots' => 1, /*scheduler*/
                         'apointments' => 1,
                         'assignment_submissions' => 1, /*assignment*/
+                        'assign_submissions' => 1, /*2.4 assignment*/
                         'survey_answers' => 1, /*survey*/
                         'lesson' => 1, /*lesson*/
                         'choice' => 1,
@@ -240,6 +248,13 @@ class course_sync_manager extends sync_manager {
                         $this->report(get_string('noeventstoprocess', 'tool_sync', $i), false);
                     }
 
+                    // Processing events.
+                    if ($record['blog_associations'] == 'yes') {
+                        $data['delete_blog_associations'] = 1;
+                    } else {
+                        $this->report(get_string('noblogstoprocess', 'tool_sync', $i), false);
+                    }
+
                     // Processing logs.
                     if ($record['logs'] == 'yes') {
                         $data['reset_logs'] = 1;
@@ -253,14 +268,37 @@ class course_sync_manager extends sync_manager {
                         $this->report(get_string('nonotestoprocess', 'tool_sync', $i), false);
                     }
 
+                    // processing comments
+                    if ($record['comments'] == 'yes') {
+                        $data['reset_comments'] = 1;
+                    } else {
+                        $this->report(get_string('nocommentstoprocess', 'tool_sync', $i), false);
+                    }
+
+                    // processing local role assigns and overrides
+                    if ($record['local_roles'] == 'all') {
+                        $data['reset_local_roles'] = 1;
+                        $data['reset_local_overrides'] = 1;
+                    } elseif ($record['local_roles'] == 'roles') {
+                        $data['reset_local_roles'] = 1;
+                    } elseif ($record['local_roles'] == 'overrides') {
+                        $data['reset_local_overrides'] = 1;
+                    } else {
+                        $this->report(get_string('nolocalroletoprocess', 'tool_sync', $i), false);
+                    }
+
                     // Processing grades.
-                    if ($record["grades"] == 'items') {
+                    if ($record['grades'] == 'all') {
+                        $data['reset_gradebook_items'] = 1;
+                        $data['reset_gradebook_grades'] = 1;
+                    } elseif ($record['grades'] == 'items') {
                         $data['reset_gradebook_items'] = 1;
                     } elseif ($record['grades'] == 'grades'){
                         $data['reset_gradebook_grades'] = 1;
                     } else {
                         $this->report(get_string('nogradestoprocess', 'tool_sync', $i));
                     }
+
                     // processing role assignations
                     $roles = explode(' ', $record['roles']);
                     $reset_roles = array();
@@ -268,19 +306,35 @@ class course_sync_manager extends sync_manager {
                     foreach ($roles as $rolename) {
                         if ($role = $DB->get_record('role', array('shortname' => $rolename))) {
                             $reset_roles[$nbrole] = $role->id;
-                            $data['reset_roles'] = $reset_roles;
+                            $data['unenrol_users'][$nbrole] = $role->id;
                             $nbrole++;
                         } else {
                             $this->report("[Error] role $rolename unkown.\n");
                         }
                     }
-                    // Processing groups.
-                    if ($record['groups'] == 'groups') {
+
+                    // processing groups
+                    if ($record['groups'] == 'all') {
                         $data['reset_groups_remove'] = 1;
-                    } elseif ($record['groups'] == 'members'){
+                        $data['reset_groups_members'] = 1;
+                    } elseif ($record['groups'] == 'groups') {
+                        $data['reset_groups_remove'] = 1;
+                    } elseif ($record['groups'] == 'members') {
                         $data['reset_groups_members'] = 1;
                     } else {
-                        $this-Sreport(get_string('nogrouptoprocess', 'tool_sync', $i));
+                        $this->report(get_string('nogrouptoprocess', 'tool_sync', $i), false);
+                    }
+        
+                    // processing groupings
+                    if ($record['groupings'] == 'all') {
+                        $data['reset_groupings_remove'] = 1;
+                        $data['reset_groupings_members'] = 1;
+                    } elseif ($record['groupings'] == 'groups') {
+                        $data['reset_groupings_remove'] = 1;
+                    } elseif ($record['groupings'] == 'members') {
+                        $data['reset_groupings_members'] = 1;
+                    } else {
+                        $this->report(get_string('nogroupingtoprocess', 'tool_sync', $i), false);
                     }
 
                     echo '<br/>';
@@ -343,6 +397,9 @@ class course_sync_manager extends sync_manager {
                         }
                         if ((isset($record['assignment_submissions'])) && ($record['assignment_submissions'] == 1)) {
                             $data['reset_assignment_submissions'] = 1;
+                        }
+                        if ((isset($record['assign_submissions'])) && ($record['assign_submissions'] == 1)) {
+                            $data['reset_assign_submissions'] = 1;
                         }
                         if ((isset($record['survey_answers'])) && ($record['survey_answers'] == 1)) {
                             $data['reset_survey_answers'] = 1;
@@ -1668,7 +1725,7 @@ class course_sync_manager extends sync_manager {
         $identifiername = $identifieroptions[0 + @$syncconfig->course_resetfileidentifier];
 
         $rows = array();
-        $cols = array('shortname', 'roles', 'grades', 'groups', 'events', 'logs', 'notes', 'modules');
+        $cols = array('shortname', 'roles', 'local_roles', 'completion', 'grades', 'groups', 'groupings', 'blog_associations', 'events', 'logs', 'notes', 'comments', 'modules');
         if (!in_array($identifiername, $cols)) {
             $cols[] = $identifiername;
         }
@@ -1685,11 +1742,16 @@ class course_sync_manager extends sync_manager {
             $values = array();
             $values[] = $c->shortname;
             $values[] = 'student teacher guest';
-            $values[] = 'grades';
-            $values[] = 'members';
+            $values[] = 'all'; // all, roles, overrides
             $values[] = 'yes';
-            $values[] = 'yes';
-            $values[] = 'yes';
+            $values[] = 'all'; // all, grades, items
+            $values[] = 'all'; // all, members, remove
+            $values[] = 'all'; // all, members, remove
+            $values[] = 'yes'; // blog associations
+            $values[] = 'yes'; // events
+            $values[] = 'yes'; // logs
+            $values[] = 'yes'; // notes
+            $values[] = 'yes'; // comments
             $values[] = 'all';
             $rows[] = implode($syncconfig->csvseparator, $values);
         }
