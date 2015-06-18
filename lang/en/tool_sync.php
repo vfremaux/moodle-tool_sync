@@ -1,5 +1,6 @@
 <?php // $Id: enrol_sync.php
 
+$string['automation'] = 'Feeders and automation';
 $string['addedtogroup'] = 'User {$a->myuser} added to group {$a->group}';
 $string['addedtogroupnot'] = 'User {$a->myuser} NOT added to group {$a->group}';
 $string['alreadyassigned'] = 'User {$a->myuser} already assigned to {$a->myrole} in course {$a->mycourse}';
@@ -247,6 +248,11 @@ $string['startingcheck'] = 'Starting check courses...';
 $string['startingreset'] = 'Starting resetting courses...';
 $string['storedfile'] = 'Stored file: {$a}';
 $string['sync:configure'] = 'Configure the synchronisation manager';
+$string['task_synccohorts'] = 'CSV Cohorts synchronisation';
+$string['task_synccourses'] = 'CSV Course Synchronisation';
+$string['task_syncenrols'] = 'CSV Enrolment Synchronisation';
+$string['task_syncuserpictures'] = 'CSV User Picture Synchronisation';
+$string['task_syncusers'] = 'CSV Users Synchronisation';
 $string['synccohorts'] = 'Cohorts synchronisation';
 $string['syncconfig'] = 'Synchronisation configuration';
 $string['synccourses'] = 'Course Manager';

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,8 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig and empty($CFG->disableonclickaddoninstall)) {
-
+$ADMIN->add('root', new admin_category('automation', new lang_string('automation', 'tool_sync')));
+if (has_capability('tool/sync:configure', context_system::instance())) {
     //--- general settings -----------------------------------------------------------------------------------
-    $ADMIN->add('root', new admin_externalpage('toolsync', get_string('pluginname', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php')));
+    $ADMIN->add('automation', new admin_externalpage('toolsync', get_string('pluginname', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'), 'tool/sync:configure'));
 }

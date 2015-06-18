@@ -1,7 +1,20 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *
  * @package tool_sync
  * @author Funck Thibaut
  */
@@ -12,19 +25,19 @@ class file_checker {
      * operates format transforms on incoming course definition file
      * @param string $filename
      */
-    function transform_checkcourses_file($filename){
+    function transform_checkcourses_file($filename) {
         global $CFG;
 
         $name = $CFG->dataroot.'/'.$filename;
         $i = 0;
         $tmp = '';
         if ($file = fopen($name,'r')) {
-            while(!feof($file)){
+            while (!feof($file)) {
                 $tmp = fgets($file);
                 $i++;
             }
         }
-            
+
         $this->setEncoding($filename);
         $this->deleteLine($filename,$i);
         $i--;
@@ -113,10 +126,12 @@ class file_checker {
                 $csv_delimiter2 = ",";
             }
 
-            //*NT* File that is used is currently hardcoded here!
-            // Large files are likely to take their time and memory. Let PHP know
-            // that we'll take longer, and that the process should be recycled soon
-            // to free up memory.
+            /**
+             * File that is used is currently hardcoded here!
+             * Large files are likely to take their time and memory. Let PHP know
+             * that we'll take longer, and that the process should be recycled soon
+             * to free up memory.
+             */
             @set_time_limit(0);
             @raise_memory_limit('192M');
             if (function_exists('apache_child_terminate')) {
@@ -125,7 +140,7 @@ class file_checker {
 
             $text = $this->my_file_get_contents($filename);
             //trim utf-8 bom
-            $textlib = new textlib();
+            $textlib = new core_text();
             $text = $textlib->trim_utf8_bom($text);
             //Fix mac/dos newlines
             $text = preg_replace('!\r\n?!',"\n",$text);
@@ -137,7 +152,7 @@ class file_checker {
     }
 
     function my_file_get_contents($filename, $use_include_path = 0) {
-        // Returns the file as one big long string
+        // Returns the file as one big long string.
         $data = '';
         $file = @fopen($filename, 'rb', $use_include_path);
         if ($file) {
@@ -166,8 +181,7 @@ class file_checker {
         $text = '';
         $i = 1;
         while ($i < $linenumber) {
-            $text. = fgets($file);
-    //        echo "$text";
+            $text .= fgets($file);
             $i++;
         }
         $tmp = fgets($file);

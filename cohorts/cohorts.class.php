@@ -115,7 +115,7 @@ class cohorts_plugin_manager extends sync_manager {
 
         // --- get header (field names) ---
 
-        $textlib = new textlib();
+        $textlib = new core_text();
 
         // jump any empty or comment line
         $text = fgets($filereader, 1024);

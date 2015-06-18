@@ -31,7 +31,7 @@ class users_plugin_manager extends sync_manager {
 
     protected $manualfilerec;
 
-    public function __construct($manualfilerec = null){
+    public function __construct($manualfilerec = null) {
         $this->manualfilerec = $manualfilerec;
     }
 
@@ -94,11 +94,13 @@ class users_plugin_manager extends sync_manager {
             $csv_delimiter = "\;";
             $csv_delimiter2 = ";";
         }
-        
-        //*NT* File that is used is currently hardcoded here!
-        // Large files are likely to take their time and memory. Let PHP know
-        // that we'll take longer, and that the process should be recycled soon
-        // to free up memory.
+
+        /*
+         * File that is used is currently hardcoded here!
+         * Large files are likely to take their time and memory. Let PHP know
+         * that we'll take longer, and that the process should be recycled soon
+         * to free up memory.
+         */
         @set_time_limit(0);
         @raise_memory_limit("256M");
         if (function_exists('apache_child_terminate')) {
@@ -111,7 +113,7 @@ class users_plugin_manager extends sync_manager {
                 'firstname' => 1,
                 'lastname' => 1);
         $optionalDefaults = array(
-                'mnethostid' => 1,  
+                'mnethostid' => 1,
                 'institution' => '',
                 'department' => '',
                 'city' => '',
@@ -137,6 +139,7 @@ class users_plugin_manager extends sync_manager {
                 'group1' => 1,
                 'type1' => 1,
                 'role1' => 1,
+                'enrol1' => 1,
                 'start1' => 1,
                 'end1' => 1,
                 'wwwroot1' => 1, // Allows MNET propagation to remote node.
@@ -146,6 +149,7 @@ class users_plugin_manager extends sync_manager {
                 'group',
                 'type',
                 'role',
+                'enrol',
                 'start',
                 'end',
                 'wwwroot');
@@ -154,7 +158,7 @@ class users_plugin_manager extends sync_manager {
 
         // --- get header (field names) ---
 
-        $textlib = new textlib();
+        $textlib = new core_text();
 
         // Jump any empty or comment line.
         $text = fgets($filereader, 1024);
@@ -231,7 +235,7 @@ class users_plugin_manager extends sync_manager {
             $valueset = explode($csv_delimiter2, $text);
             $record = array();
             foreach ($valueset as $key => $value) {
-                // Decode encoded commas
+                // Decode encoded commas.
                 $record[$header[$key]] = preg_replace($csv_encode, $csv_delimiter2, trim($value));
             }
             if ($record[$header[0]]) {
@@ -251,15 +255,34 @@ class users_plugin_manager extends sync_manager {
                         return;
                     } elseif ($name == 'password' && !empty($value)) {
 
+                        // Value
+                        if ($value === 'to be generated') {
+                            $user->password = $value;
+                            set_user_preference('create_password', 1, $user);
+                        }
+
                         // Password needs to be encrypted.
-                        //$user->password = hash_internal_user_password($value);  *NT*  Password is LDAP!
+                        elseif ($value != '*NOPASS*') {
+                            $user->password = hash_internal_user_password($value);
+                            if ($notifypasswordsfornewusers) {
+                                if (!empty($user->email) && (!preg_match('/NO MAIL|NOMAIL/', $user->email))) {
+                                    // If we can send mail to user, let's notfy with the moodle password notification mail.
+                                    sync_notify_new_user_password($user, $value);
+                                }
+                            }
+                        } else {
+                            // Mark user having no password.
+                            $user->password = '*NOPASS*';
+                        }
                     } elseif ($name == 'username') {
-                        $user->username = textlib::strtolower($value);
+                        $user->username = core_text::strtolower($value);
                     } else {
                         // Normal entry.
                         $user->{$name} = $value;
                     }
                 }
+                if (isset($user->country)) $user->country = strtoupper($user->country);
+                if (isset($user->lang)) $user->lang = str_replace('_utf8', '', strtolower($user->lang));
                 $user->confirmed = 1;
                 $user->timemodified = time();
                 $linenum++;
@@ -273,16 +296,18 @@ class users_plugin_manager extends sync_manager {
                 $groupix = 'group'.$ci;
                 $typeix = 'type'.$ci;
                 $roleix = 'role'.$ci;
+                $enrolix = 'enrol'.$ci;
                 $startix = 'start'.$ci;
                 $endix = 'end'.$ci;
                 $wwwrootix = 'wwwroot'.$ci;
                 $addcourses = array();
-                while(isset($user->$courseix)){
+                while (isset($user->$courseix)) {
                     $coursetoadd = new StdClass;
                     $coursetoadd->idnumber = $user->$courseix;
                     $coursetoadd->group = isset($user->$groupix) ? $user->$groupix : NULL;
-                    $coursetoadd->type = isset($user->$typeix) ? $user->$typeix : NULL;
+                    $coursetoadd->type = isset($user->$typeix) ? $user->$typeix : NULL;  // Deprecated. Not more used.
                     $coursetoadd->role = isset($user->$roleix) ? $user->$roleix : NULL;
+                    $coursetoadd->enrol = isset($user->$enrolix) ? $user->$enrolix : NULL;
                     $coursetoadd->start = isset($user->$startix) ? $user->$startix : 0;
                     $coursetoadd->end = isset($user->$endix) ? $user->$endix : 0;
                     $coursetoadd->wwwroot = isset($user->$wwwrootix) ? $user->$wwwrootix : 0;
@@ -320,9 +345,14 @@ class users_plugin_manager extends sync_manager {
                 }
 
                 // Set some default.
-                if (!isset($CFG->primaryidentity)) set_config('primaryidentity', 'idnumber');
+                if (!isset($CFG->primaryidentity)) {
+                    set_config('primaryidentity', 'idnumber');
+                }
 
-                if (empty($user->mnethostid)) $user->mnethostid = $CFG->mnet_localhost_id;
+                if (empty($user->mnethostid)) {
+                    $user->mnethostid = $CFG->mnet_localhost_id;
+                }
+
                 if (($CFG->primaryidentity == 'idnumber') && !empty($idnumber)){
                     $olduser = $DB->get_record('user', array('idnumber' => $idnumber, 'mnethostid' => $user->mnethostid));
                 } elseif (($CFG->primaryidentity == 'email') && !empty($user->email)){
@@ -334,12 +364,12 @@ class users_plugin_manager extends sync_manager {
                     if ($updateaccounts) {
                         // Record is being updated.
                         $user->id = $olduser->id;
-                        if ($olduser->deleted){
+                        if ($olduser->deleted) {
                             // Revive old deleted users if they already exist.
                             $this->report(get_string('userrevived', 'tool_sync', "$user->username ($idnumber)"));
                             $user->deleted = 0;
                         }
-                        if ($keepexistingemailsafe){
+                        if ($keepexistingemailsafe) {
                             unset($user->email);
                         }
                         try {
@@ -389,11 +419,11 @@ class users_plugin_manager extends sync_manager {
                             $pref->name = 'create_password';
                             $pref->value = 1;
                             $DB->insert_record('user_preferences', $pref);
-    
+
                             $pref = new StdClass();
                             $pref->userid = $newuser->id;
                             $pref->name = 'auth_forcepasswordchange';
-                            $pref->value = 1;
+                            $pref->value = $forcepasswordchange;
                             $DB->insert_record('user_preferences', $pref);
                         }
 
@@ -413,7 +443,7 @@ class users_plugin_manager extends sync_manager {
                 // Cohort (only system level) binding management.
                 if (@$user->cohort) {
                     $t = time();
-                    if (!$cohort = $DB->get_record('cohort', array('name' => $user->cohort))){
+                    if (!$cohort = $DB->get_record('cohort', array('name' => $user->cohort))) {
                         $cohort = new StdClass();
                         $cohort->name = $user->cohort;
                         $cohort->idnumber = @$user->cohortid;
@@ -425,7 +455,7 @@ class users_plugin_manager extends sync_manager {
                     }
 
                     // Bind user to cohort.
-                    if (!$cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))){
+                    if (!$cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
                         $cohortmembership = new StdClass();
                         $cohortmembership->userid = $user->id;
                         $cohortmembership->cohortid = ''.@$cohort->id;
@@ -435,44 +465,78 @@ class users_plugin_manager extends sync_manager {
                 }
 
                 // Course binding management.
-                if (!empty($addcourses)){
-                    foreach($addcourses as $c){
+                if (!empty($addcourses)) {
+                    foreach ($addcourses as $c) {
 
-                        if (empty($c->wwwroot)){
+                        if (empty($c->idnumber)) {
+                            // empty course sets should be ignored.
+                            continue;
+                        }
+
+                        if (empty($c->wwwroot)) {
                             // Course binding is local.
 
-                            if (!$crec = $DB->get_record('course', array('idnumber' => $c->idnumber))){        
+                            if (!$crec = $DB->get_record('course', array('idnumber' => $c->idnumber))) {
                                 $this->report(get_string('unknowncourse', 'error', $c->idnumber));
                                 continue;
                             }
 
+                            if (!empty($c->enrol)) {
+                                $enrol = enrol_get_plugin('manual');
+                                if (!$enrols = $DB->get_records('enrol', array('enrol' => $c->enrol, 'courseid' => $crec->id, 'status' => ENROL_INSTANCE_ENABLED), 'sortorder ASC')) {
+                                    $this->report(get_string('errornomanualenrol', 'tool_sync'));
+                                    $c->enrol = '';
+                                } else {
+                                    $enrol = reset($enrols);
+                                    $enrolplugin = enrol_get_plugin($c->enrol);
+                                }
+                            }
+
                             $coursecontext = context_course::instance($crec->id);
                             if (!empty($c->role)) {
-                                if (!user_can_assign($coursecontext, $c->role)) {
-                                    //notify('--> Can not assign role in course');
-                                    //TODO: localize
-                                }
                                 $role = $DB->get_record('role', array('shortname' => $c->role));
-                                $ret = role_assign($role->id, $user->id, 0, $coursecontext->id);
-                                $e->contextid = $coursecontext->id;
-                                $e->rolename = $c->role;
-                                $this->report(get_string('roleadded', 'tool_sync', $e));
-                            } else {
-                                $ret = enrol_student($user->id, $crec->id);
-                            }
-                            if (@$ret) {
-                                // OK
-                                $this->report(get_string('enrolledincourse', '', $c->idnumber));
-                            } else {
-                                $this->report(get_string('enrolledincoursenot', '', $c->idnumber));
-                            }
-                            // We only can manage groups for successful enrollments.
+                                if (!empty($c->enrol)) {
 
-                            if (@$ret) {
-                                // OK
-                                // Check group existance and try to create.
+                                    $e = new StdClass();
+                                    $e->myuser = $user->username; // user identifier
+                                    $e->mycourse = $crec->idnumber; // course identifier
+
+                                    try {
+                                        $enrolplugin->enrol_user($enrol, $user->id, $role->id, time(), 0, ENROL_USER_ACTIVE);
+                                        $this->report(get_string('enrolled', 'tool_sync', $e));
+                                        $ret = true;
+                                    } catch (Exception $exc) {
+                                        $this->report(get_string('errorenrol', 'tool_sync', $e));
+                                    }
+                                } else {
+                                    if (!user_can_assign($coursecontext, $c->role)) {
+                                        //notify('--> Can not assign role in course'); //TODO: localize
+                                    }
+                                    $ret = role_assign($role->id, $user->id, $coursecontext->id);
+                                    $e = new StdClass();
+                                    $e->contextid = $coursecontext->id;
+                                    $e->rolename = $c->role;
+                                    $this->report(get_string('roleadded', 'tool_sync', $e));
+                                }
+                            } else {
+                                if (!empty($c->enrol)) {
+                                    $role = $DB->get_record('role', array('shortname' => 'student'));
+                                    $enrolplugin->enrol_user($enrol, $user->id, $role->id, time(), 0, ENROL_USER_ACTIVE);
+                                    $this->report(get_string('enrolledincourse', 'tool_sync', $c->idnumber));
+                                }
+                            }
+                            if (!@$ret) {
+                                // OK.
+                                $this->report(get_string('enrolledincoursenot', 'tool_sync', $c->idnumber));
+                            }
+
+                            // we only can manage groups for successful enrollments
+
+                            if (@$ret) {   // OK
+                                // check group existance and try to create
                                 if (!empty($c->group)) {
                                     if (!$gid = groups_get_group_by_name($crec->id, $c->group)) {
+                                        $groupsettings = new StdClass();
                                         $groupsettings->name = $c->group;
                                         $groupsettings->courseid = $crec->id;
                                         if (!$gid = groups_create_group($groupsettings)) {
@@ -501,7 +565,7 @@ class users_plugin_manager extends sync_manager {
                          */
                         if (!empty($c->wwwroot) && $DB->get_record('block', array('name' => 'vmoodle'))) {
                             if (!file_exists($CFG->dirroot.'/blocks/vmoodle/rpclib.php')) {
-                                echo $OUTPUT->notifcation('This feature works with VMoodle Virtual Moodle Implementation');
+                                echo $OUTPUT->notification('This feature works with VMoodle Virtual Moodle Implementation');
                                 continue;
                             }
                             include_once($CFG->dirroot.'/blocks/vmoodle/rpclib.php');
@@ -513,6 +577,7 @@ class users_plugin_manager extends sync_manager {
                             $MNET->init();
 
                             $this->report(get_string('propagating', 'vmoodle', fullname($user)));
+                            $caller = new StdClass();
                             $caller->username = 'admin';
                             $caller->remoteuserhostroot = $CFG->wwwroot;
                             $caller->remotehostroot = $CFG->wwwroot;
@@ -534,7 +599,7 @@ class users_plugin_manager extends sync_manager {
                                     $this->report(get_string('rpcmajorerror', 'tool_sync'));
                                     continue;
                                 } elseif ($response->status == RPC_SUCCESS) {
-                                    if (!$response->user){
+                                    if (!$response->user) {
                                         $this->report(get_string('userunknownremotely', 'tool_sync', fullname($user)));
                                         $exists = false;
                                     } else {
@@ -558,6 +623,7 @@ class users_plugin_manager extends sync_manager {
                                         // print_object($response);
                                         $this->report(get_string('communicationerror', 'tool_sync'));
                                     } else {
+                                        $u = new StdClass();
                                         $u->username = $user->username;
                                         $u->wwwroot = $c->wwwroot;
                                         $this->report(get_string('usercreatedremotely', 'tool_sync', $u));
@@ -591,6 +657,7 @@ class users_plugin_manager extends sync_manager {
                                             }
                                         }
                                     }
+                                    $e = new StdClass();
                                     $e->username = $user->username;
                                     $e->rolename = $c->role;
                                     $e->coursename = $c->idnumber;
@@ -606,10 +673,10 @@ class users_plugin_manager extends sync_manager {
         }
         fclose($filereader);
 
-        if (!empty($CFG->tool_sync_filearchive)) {
+        if (!empty($syncconfig->filearchive)) {
             $this->archive_input_file($filerec);
         }
-        if (!empty($CFG->tool_sync_filecleanup)) {
+        if (!empty($syncconfig->filecleanup)) {
             $this->cleanup_input_file($filerec);
         }
         return true;

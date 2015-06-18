@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2014081801;
+$plugin->version  = 2015060100;
 $plugin->requires  = 2014041100;        // Requires this Moodle version
 $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics)
 $plugin->cron = 5;
