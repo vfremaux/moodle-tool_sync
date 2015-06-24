@@ -31,4 +31,4 @@ $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnost
 $plugin->cron = 5;
 $plugin->maturity = MATURITY_RC;
 // $plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
-$plugin->release = '2.8.0 (Build 2014081801)';
+$plugin->release = '2.8.0 (Build 2015041403)';
