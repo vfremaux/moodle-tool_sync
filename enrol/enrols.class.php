@@ -460,6 +460,10 @@ class enrol_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
+        if (!empty($syncconfig->storereport)) {
+            $this->store_report_file($filerec);
+        }
+
         if (!empty($syncconfig->filefailed)) {
             $this->write_tryback($filerec);
         }

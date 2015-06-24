@@ -38,6 +38,7 @@ class tool_plugin_sync {
         $frm->addElement('header', 'globalconf3', get_string('final_action', 'tool_sync'));
 
         $frm->addElement('checkbox', 'tool_sync/enrolcleanup', get_string('group_clean', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/storereport', get_string('storereport', 'tool_sync'));
         $frm->addElement('checkbox', 'tool_sync/filearchive', get_string('filearchive', 'tool_sync'));
         $frm->addElement('checkbox', 'tool_sync/filefailed', get_string('failedfile', 'tool_sync'));
         $frm->addElement('checkbox', 'tool_sync/filecleanup', get_string('filecleanup', 'tool_sync'));

@@ -1047,6 +1047,10 @@ class course_sync_manager extends sync_manager {
 
             fix_course_sortorder(); // Re-sort courses
 
+            if (!empty($syncconfig->storereport)) {
+                $this->store_report_file($filerec);
+            }
+
             if (!empty($syncconfig->filefailed)) {
                 $this->write_tryback($filerec);
             }
@@ -1055,7 +1059,7 @@ class course_sync_manager extends sync_manager {
                 $this->archive_input_file($filerec);
             }
 
-            if (!empty($CFG->sync_filecleanup)) {
+            if (!empty($syncconfig->filecleanup)) {
                 $this->cleanup_input_file($filerec);
             }
         }

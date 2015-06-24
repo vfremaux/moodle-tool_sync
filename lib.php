@@ -50,9 +50,15 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
     $config = get_config('tool_sync');
 
     // we may have a risk the BOM is present on first line
-    if ($resetfirst) $first = true;
-    if (!isset($textlib)) $textlib = new core_text(); // singleton
-    if ($first && $config->encoding == 'UTF-8'){
+    if ($resetfirst) {
+        $first = true;
+    }
+
+    if (!isset($textlib)) {
+        $textlib = new core_text(); // singleton
+    }
+
+    if ($first && $config->encoding == 'UTF-8') {
         $text = $textlib->trim_utf8_bom($text);
         $first = false;
     }

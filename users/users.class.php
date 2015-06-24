@@ -22,7 +22,7 @@ if (!defined('MOODLE_INTERNAL')) {
  * @author Funck Thibaut
  */
 
-require_once $CFG->dirroot.'/admin/tool/sync/lib.php';
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
 require_once($CFG->dirroot.'/user/lib.php');
@@ -45,6 +45,10 @@ class users_sync_manager extends sync_manager {
         $frm->setType('tool_sync/users_filelocation', PARAM_TEXT);
 
         $frm->addElement('static', 'usersst1', '<hr>');
+
+        $identifieroptions = array('idnumber' => 'idnumber', 'username' => 'username', 'email' => 'email');
+        $frm->addElement('select', 'tool_sync/primaryidentity', get_string('primaryidentity', 'tool_sync'), $identifieroptions);
+        $frm->setType('tool_sync/primaryidentity', PARAM_TEXT);
 
         $params = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/users/execcron.php\'');
         $frm->addElement('button', 'manualusers', get_string('manualuserrun', 'tool_sync'), $params);
@@ -347,17 +351,23 @@ class users_sync_manager extends sync_manager {
                 }
 
                 // Set some default.
-                if (!isset($CFG->primaryidentity)) {
-                    set_config('primaryidentity', 'idnumber');
+                if (empty($syncconfig->primaryidentity)) {
+                    if (!isset($CFG->primaryidentity)) {
+                        set_config('primaryidentity', 'idnumber', 'tool_sync');
+                        $syncconfig->primaryidentity = 'idnumber';
+                    } else {
+                        set_config('primaryidentity', $CFG->primaryidentity, 'tool_sync');
+                        $syncconfig->primaryidentity = $CFG->primaryidentity;
+                    }
                 }
 
                 if (empty($user->mnethostid)) {
                     $user->mnethostid = $CFG->mnet_localhost_id;
                 }
 
-                if (($CFG->primaryidentity == 'idnumber') && !empty($idnumber)){
+                if (($syncconfig->primaryidentity == 'idnumber') && !empty($idnumber)){
                     $olduser = $DB->get_record('user', array('idnumber' => $idnumber, 'mnethostid' => $user->mnethostid));
-                } elseif (($CFG->primaryidentity == 'email') && !empty($user->email)){
+                } elseif (($syncconfig->primaryidentity == 'email') && !empty($user->email)){
                     $olduser = $DB->get_record('user', array('email' => $user->email, 'mnethostid' => $user->mnethostid));
                 } else {
                     $olduser = $DB->get_record('user', array('username' => $username, 'mnethostid' => $user->mnethostid));
@@ -403,8 +413,8 @@ class users_sync_manager extends sync_manager {
                 } else {
                     // New user.
                     // Pre check we have no username collision.
-                    if ($DB->get_record('user', array('mnethostid' => $user->mnethostid, 'username' => $user->username))){
-                        $this->report(get_string('usercollision', 'tool_sync', "$user->id , $user->username , $user->idnumber, $user->firstname, $user->lastname "));
+                    if ($olduser = $DB->get_record('user', array('mnethostid' => $user->mnethostid, 'username' => $user->username))){
+                        $this->report(get_string('usercollision', 'tool_sync', "$olduser->id , $user->username , $user->idnumber, $user->firstname, $user->lastname "));
                         continue;
                     }
                     
@@ -675,6 +685,9 @@ class users_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
+        if (!empty($syncconfig->storereport)) {
+            $this->store_report_file($filerec);
+        }
         if (!empty($syncconfig->filearchive)) {
             $this->archive_input_file($filerec);
         }

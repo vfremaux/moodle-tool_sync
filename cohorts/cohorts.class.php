@@ -217,9 +217,14 @@ class cohorts_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
+        if (!empty($syncconfig->storereport)) {
+            $this->store_report_file($filerec);
+        }
+
         if (!empty($syncconfig->filearchive)) {
             $this->archive_input_file($filerec);
         }
+        
         if (!empty($syncconfig->filecleanup)) {
             $this->cleanup_input_file($filerec);
         }
