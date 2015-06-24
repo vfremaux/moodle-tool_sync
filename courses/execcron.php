@@ -56,7 +56,7 @@ if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $enrolsmanager = new course_plugin_manager($action);
+        $enrolsmanager = new course_sync_manager($action);
         $processedfile = $syncconfig->course_fileuploadlocation;
         $canprocess = true;
     } else {
@@ -115,10 +115,10 @@ if ($canprocess) {
     $enrolsmanager->cron($syncconfig);
     echo '</pre>';
 
-    $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
+    $coursemgtmanual = get_string('coursemgtmanual', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
 
-    echo "<br/><fieldset><legend><strong>$enrolmgtmanual</strong></legend>";
+    echo "<br/><fieldset><legend><strong>$coursemgtmanual</strong></legend>";
     echo "<center>$cronrunmsg</center>";
     echo '</fieldset>';
 }

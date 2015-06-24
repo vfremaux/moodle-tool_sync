@@ -1,5 +1,6 @@
 <?php
 
+$string['automation'] = 'Alimentations et automatisation';
 $string['addedtogroup'] = 'L\'utilisateur {$a->myuser} a été ajouté au groupe {$a->group}';
 $string['addedtogroupnot'] = 'L\'utilisateur {$a->myuser} n\'a pas été ajouté au groupe {$a->group}';
 $string['alreadyassigned'] = 'L\'utilisateur {$a->myuser} est déjà assigné au role {$a->myrole} dans le cours {$a->mycourse}';
@@ -242,6 +243,11 @@ $string['startingcheck'] = 'Démarrage de la vérification d\'existence...';
 $string['startingreset'] = 'Démarrage de la réinitialisation...';
 $string['storedfile'] = 'Fichier de commande mémorisé : {$a}';
 $string['sync:configure'] = 'Configurer les synchronisations';
+$string['task_synccohorts'] = 'Synchronisaton des cohortes par CSV';
+$string['task_synccourses'] = 'Synchronisation de cours par CSV';
+$string['task_syncenrols'] = 'Synchronisation des inscriptions par CSV';
+$string['task_syncuserpictures'] = 'Synchronisation des avatars';
+$string['task_syncusers'] = 'Synchronisation des utilisateurs par CSV';
 $string['synccohorts'] = 'Gestionnaire des cohortes';
 $string['syncconfig'] = 'Configuration de la synchronisation';
 $string['synccourses'] = 'Gestionnaire de cours';
@@ -345,14 +351,14 @@ mode récursif et détruira toutes les "banches vides".
 ';
 
 $string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\'utilisateurs et de groupe à l\'aide de fichiers txt et csv appelés par le cron.<br/><br/>
-	Il suffit de préciser les chemins des quatre fichiers (à partir de la racine de "moodledata" :<br/>
-	<ol>
-		<li>Le fichier .txt pour la suppression de cours.
-		</li>
-		<li>Le fichier .csv pour l\'ajout de cours.
-		</li>
-		<li>Le fichier .csv pour l\'ajout ou la suppression d\'utilisateurs.
-		</li>
-		<li>Le fichier .csv pour l\'enrollement des apprenants et la gestion des groupes.
-		</li></il>
-		Il est egalement possible de déclencher ces scripts manuellement.';
+    Il suffit de préciser les chemins des quatre fichiers (à partir de la racine de "moodledata" :<br/>
+    <ol>
+        <li>Le fichier .txt pour la suppression de cours.
+        </li>
+        <li>Le fichier .csv pour l\'ajout de cours.
+        </li>
+        <li>Le fichier .csv pour l\'ajout ou la suppression d\'utilisateurs.
+        </li>
+        <li>Le fichier .csv pour l\'enrollement des apprenants et la gestion des groupes.
+        </li></il>
+        Il est egalement possible de déclencher ces scripts manuellement.';

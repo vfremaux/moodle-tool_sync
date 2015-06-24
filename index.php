@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * sync.php - allows admin to create or delete courses,users,enrol from csv files
  * @author Funck Thibaut
+ *
  */
 
 require('../../../config.php');

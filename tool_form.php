@@ -49,5 +49,4 @@ class ToolForm extends moodleform {
         $this->add_action_buttons();
 
     }
-    
 }
