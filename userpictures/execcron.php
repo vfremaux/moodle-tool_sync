@@ -17,12 +17,9 @@ require_login();
 if (!is_siteadmin()) {
     print_error('erroradminrequired', 'tool_sync');
 }
-if (! $site = get_site()) {
-    print_error('errornosite', 'tool_sync');
-}
-if (!$adminuser = get_admin()) {
-    print_error('errornoadmin', 'tool_sync');
-}
+
+// Capture incoming files in <moodledata>/sync.
+tool_sync_capture_input_files(false);
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');

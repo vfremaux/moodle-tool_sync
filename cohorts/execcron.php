@@ -34,6 +34,9 @@ if (!is_siteadmin()) {
     print_error('erroradminrequired', 'tool_sync');
 }
 
+// Capture incoming files in <moodledata>/sync.
+tool_sync_capture_input_files(false);
+
 set_time_limit(1800);
 raise_memory_limit('512M');
 

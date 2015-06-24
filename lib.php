@@ -153,6 +153,7 @@ function tool_sync_capture_input_files($interactive = false) {
     }
 
     $lockfile = $CFG->dataroot.'/sync/lock.txt';
+
     if (file_exists($lockfile)) {
         $fileinfo = stat($lockfile);
         if ($fileinfo['timecreated'] < (time() - HOURSEC * 3)) {
@@ -178,6 +179,7 @@ function tool_sync_capture_input_files($interactive = false) {
             }
         }
     }
+
     if ($FILE = fopen($readlockfile, 'w')) {
         fputs($FILE, time());
         fclose($FILE);
@@ -226,7 +228,7 @@ function tool_sync_capture_input_files($interactive = false) {
     }
 
     closedir($DIR);
-    
+
     @unlink($readlockfile);
 }
 

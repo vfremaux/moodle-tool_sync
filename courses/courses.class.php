@@ -746,9 +746,10 @@ class course_sync_manager extends sync_manager {
                     $valueset = explode($syncconfig->csvseparator, $text);
 
                     if (count($valueset) != $fieldcount) {
-                           $e->i = $i;
-                           $e->count = count($valueset);
-                           $e->expected = $fieldcount;
+                        $e = new StdClass();
+                        $e->i = $i;
+                        $e->count = count($valueset);
+                        $e->expected = $fieldcount;
                         $this->report(get_string('errorbadcount', 'tool_sync', $e));
                         if (!empty($syncconfig->filefailed)) {
                             $this->feed_tryback($text);
@@ -787,6 +788,7 @@ class course_sync_manager extends sync_manager {
                         foreach ($courseteachers as $key => $value) { // Deep validate course teacher info on second pass
                               if (isset($value) && (count($value) > 0)) {
                                 if (!(isset($value['_account']) && $this->check_is_in($value['_account']))) {
+                                    $e = new StdClass();
                                     $e->i = $i;
                                     $e->key = $key;
                                     $this->report(get_string('errornoteacheraccountkey', 'tool_sync', $e));
