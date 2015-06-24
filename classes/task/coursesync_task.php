@@ -44,7 +44,7 @@ class coursesync_task extends \core\task\scheduled_task {
      */
     public function execute() {
         $syncconfig = get_config('tool_sync');
-        $coursesmanager = new \course_plugin_manager();
+        $coursesmanager = new \course_sync_manager();
         $coursesmanager->cron($syncconfig);
         return true;
     }

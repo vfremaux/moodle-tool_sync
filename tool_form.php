@@ -14,10 +14,10 @@ class ToolForm extends moodleform {
         global $CFG;
 
         $coursemanager = new course_sync_manager();
-        $usermanager = new users_plugin_manager();
-        $userpicturemanager = new userpictures_plugin_manager();
-        $enrolmanager = new enrol_plugin_manager();
-        $cohortmanager = new cohorts_plugin_manager();
+        $usermanager = new users_sync_manager();
+        $userpicturemanager = new userpictures_sync_manager();
+        $enrolmanager = new enrol_sync_manager();
+        $cohortmanager = new cohorts_sync_manager();
         $mainmanager = new tool_plugin_sync();
 
         $fileoptions = array('context' => context_system::instance());

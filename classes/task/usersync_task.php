@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -43,7 +42,7 @@ class usersync_task extends \core\task\scheduled_task {
      */
     public function execute() {
         $syncconfig = get_config('tool_sync');
-        $usersmanager = new \users_plugin_manager();
+        $usersmanager = new \users_sync_manager();
         $usersmanager->cron($syncconfig);
         return true;
     }

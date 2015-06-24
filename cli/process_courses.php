@@ -121,7 +121,7 @@ switch ($options['action']) {
         break;
 }
 
-$manager = new courses_plugin_manager($controlfiles, $action);
+$manager = new courses_sync_manager($controlfiles, $action);
 $manager->cron();
 
 if ($options['verbose']) {

@@ -34,7 +34,7 @@ define ('PIX_FILE_UPDATED', 0);
 define ('PIX_FILE_ERROR', 1);
 define ('PIX_FILE_SKIPPED', 2);
 
-class userpictures_plugin_manager extends sync_manager {
+class userpictures_sync_manager extends sync_manager {
 
     function form_elements(&$frm) {
         global $CFG;
@@ -67,11 +67,11 @@ class userpictures_plugin_manager extends sync_manager {
         $fs = get_file_storage();
         
         $filerec = new StdClass();
-        $contextid = context_system::intance()->id;
+        $contextid = context_system::instance()->id;
         $component = 'tool_sync';
         $filearea = 'syncfiles';
         $itemid = 0;
-        $areafiles = $fs->get_area_files($contextid, $component, $filearea, $itmid);
+        $areafiles = $fs->get_area_files($contextid, $component, $filearea, $itemid);
         
         // Searching in area what matches userpicture archives
         if (!empty($areafiles)) {

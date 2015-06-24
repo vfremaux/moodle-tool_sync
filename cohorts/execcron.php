@@ -41,11 +41,11 @@ set_time_limit(1800);
 raise_memory_limit('512M');
 
 $renderer = $PAGE->get_renderer('tool_sync');
-$cohortssmanager = new cohorts_plugin_manager();
+$cohortssmanager = new cohorts_sync_manager();
 $syncconfig = get_config('tool_sync');
 
-$url = $CFG->wwwroot.'/admin/tool/sync/cohorts/execcron.php';
-$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$url = new moodle_url('/admin/tool/sync/cohorts/execcron.php');
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('cohortmgtmanual', 'tool_sync'));
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
@@ -58,7 +58,7 @@ echo $OUTPUT->heading_with_help(get_string('cohortmgtmanual', 'tool_sync'), 'coh
 echo '<pre>';
 $cohortssmanager->cron($syncconfig);
 echo '</pre>';
-$address = $syncconfig->cohorts_filelocation;
+$address = @$syncconfig->cohorts_filelocation;
 
 $cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
 $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $address);

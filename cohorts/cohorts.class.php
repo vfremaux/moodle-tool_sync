@@ -26,7 +26,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
 
-class cohorts_plugin_manager extends sync_manager {
+class cohorts_sync_manager extends sync_manager {
 
     protected $manualfilerec;
 
@@ -62,7 +62,7 @@ class cohorts_plugin_manager extends sync_manager {
     */
     public function cron($syncconfig) {
         global $CFG, $USER, $DB;
-        
+
         $systemcontext = context_system::instance();
 
         // Internal process controls
@@ -75,10 +75,12 @@ class cohorts_plugin_manager extends sync_manager {
         }
 
         if (empty($this->manualfilerec)) {
-            $filerec = $this->get_input_file($syncconfig->cohorts_filelocation, 'cohorts.csv');
+            $filerec = $this->get_input_file(@$syncconfig->cohorts_filelocation, 'cohorts.csv');
         } else {
             $filerec = $this->manualfilerec;
         }
+
+        // We have no file to process. Probably because never setup
         if (!($filereader = $this->open_input_file($filerec))) {
             return;
         }
@@ -110,8 +112,7 @@ class cohorts_plugin_manager extends sync_manager {
         $required = array('userid' => 1,
                 'cohortid' => 1);
         $optionalDefaults = array();
-        $optional = array('cdescription',
-            'cidnumber');
+        $optional = array('cdescription', 'cidnumber');
 
         // --- get header (field names) ---
 

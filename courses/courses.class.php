@@ -116,7 +116,7 @@ class course_sync_manager extends sync_manager {
 
             // Get file rec to process depending on something has been provided for immediate processing
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_fileresetlocation, 'resetcourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_fileresetlocation, 'resetcourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -501,7 +501,7 @@ class course_sync_manager extends sync_manager {
 
             // Get file rec to process depending on somethoing has been provided for immediate processing.
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_fileexistlocation, 'courses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_fileexistlocation, 'courses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -550,7 +550,7 @@ class course_sync_manager extends sync_manager {
         if ($this->execute & SYNC_COURSE_DELETE) {
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_filedeletelocation, 'deletecourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_filedeletelocation, 'deletecourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -672,10 +672,11 @@ class course_sync_manager extends sync_manager {
                                 'teacher_role' => array(1,40,0));
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_fileuploadlocation, 'uploadcourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_fileuploadlocation, 'uploadcourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
+
             if ($filereader = $this->open_input_file($filerec)) {
 
                 $i = 0;
@@ -799,8 +800,8 @@ class course_sync_manager extends sync_manager {
                                 if (!isset($value['_role'])) {
                                     $courseteachers[$key]['_role'] = '';
                                 }
-                              }
-                          }
+                            }
+                        }
                     } else {
                         $courseteachers = array();
                     }

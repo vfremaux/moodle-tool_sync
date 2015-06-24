@@ -44,7 +44,7 @@ class cohortsync_task extends \core\task\scheduled_task {
      */
     public function execute() {
         $syncconfig = get_config('tool_sync');
-        $cohortsmanager = new \cohorts_plugin_manager();
+        $cohortsmanager = new \cohorts_sync_manager();
         $cohortsmanager->cron($syncconfig);
         return true;
     }

@@ -27,7 +27,7 @@ require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
-class users_plugin_manager extends sync_manager {
+class users_sync_manager extends sync_manager {
 
     protected $manualfilerec;
 
@@ -74,10 +74,12 @@ class users_plugin_manager extends sync_manager {
         }
 
         if (empty($this->manualfilerec)) {
-            $filerec = $this->get_input_file($syncconfig->users_filelocation, 'userimport.csv');
+            $filerec = $this->get_input_file(@$syncconfig->users_filelocation, 'userimport.csv');
         } else {
             $filerec = $this->manualfilerec;
         }
+
+        // We have no file to process. Probably because never setup
         if (!($filereader = $this->open_input_file($filerec))) {
             return;
         }

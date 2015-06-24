@@ -23,7 +23,7 @@ tool_sync_capture_input_files(false);
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
-$picturemanager = new userpictures_plugin_manager;
+$picturemanager = new userpictures_sync_manager;
 
 set_time_limit(1800);
 raise_memory_limit('512M');
