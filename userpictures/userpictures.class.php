@@ -34,7 +34,7 @@ define ('PIX_FILE_UPDATED', 0);
 define ('PIX_FILE_ERROR', 1);
 define ('PIX_FILE_SKIPPED', 2);
 
-class userpictures_plugin_manager extends sync_manager {
+class userpictures_sync_manager extends sync_manager {
 
     function form_elements(&$frm) {
         global $CFG;
@@ -62,16 +62,16 @@ class userpictures_plugin_manager extends sync_manager {
     }
 
     function cron($syncconfig) {
-        global $USER;
+        global $USER, $CFG;
 
         $fs = get_file_storage();
         
         $filerec = new StdClass();
-        $contextid = context_system::intance()->id;
+        $contextid = context_system::instance()->id;
         $component = 'tool_sync';
         $filearea = 'syncfiles';
         $itemid = 0;
-        $areafiles = $fs->get_area_files($contextid, $component, $filearea, $itmid);
+        $areafiles = $fs->get_area_files($contextid, $component, $filearea, $itemid);
         
         // Searching in area what matches userpicture archives
         if (!empty($areafiles)) {
@@ -116,7 +116,7 @@ class userpictures_plugin_manager extends sync_manager {
             $zipdir = sync_my_mktempdir($CFG->tempdir.'/', 'usrpic');
 
             $fp = get_file_packer('application/zip');
-            $unzipresult = $f->extract_to_pathname($fp, $f, $zipdir);
+            $unzipresult = $f->extract_to_pathname($fp, $zipdir, null);
             if (!$unzipresult) {
                 $this->report(get_string('erroruploadpicturescannotunzip', 'tool_sync', $f));
                 @remove_dir($zipdir);
@@ -245,14 +245,14 @@ class userpictures_plugin_manager extends sync_manager {
             return PIX_FILE_ERROR;
         }
 
-        $haspicture = $DB->get_field('user', 'picture', array('id'=>$user->id));
+        $haspicture = $DB->get_field('user', 'picture', array('id' => $user->id));
         if ($haspicture && !$overwrite) {
             $this->report(get_string('uploadpicture_userskipped', 'tool_uploaduser', $user->username));
             return PIX_FILE_SKIPPED;
         }
 
         if (sync_my_save_profile_image($user->id, $file)) {
-            $DB->set_field('user', 'picture', 1, array('id'=>$user->id));
+            $DB->set_field('user', 'picture', 1, array('id' => $user->id));
             $this->report(get_string('uploadpicture_userupdated', 'tool_uploaduser', $user->username));
             return PIX_FILE_UPDATED;
         } else {

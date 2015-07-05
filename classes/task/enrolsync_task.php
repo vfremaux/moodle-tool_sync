@@ -24,6 +24,7 @@
 namespace tool_sync\task;
 
 require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
 /**
  * Scheduled task to sync users by file.
@@ -43,8 +44,12 @@ class enrolsync_task extends \core\task\scheduled_task {
      * Do the job.
      */
     public function execute() {
+        // Ensure we have all input files.
+        tool_sync_capture_input_files(false);
+
+        // Process task.
         $syncconfig = get_config('tool_sync');
-        $enrolsmanager = new \enrol_plugin_manager();
+        $enrolsmanager = new \enrol_sync_manager();
         $enrolsmanager->cron($syncconfig);
 
         return true;

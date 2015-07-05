@@ -50,9 +50,15 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
     $config = get_config('tool_sync');
 
     // we may have a risk the BOM is present on first line
-    if ($resetfirst) $first = true;
-    if (!isset($textlib)) $textlib = new core_text(); // singleton
-    if ($first && $config->encoding == 'UTF-8'){
+    if ($resetfirst) {
+        $first = true;
+    }
+
+    if (!isset($textlib)) {
+        $textlib = new core_text(); // singleton
+    }
+
+    if ($first && $config->encoding == 'UTF-8') {
         $text = $textlib->trim_utf8_bom($text);
         $first = false;
     }
@@ -153,6 +159,7 @@ function tool_sync_capture_input_files($interactive = false) {
     }
 
     $lockfile = $CFG->dataroot.'/sync/lock.txt';
+
     if (file_exists($lockfile)) {
         $fileinfo = stat($lockfile);
         if ($fileinfo['timecreated'] < (time() - HOURSEC * 3)) {
@@ -178,6 +185,7 @@ function tool_sync_capture_input_files($interactive = false) {
             }
         }
     }
+
     if ($FILE = fopen($readlockfile, 'w')) {
         fputs($FILE, time());
         fclose($FILE);
@@ -208,6 +216,11 @@ function tool_sync_capture_input_files($interactive = false) {
             continue;
         }
 
+        // Forget any file starting with '_' (could be an output file).
+        if (preg_match('/^_/', $entry)) {
+            continue;
+        }
+
         $filerec = new StdClass();
         $filerec->contextid = context_system::instance()->id;
         $filerec->component = 'tool_sync';
@@ -226,7 +239,7 @@ function tool_sync_capture_input_files($interactive = false) {
     }
 
     closedir($DIR);
-    
+
     @unlink($readlockfile);
 }
 

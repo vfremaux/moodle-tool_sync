@@ -32,7 +32,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
  * The Enrol Plugin Manager manages role assignaitns and enrollements from a CSV input file.
  *
  */
-class enrol_plugin_manager extends sync_manager {
+class enrol_sync_manager extends sync_manager {
 
     function form_elements(&$frm) {
         global $CFG;
@@ -71,10 +71,12 @@ class enrol_plugin_manager extends sync_manager {
         }
 
         if (empty($this->manualfilerec)) {
-            $filerec = $this->get_input_file($syncconfig->enrol_filelocation, 'enrols.csv');
+            $filerec = $this->get_input_file(@$syncconfig->enrol_filelocation, 'enrols.csv');
         } else {
             $filerec = $this->manualfilerec;
         }
+
+        // We have no file to process. Probably because never setup
         if (!($filereader = $this->open_input_file($filerec))) {
             return;
         }
@@ -457,6 +459,10 @@ class enrol_plugin_manager extends sync_manager {
             $i++;
         }
         fclose($filereader);
+
+        if (!empty($syncconfig->storereport)) {
+            $this->store_report_file($filerec);
+        }
 
         if (!empty($syncconfig->filefailed)) {
             $this->write_tryback($filerec);

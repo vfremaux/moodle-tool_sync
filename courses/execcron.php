@@ -21,6 +21,7 @@
 require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/course/lib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
@@ -28,6 +29,9 @@ $action = optional_param('action', SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC
 
 set_time_limit(1800);
 raise_memory_limit('512M');
+
+// Capture incoming files in <moodledata>/sync.
+tool_sync_capture_input_files(false);
 
 $systemcontext = context_system::instance();
 $PAGE->set_context(null);

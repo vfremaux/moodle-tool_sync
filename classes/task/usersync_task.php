@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,6 +22,7 @@
 namespace tool_sync\task;
 
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
 /**
  * Scheduled task to sync users by file.
@@ -42,8 +42,12 @@ class usersync_task extends \core\task\scheduled_task {
      * Do the job.
      */
     public function execute() {
+        // Ensure we have all input files.
+        tool_sync_capture_input_files(false);
+
+        // Process task.
         $syncconfig = get_config('tool_sync');
-        $usersmanager = new \users_plugin_manager();
+        $usersmanager = new \users_sync_manager();
         $usersmanager->cron($syncconfig);
         return true;
     }

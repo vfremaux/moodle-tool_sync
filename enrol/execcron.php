@@ -18,14 +18,17 @@ if (!is_siteadmin()) {
     print_error('erroradminrequired', 'tool_sync');
 }
 
+// Capture incoming files in <moodledata>/sync.
+tool_sync_capture_input_files(false);
+
 set_time_limit(1800);
 raise_memory_limit('512M');
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
 
-$url = $CFG->wwwroot.'/admin/tool/sync/enrol/execcron.php';
-$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$url = new moodle_url('/admin/tool/sync/enrol/execcron.php');
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('enrolmgtmanual', 'tool_sync'));
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
@@ -39,7 +42,7 @@ if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $enrolsmanager = new enrol_plugin_manager();
+        $enrolsmanager = new enrol_sync_manager();
         $processedfile = $syncconfig->enrol_filelocation;
         $canprocess = true;
     } else {
@@ -64,7 +67,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
     
-            $enrolsmanager = new enrol_plugin_manager($manualfilerec);
+            $enrolsmanager = new enrol_sync_manager($manualfilerec);
             $canprocess = true;
         } else {
             $errormes = "Failed loading a file";

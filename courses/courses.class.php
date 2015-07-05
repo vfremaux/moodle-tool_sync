@@ -116,7 +116,7 @@ class course_sync_manager extends sync_manager {
 
             // Get file rec to process depending on something has been provided for immediate processing
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_fileresetlocation, 'resetcourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_fileresetlocation, 'resetcourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -501,7 +501,7 @@ class course_sync_manager extends sync_manager {
 
             // Get file rec to process depending on somethoing has been provided for immediate processing.
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_fileexistlocation, 'courses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_fileexistlocation, 'courses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -550,7 +550,7 @@ class course_sync_manager extends sync_manager {
         if ($this->execute & SYNC_COURSE_DELETE) {
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_filedeletelocation, 'deletecourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_filedeletelocation, 'deletecourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -672,10 +672,11 @@ class course_sync_manager extends sync_manager {
                                 'teacher_role' => array(1,40,0));
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file($syncconfig->course_fileuploadlocation, 'uploadcourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->course_fileuploadlocation, 'uploadcourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
+
             if ($filereader = $this->open_input_file($filerec)) {
 
                 $i = 0;
@@ -746,9 +747,10 @@ class course_sync_manager extends sync_manager {
                     $valueset = explode($syncconfig->csvseparator, $text);
 
                     if (count($valueset) != $fieldcount) {
-                           $e->i = $i;
-                           $e->count = count($valueset);
-                           $e->expected = $fieldcount;
+                        $e = new StdClass();
+                        $e->i = $i;
+                        $e->count = count($valueset);
+                        $e->expected = $fieldcount;
                         $this->report(get_string('errorbadcount', 'tool_sync', $e));
                         if (!empty($syncconfig->filefailed)) {
                             $this->feed_tryback($text);
@@ -787,6 +789,7 @@ class course_sync_manager extends sync_manager {
                         foreach ($courseteachers as $key => $value) { // Deep validate course teacher info on second pass
                               if (isset($value) && (count($value) > 0)) {
                                 if (!(isset($value['_account']) && $this->check_is_in($value['_account']))) {
+                                    $e = new StdClass();
                                     $e->i = $i;
                                     $e->key = $key;
                                     $this->report(get_string('errornoteacheraccountkey', 'tool_sync', $e));
@@ -797,8 +800,8 @@ class course_sync_manager extends sync_manager {
                                 if (!isset($value['_role'])) {
                                     $courseteachers[$key]['_role'] = '';
                                 }
-                              }
-                          }
+                            }
+                        }
                     } else {
                         $courseteachers = array();
                     }
@@ -1044,6 +1047,10 @@ class course_sync_manager extends sync_manager {
 
             fix_course_sortorder(); // Re-sort courses
 
+            if (!empty($syncconfig->storereport)) {
+                $this->store_report_file($filerec);
+            }
+
             if (!empty($syncconfig->filefailed)) {
                 $this->write_tryback($filerec);
             }
@@ -1052,7 +1059,7 @@ class course_sync_manager extends sync_manager {
                 $this->archive_input_file($filerec);
             }
 
-            if (!empty($CFG->sync_filecleanup)) {
+            if (!empty($syncconfig->filecleanup)) {
                 $this->cleanup_input_file($filerec);
             }
         }

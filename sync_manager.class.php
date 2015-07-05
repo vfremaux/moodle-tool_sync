@@ -28,6 +28,9 @@ class sync_manager {
     // keeps tryback lines
     private $trybackarr;
 
+    /**
+     * Adds a report message into the log buffer.
+     */
     protected function report($message, $screen = true) {
         if (empty($this->log)) {
             $this->log = '';
@@ -39,17 +42,47 @@ class sync_manager {
     }
 
     /**
-     * Initiates tryback buffer
+     * Given an input file as stored file record, store an archived file.
+     *
+     */
+    protected function store_report_file($filerec) {
+
+        $fs = get_file_storage();
+
+        $now = date('Ymd-Hi', time());
+        $reportrec = clone($filerec);
+        $reportrec->filename = $now.'_report_'.$filerec->filename;
+        $reportrec->filepath = '/reports/';
+
+        // Ensure no collisions.
+        if ($oldfile = $fs->get_file($reportrec->contextid, $reportrec->component, $reportrec->filearea, 
+                                        $reportrec->itemid, $reportrec->filepath, $reportrec->filename)) {
+            $oldfile->delete();
+        }
+
+        if (!empty($this->log)) {
+            $fs->create_file_from_string($reportrec, $this->log);
+        }
+    }
+
+    /**
+     * Initiates tryback buffer and adds the first headline.
      */
     protected function init_tryback($headline) {
         $this->trybackhead = $headline;
         $this->tryback = '';
     }
 
+    /**
+     * Feeds a single line into the tryback buffer.
+     */
     protected function feed_tryback($line) {
         $this->tryback[] = $line;
     }
 
+    /**
+     * Writes the tryback buffer in a file.
+     */
     public function write_tryback($originalfilerec) {
 
         if (empty($this->tryback)) {
@@ -126,9 +159,9 @@ class sync_manager {
 
         $fs = get_file_storage();
 
-        $now = date('Ymd-hi', time());
+        $now = date('Ymd-Hi', time());
         $archiverec = clone($filerec);
-        $archiverec->filename = $now.'_cohorts_'.$filerec->filename;
+        $archiverec->filename = $now.'_'.$filerec->filename;
         $archiverec->filepath = '/archives/';
 
         // Ensure no collisions.
@@ -140,7 +173,10 @@ class sync_manager {
         $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
         $fs->create_file_from_storedfile($archiverec, $inputfile);
     }
-    
+
+    /**
+     * 
+     */
     protected function cleanup_input_file($filerec) {
         $fs = get_file_storage();
 
