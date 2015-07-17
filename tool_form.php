@@ -30,18 +30,23 @@ class ToolForm extends moodleform {
         $mform->addElement('static', 'files', '<a href="'.$fileareaurl.'">'.get_string('filemanager2', 'tool_sync').'</a>'); 
 
         $mform->addElement('header', 'h2', get_string('coursesync', 'tool_sync'));
+        $mform->addHelpButton('h2', 'coursecreateformat', 'tool_sync');
         $coursemanager->form_elements($mform);
 
         $mform->addElement('header', 'h3', get_string('usersync', 'tool_sync'));
+        $mform->addHelpButton('h3', 'userformat', 'tool_sync');
         $usermanager->form_elements($mform);
 
         $mform->addElement('header', 'h4', get_string('enrolsync', 'tool_sync'));
+        $mform->addHelpButton('h4', 'enrolformat', 'tool_sync');
         $enrolmanager->form_elements($mform);
 
         $mform->addElement('header', 'h5', get_string('userpicturesync', 'tool_sync'));
+        $mform->addHelpButton('h5', 'userpicturesformat', 'tool_sync');
         $userpicturemanager->form_elements($mform);
 
         $mform->addElement('header', 'h6', get_string('cohortsync', 'tool_sync'));
+        $mform->addHelpButton('h6', 'cohortformat', 'tool_sync');
         $cohortmanager->form_elements($mform);
 
         // $mform->addElement('header', get_string('optionheader', 'tool_sync'));

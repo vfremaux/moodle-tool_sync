@@ -393,7 +393,7 @@ is given by the Sync Tool configuration.
 $string['coursereinitializeformat_help'] = '
 Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
 The first line must hold column titles in any order.
-The first field must identify a course, dpending on the selected course primary identifier in configuration : 
+The first field must identify a course, depending on the selected course primary identifier in configuration : 
 
 <li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
 <li><i>shortname</i>: Using the course shortname</li>
@@ -414,7 +414,14 @@ The first field must identify a course, dpending on the selected course primary 
 
 ';
 
+$string['userformat'] = 'User creation/deletion/update file format';
 $string['userformat_help'] = '
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+The first field must identify a user with a username.
+
+<p>Mandatory fields: <b>username, firstname, lastname, email</b></p>
+
 ';
 
 $string['enrolformat_help'] = '

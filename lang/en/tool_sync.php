@@ -22,7 +22,14 @@ $string['cohortmanualsync'] = 'Manual execution of cohort synchronisation proces
 $string['cohortmgtmanual'] = 'Manual management for cohorts';
 $string['cohortsconfig'] = 'Cohorts synchonisation configuration';
 $string['cohortsync'] = 'Cohorts synchonisation';
+$string['cohortsstarting'] = 'Cohort sync starting...';
+$string['cohortcreated'] = 'Cohort {$a->name} created';
+$string['cohortmemberadded'] = 'Cohort member {$a->username} ({$a->idnumber}) added to cohort{$a->cname}';
+$string['cohortmemberremoved'] = 'Cohort member {$a->username} ({$a->idnumber}) removed from cohort{$a->cname}';
+$string['cohortalreadymember'] = 'User {$a->username} ({$a->idnumber}) already member of cohort{$a->cname}';
 $string['cohortuseridentifier'] = 'Cohort user identifier';
+$string['cohortusernotfound'] = 'Cohort user {$a->identifier} as {$a->uid} was not found.';
+$string['cohortnotfound'] = 'Cohort {$a->identifier} as {$a->cid} was not found. Script cannot create.';
 $string['commandfile'] = 'Control file';
 $string['communicationerror'] = 'Communication error with remote. Errors : {$a}';
 $string['configdefaultcmd'] = 'Default value for the command column';
@@ -361,6 +368,7 @@ This service deletes massively courses based on the identifier choosed in settin
 for file format exact specification at http://docs.moodle.org/en/23".
 ';
 
+$string['coursecreateformat'] = 'Course creation file format';
 $string['coursecreateformat_help'] = '
 Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
 The first line must hold column titles in any order.
@@ -372,9 +380,12 @@ to be properly created.</p>
 
 ';
 
+$string['coursedeleteformat'] = 'Course deletion file format';
 $string['coursedeleteformat_help'] = '
 The file is a simple list of course primary identifiers, one per line, without any column title line. the primary identifier field
-is given by the Sync Tool configuration.  
+is given by the Sync Tool configuration.
+
+the course identifier used depends on Sync Tool settings.
 ';
 
 $string['coursecheckformat_help'] = '
@@ -406,6 +417,7 @@ The first field must identify a course, dpending on the selected course primary 
 
 ';
 
+$string['userformat'] = 'User creation/update/deletion file format.';
 $string['userformat_help'] = '
 User definition file must be in ISO or UTF-8 format depending on Sync Tool settings. 
 The first line must hold column titles in any order.
@@ -422,8 +434,9 @@ The first line must hold column titles in any order.
 <p>Additionnaly you may use additional special fields for adding values in custome profile fields. The general form of those fiedls is: <i>user_profile_xxxxx</i></p>
 ';
 
+$string['enrolformat'] = 'Enrol sync file format';
 $string['enrolformat_help'] = '
-Enrol cvs file is a CSV UTF-8 encoded file that automates enrol constructions in Moodle.
+Enrol cvs file is a CSV UTF-8 or ISO encoded (depending on tool configuration) file that automates enrol constructions in Moodle.
 
 <p>Mandatory fields: <b>rolename, uid, cid</b></p>
 
@@ -431,7 +444,7 @@ Enrol cvs file is a CSV UTF-8 encoded file that automates enrol constructions in
 <li><i>uid</i>: The relevant user id, depending on settings selection.</li>
 <li><i>cid</i>: The relevant course id, depending on settings selection.</li>
 
-<p>Optional fields: <b>hidden, starttime, endtime, enrol, cmd, g1 to g7</b>
+<p>Optional fields: <b>hidden, starttime, endtime, enrol, cmd, g1 to g7</b></p>
 
 <li><i>cmd</i>: implicitely \'add\', but could be \'del\' for enrolment deletion. \'shift\' will delete all old roles and set this unique role.</li>
 <li><i>hidden:</i></li>
@@ -443,8 +456,23 @@ Enrol cvs file is a CSV UTF-8 encoded file that automates enrol constructions in
 
 ';
 
+$string['cohortformat'] = 'Cohort sync file format';
 $string['cohortformat_help'] = '
+Cohort creation/update file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+
+<p>Mandatory fields: <b>cohortid, userid</b></p>
+
+<li><i>cohortid</i>: An identifier, depending on Sync Tools settings. Can be cohort internal id, name or idnumber.</li>
+<li><i>userid</i>: A primary identifier for the user. Can be internal id, username, email or idnumber.</li>
+
+<p>Optional fields: <b>cdescription, cidnumber</b></p>
+
+<li><i>cdescription</i>: If cohort needs to be created, a textuel description for it.</li>
+<li><i>cidnumber</i>: If cohort needs to be created, the id number. In that case, should the primary cohort id be choosen as \'name\'.</li>
 ';
 
+$string['userpicturesformat'] = 'User pictures file format';
 $string['userpicturesformat_help'] = '
+The User Pictures feeding file must be a zip with png, jpg or gif images for users, named using their primary identifier. 
 ';

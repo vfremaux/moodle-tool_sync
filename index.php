@@ -95,7 +95,7 @@ if ($data = $form->get_data()) {
             $syncconfig->$datakey = $value;
         }
     }
-    
+
     redirect(new moodle_url('/admin/tool/sync/index.php', array('resultmessage' => get_string('changessaved'))));
 }
 

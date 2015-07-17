@@ -61,10 +61,10 @@ echo '</pre>';
 $address = @$syncconfig->cohorts_filelocation;
 
 $cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
-$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $address);
+$taskrunmsg = get_string('taskrunmsg', 'tool_sync', $address);
 
 echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";
-echo "<center>$cronrunmsg</center>";
+echo "<center>$taskrunmsg</center>";
 echo '</fieldset>';
 
 // always return to main tool view.
