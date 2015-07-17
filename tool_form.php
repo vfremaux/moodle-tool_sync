@@ -13,12 +13,12 @@ class ToolForm extends moodleform {
     function definition() {
         global $CFG;
 
-        $coursemanager = new course_sync_manager();
-        $usermanager = new users_sync_manager();
-        $userpicturemanager = new userpictures_sync_manager();
-        $enrolmanager = new enrol_sync_manager();
-        $cohortmanager = new cohorts_sync_manager();
-        $mainmanager = new tool_plugin_sync();
+        $coursemanager = new \tool_sync\course_sync_manager();
+        $usermanager = new \tool_sync\users_sync_manager();
+        $userpicturemanager = new \tool_sync\userpictures_sync_manager();
+        $enrolmanager = new \tool_sync\enrol_sync_manager();
+        $cohortmanager = new \tool_sync\cohorts_sync_manager();
+        $mainmanager = new \tool_sync\tool_plugin_sync();
 
         $fileoptions = array('context' => context_system::instance());
 
@@ -26,7 +26,8 @@ class ToolForm extends moodleform {
 
         $mform->addElement('header', 'h1', get_string('filemanager', 'tool_sync'));
 
-        $mform->addElement('static', 'files', '<a href="'.$CFG->wwwroot.'/admin/tool/sync/filearea.php">'.get_string('filemanager2', 'tool_sync').'</a>'); 
+        $fileareaurl = new moodle_url('/admin/tool/sync/filearea.php');
+        $mform->addElement('static', 'files', '<a href="'.$fileareaurl.'">'.get_string('filemanager2', 'tool_sync').'</a>'); 
 
         $mform->addElement('header', 'h2', get_string('coursesync', 'tool_sync'));
         $coursemanager->form_elements($mform);

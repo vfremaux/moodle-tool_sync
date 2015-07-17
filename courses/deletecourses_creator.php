@@ -44,7 +44,7 @@ if ($selection) {
     tool_sync_create_course_deletion_file($selection);
 }
 
-$url = $CFG->wwwroot.'/admin/tool/sync/courses/deletecourses_creator.php';
+$url = new moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
 $PAGE->navigation->add(get_string('builddeletefile', 'tool_sync'));
 $PAGE->set_url($url);

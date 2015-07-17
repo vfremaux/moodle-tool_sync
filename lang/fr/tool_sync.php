@@ -49,7 +49,9 @@ $string['coursesync'] = 'Synchronisation des cours';
 $string['courseupdated'] = 'Cours {$a->shortname} mis à jour.';
 $string['createtextreport'] = 'Souhaitez vous créer un rapport en format texte ?';
 $string['criticaltime'] = 'Temps limite';
-$string['cronrunmsg'] = 'Execution du script sur {$a}<br/>.';
+$string['taskrunmsg'] = 'Execution du script sur {$a}<br/>.';
+$string['taskrunmsgnofile'] = 'Pas de fichier défini<br/>.';
+$string['runlocalfiles'] = 'Lancer tous les traitements';
 $string['csvseparator'] = 'Séparateur de champs CSV';
 $string['day_fri'] = 'Vendredi';
 $string['day_mon'] = 'Lundi';
@@ -364,4 +366,64 @@ $string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\
         </li>
         <li>Le fichier .csv pour l\'enrollement des apprenants et la gestion des groupes.
         </li></il>
-        Il est egalement possible de déclencher ces scripts manuellement.';
+        Il est egalement possible de déclencher ces scripts manuellement.
+';
+
+$string['coursecreateformat_help'] = '
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+
+<p>Two columns are mandatory, <b>shortname</b> and <b>fullname</b>. Shortname must not be already used in Moodle for the course
+to be properly created.</p>
+
+<p>Optional fields: <b>category, sortorder, summary, format, idnumber, showgrades, newsitems, startdate, marker, maxbytes, legacyfiles, showreports, visible, visibleold, groupmode, groupmodeforce, defaultgroupingid, lang, theme, timecreated, timemodified, self, guest, template</b></p>
+
+';
+
+$string['coursedeleteformat_help'] = '
+The file is a simple list of course primary identifiers, one per line, without any column title line. the primary identifier field
+is given by the Sync Tool configuration.  
+';
+
+$string['coursecheckformat_help'] = '
+The file is a simple list of course primary identifiers, one per line, without any column title line. the primary identifier field
+is given by the Sync Tool configuration.
+';
+
+$string['coursereinitializeformat_help'] = '
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+The first field must identify a course, dpending on the selected course primary identifier in configuration : 
+
+<li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
+<li><i>shortname</i>: Using the course shortname</li>
+<li><i>idnumber</i>: Using the IDNumber of the course</li>
+
+<p>Mandatory fields : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings, blog_associations, comments, modules</b>
+
+<p>Usual value is \'yes\' or \'no\' unless :</p>
+<li><i>roles</i>: a list of role shortnames, separed by spaces.</li>
+<li><i>local_roles</i>: \'all\' (roles and overrides), \'roles\' or \'overrides\'.</li>
+<li><i>grades</i>: \'all\' (items and grades), \'items\' or \'grades\'.</li>
+<li><i>groups</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
+<li><i>groupings</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
+<li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
+
+<p>Additional fields can be added for more specific control for modules: 
+<b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions, assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
+
+';
+
+$string['userformat_help'] = '
+';
+
+$string['enrolformat_help'] = '
+
+';
+
+$string['cohortformat_help'] = '
+';
+
+$string['userpicturesformat_help'] = '
+';
+

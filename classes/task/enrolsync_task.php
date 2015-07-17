@@ -49,7 +49,7 @@ class enrolsync_task extends \core\task\scheduled_task {
 
         // Process task.
         $syncconfig = get_config('tool_sync');
-        $enrolsmanager = new \enrol_sync_manager();
+        $enrolsmanager = new \tool_sync\enrol_sync_manager();
         $enrolsmanager->cron($syncconfig);
 
         return true;

@@ -29,6 +29,11 @@ class InputFileLoadForm extends moodleform {
         }
         $form->setType('uselocal', PARAM_BOOL);
 
+        if (!empty($this->_customdata['runlocalfiles'])) {
+            $form->addElement('submit', 'runlocalfiles', get_string('runlocalfiles', 'tool_sync'));
+        }
+        $form->setType('uselocal', PARAM_BOOL);
+
         $form->addElement('filepicker', 'inputfile', get_string('filetoprocess', 'tool_sync'), $fileoptions);
 
         $this->add_action_buttons();

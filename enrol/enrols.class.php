@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_sync;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('You cannot use this script this way!');
 }
@@ -114,11 +116,7 @@ class enrol_sync_manager extends sync_manager {
 
         $headers = explode($csv_delimiter2, $text);
         
-        function trim_fields(&$e){
-            $e = trim($e);
-        }
-        
-        array_walk($headers, 'trim_fields');
+        array_walk($headers, 'trim_array_values');
 
         foreach ($headers as $h) {
             $header[] = trim($h); // Remove whitespace.
@@ -182,7 +180,7 @@ class enrol_sync_manager extends sync_manager {
                 $record['endtime'] = 0;
             }
 
-            $e = new StdClass;
+            $e = new \StdClass;
             $e->i = $i;
             $e->mycmd = $record['cmd'];
             $e->myrole = $record['rolename'];
@@ -226,7 +224,7 @@ class enrol_sync_manager extends sync_manager {
             }
 
             $syncconfig->coursesg[$i - 1] = $course->id;
-            $context = context_course::instance($course->id);
+            $context = \context_course::instance($course->id);
 
             // Get enrolment plugin and method.
             if ($enrolments = enrol_get_instances($course->id, true)){
@@ -385,6 +383,7 @@ class enrol_sync_manager extends sync_manager {
                                 $groupid[$i] = $gid;
                             } else {
                                 if ($record['gcmd'] == 'gaddcreate'){
+                                    $groupsettings = new \StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
                                     if ($gid = groups_create_group($groupsettings)) {
@@ -423,7 +422,8 @@ class enrol_sync_manager extends sync_manager {
                             if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
                                 $groupid[$i] = $gid;
                             } else {
-                                if ($record['gcmd'] == 'greplacecreate'){
+                                if ($record['gcmd'] == 'greplacecreate') {
+                                    $groupsettings = new \StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
                                     if ($gid = groups_create_group($groupsettings)) {
@@ -451,6 +451,8 @@ class enrol_sync_manager extends sync_manager {
                             }
                         }
                     }
+                } elseif ($record['gcmd'] == 'gdel') {
+                    // Remove membership
                 } else {
                     $this->report(get_string('errorgcmdvalue', 'tool_sync', $e));
                 }

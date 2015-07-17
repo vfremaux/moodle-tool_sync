@@ -81,7 +81,7 @@ function tool_sync_get_all_courses($orderby = 'shortname') {
 
     $sql = "
         SELECT
-            IF(ass.roleid IS NOT NULL , CONCAT( c.id, '_', ass.roleid ) , CONCAT( c.id, '_', '0' ) ) AS recid, 
+            CASE WHEN ass.roleid IS NOT NULL THEN CONCAT( c.id, '_', ass.roleid ) ELSE CONCAT( c.id, '_', '0' ) END AS recid, 
             c.id,
             c.shortname, 
             c.fullname, 
@@ -247,4 +247,8 @@ function tool_sync_capture_input_files($interactive = false) {
  * TODO write notification code
  */
 function sync_notify_new_user_password($user, $value) {
+}
+
+function trim_array_values(&$e) {
+    $e = trim($e);
 }

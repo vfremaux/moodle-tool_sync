@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_sync;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('You cannot use this script this way!');
 }
@@ -66,7 +68,7 @@ class users_sync_manager extends sync_manager {
     function cron($syncconfig) {
         global $CFG, $USER, $DB;
 
-        $systemcontext = context_system::instance();
+        $systemcontext = \context_system::instance();
 
         // Internal process controls
         $createpassword = false;
@@ -164,7 +166,7 @@ class users_sync_manager extends sync_manager {
 
         // --- get header (field names) ---
 
-        $textlib = new core_text();
+        $textlib = new \core_text();
 
         // Jump any empty or comment line.
         $text = fgets($filereader, 1024);
@@ -220,7 +222,7 @@ class users_sync_manager extends sync_manager {
         while (!feof($filereader)) {
 
             // Make a new base record.
-            $user = new StdClass;
+            $user = new \StdClass;
             foreach ($optionalDefaults as $key => $value) {
                 if ($value == 'adminvalue'){
                     $user->$key = $adminuser->$key;
@@ -308,7 +310,7 @@ class users_sync_manager extends sync_manager {
                 $wwwrootix = 'wwwroot'.$ci;
                 $addcourses = array();
                 while (isset($user->$courseix)) {
-                    $coursetoadd = new StdClass;
+                    $coursetoadd = new \StdClass;
                     $coursetoadd->idnumber = $user->$courseix;
                     $coursetoadd->group = isset($user->$groupix) ? $user->$groupix : NULL;
                     $coursetoadd->type = isset($user->$typeix) ? $user->$typeix : NULL;  // Deprecated. Not more used.
@@ -365,9 +367,9 @@ class users_sync_manager extends sync_manager {
                     $user->mnethostid = $CFG->mnet_localhost_id;
                 }
 
-                if (($syncconfig->primaryidentity == 'idnumber') && !empty($idnumber)){
+                if (($syncconfig->primaryidentity == 'idnumber') && !empty($idnumber)) {
                     $olduser = $DB->get_record('user', array('idnumber' => $idnumber, 'mnethostid' => $user->mnethostid));
-                } elseif (($syncconfig->primaryidentity == 'email') && !empty($user->email)){
+                } elseif (($syncconfig->primaryidentity == 'email') && !empty($user->email)) {
                     $olduser = $DB->get_record('user', array('email' => $user->email, 'mnethostid' => $user->mnethostid));
                 } else {
                     $olduser = $DB->get_record('user', array('username' => $username, 'mnethostid' => $user->mnethostid));
@@ -426,7 +428,7 @@ class users_sync_manager extends sync_manager {
                         $usersnew++;
                         if (empty($user->password) && $createpassword) {
                             // Passwords will be created and sent out on cron.
-                            $pref = new StdClass();
+                            $pref = new \StdClass();
                             $pref->userid = $newuser->id;
                             $pref->name = 'create_password';
                             $pref->value = 1;
@@ -456,7 +458,7 @@ class users_sync_manager extends sync_manager {
                 if (@$user->cohort) {
                     $t = time();
                     if (!$cohort = $DB->get_record('cohort', array('name' => $user->cohort))) {
-                        $cohort = new StdClass();
+                        $cohort = new \StdClass();
                         $cohort->name = $user->cohort;
                         $cohort->idnumber = @$user->cohortid;
                         $cohort->descriptionformat = FORMAT_MOODLE;
@@ -468,7 +470,7 @@ class users_sync_manager extends sync_manager {
 
                     // Bind user to cohort.
                     if (!$cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
-                        $cohortmembership = new StdClass();
+                        $cohortmembership = new \StdClass();
                         $cohortmembership->userid = $user->id;
                         $cohortmembership->cohortid = ''.@$cohort->id;
                         $cohortmembership->timeadded = $t;
@@ -509,7 +511,7 @@ class users_sync_manager extends sync_manager {
                                 $role = $DB->get_record('role', array('shortname' => $c->role));
                                 if (!empty($c->enrol)) {
 
-                                    $e = new StdClass();
+                                    $e = new \StdClass();
                                     $e->myuser = $user->username; // user identifier
                                     $e->mycourse = $crec->idnumber; // course identifier
 
@@ -525,7 +527,7 @@ class users_sync_manager extends sync_manager {
                                         //notify('--> Can not assign role in course'); //TODO: localize
                                     }
                                     $ret = role_assign($role->id, $user->id, $coursecontext->id);
-                                    $e = new StdClass();
+                                    $e = new \StdClass();
                                     $e->contextid = $coursecontext->id;
                                     $e->rolename = $c->role;
                                     $this->report(get_string('roleadded', 'tool_sync', $e));
@@ -548,7 +550,7 @@ class users_sync_manager extends sync_manager {
                                 // check group existance and try to create
                                 if (!empty($c->group)) {
                                     if (!$gid = groups_get_group_by_name($crec->id, $c->group)) {
-                                        $groupsettings = new StdClass();
+                                        $groupsettings = new \StdClass();
                                         $groupsettings->name = $c->group;
                                         $groupsettings->courseid = $crec->id;
                                         if (!$gid = groups_create_group($groupsettings)) {
@@ -585,11 +587,11 @@ class users_sync_manager extends sync_manager {
 
                             // Imagine we never did it before.
                             global $MNET;
-                            $MNET = new mnet_environment();
+                            $MNET = new \mnet_environment();
                             $MNET->init();
 
                             $this->report(get_string('propagating', 'vmoodle', fullname($user)));
-                            $caller = new StdClass();
+                            $caller = new \StdClass();
                             $caller->username = 'admin';
                             $caller->remoteuserhostroot = $CFG->wwwroot;
                             $caller->remotehostroot = $CFG->wwwroot;
@@ -635,7 +637,7 @@ class users_sync_manager extends sync_manager {
                                         // print_object($response);
                                         $this->report(get_string('communicationerror', 'tool_sync'));
                                     } else {
-                                        $u = new StdClass();
+                                        $u = new \StdClass();
                                         $u->username = $user->username;
                                         $u->wwwroot = $c->wwwroot;
                                         $this->report(get_string('usercreatedremotely', 'tool_sync', $u));
@@ -669,7 +671,7 @@ class users_sync_manager extends sync_manager {
                                             }
                                         }
                                     }
-                                    $e = new StdClass();
+                                    $e = new \StdClass();
                                     $e->username = $user->username;
                                     $e->rolename = $c->role;
                                     $e->coursename = $c->idnumber;

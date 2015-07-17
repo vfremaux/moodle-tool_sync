@@ -39,7 +39,7 @@ $PAGE->requires->js('/admin/tool/sync/courses/js.js');
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
-$coursesmanager = new course_sync_manager('', null);
+$coursesmanager = new \tool_sync\course_sync_manager('', null);
 
 $selection = optional_param_array('selection', '', PARAM_TEXT);
 if ($selection) {

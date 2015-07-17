@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_sync;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('You cannot use this script this way!');
 }
@@ -66,8 +68,8 @@ class userpictures_sync_manager extends sync_manager {
 
         $fs = get_file_storage();
         
-        $filerec = new StdClass();
-        $contextid = context_system::instance()->id;
+        $filerec = new \StdClass();
+        $contextid = \context_system::instance()->id;
         $component = 'tool_sync';
         $filearea = 'syncfiles';
         $itemid = 0;
@@ -133,7 +135,7 @@ class userpictures_sync_manager extends sync_manager {
 
             // files cleanup
 
-            $filerec = new StdClass();
+            $filerec = new \StdClass();
             $filerec->contextid = $f->get_contextid();
             $filerec->component = $f->get_component();
             $filerec->filearea = $f->get_filearea();
@@ -238,7 +240,7 @@ class userpictures_sync_manager extends sync_manager {
 
         // userfield names are safe, so don't quote them.
         if (!($user = $DB->get_record('user', array ($userfield => $uservalue, 'deleted' => 0)))) {
-            $a = new StdClass();
+            $a = new \StdClass();
             $a->userfield = clean_param($userfield, PARAM_CLEANHTML);
             $a->uservalue = clean_param($uservalue, PARAM_CLEANHTML);
             $this->report(get_string('uploadpicture_usernotfound', 'tool_uploaduser', $a));

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_sync;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('You cannot use this script this way!');
 }
@@ -121,8 +123,8 @@ class sync_manager {
             $filepath = preg_replace('#//#', '/', '/'.$filepath.'/');
         }
 
-        $filerec = new StdClass();
-        $filerec->contextid = context_system::instance()->id;
+        $filerec = new \StdClass();
+        $filerec->contextid = \context_system::instance()->id;
         $filerec->component = 'tool_sync';
         $filerec->filearea = 'syncfiles';
         $filerec->itemid = 0;
@@ -140,6 +142,10 @@ class sync_manager {
     protected function open_input_file($filerec) {
 
         $fs = get_file_storage();
+
+        if ($filerec->filepath == '/./') {
+            $filerec->filepath = '/';
+        }
 
         $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
         if (!$inputfile) {

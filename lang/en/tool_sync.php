@@ -51,7 +51,9 @@ $string['coursesync'] = 'Courses synchronization';
 $string['courseupdated'] = 'Course {$a->shortname} updated.';
 $string['createtextreport'] = 'Do you want to create a text report?';
 $string['criticaltime'] = 'Time limit';
-$string['cronrunmsg'] = 'Script execution on {$a}<br/>.';
+$string['taskrunmsg'] = 'Script execution on {$a}<br/>.';
+$string['taskrunmsgnofile'] = 'No file<br/>.';
+$string['runlocalfiles'] = 'Run all commands';
 $string['csvseparator'] = 'CSV field separator';
 $string['day_fri'] = 'Friday';
 $string['day_mon'] = 'Monday';
@@ -173,7 +175,7 @@ $string['filemanager'] = 'File manager';
 $string['filemanager2'] = 'File manager';
 $string['filenameformatcc'] = '<strong>Filename format:</strong> CC_YYYY-MM-DD_hh-mm.txt';
 $string['filenameformatuc'] = '<strong>Filename format:</strong> UC_YYYY-MM-DD_hh-mm.txt';
-$string['filenotfound'] = 'File not found.';
+$string['filenotfound'] = 'File {$a} not found.';
 $string['filetoprocess'] = 'File to process';
 $string['final_action'] = 'Post-processing';
 $string['flatfilefoundforenrols'] = 'Command file found for enrols: ';
@@ -182,6 +184,7 @@ $string['foundfile'] = 'File found : {$a}';
 $string['foundfilestoprocess'] = 'Found {$a} files to process';
 $string['generate'] = 'Generate';
 $string['getfile'] = 'Get the command file';
+$string['groupcreated'] = 'Group {$a->group} created in course {$a->mycourse}';
 $string['group_clean'] = 'Group cleanup';
 $string['group_cleanex'] = 'Clear groups that are present in moodle but empty of users';
 $string['groupunkown'] = 'This group {$a->group} is not known in {$a->mycourse} and cannot be created.';
@@ -248,6 +251,8 @@ $string['shortnametodelete'] = 'Course to delete';
 $string['skippedline'] = 'Source line ({$a}) skipped as not in correct format';
 $string['startingcheck'] = 'Starting check courses...';
 $string['startingreset'] = 'Starting resetting courses...';
+$string['startingdelete'] = 'Starting deleting courses...';
+$string['startingcreate'] = 'Starting creating courses...';
 $string['storedfile'] = 'Stored file: {$a}';
 $string['sync:configure'] = 'Configure the synchronisation manager';
 $string['task_synccohorts'] = 'CSV Cohorts synchronisation';
@@ -354,4 +359,92 @@ will then delete all full empty branches.
 $string['coursedeletion_help'] = '
 This service deletes massively courses based on the identifier choosed in settings. Please read the online documentation
 for file format exact specification at http://docs.moodle.org/en/23".
+';
+
+$string['coursecreateformat_help'] = '
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+
+<p>Two columns are mandatory, <b>shortname</b> and <b>fullname</b>. Shortname must not be already used in Moodle for the course
+to be properly created.</p>
+
+<p>Optional fields: <b>category, sortorder, summary, format, idnumber, showgrades, newsitems, startdate, marker, maxbytes, legacyfiles, showreports, visible, visibleold, groupmode, groupmodeforce, defaultgroupingid, lang, theme, timecreated, timemodified, self, guest, template</b></p>
+
+';
+
+$string['coursedeleteformat_help'] = '
+The file is a simple list of course primary identifiers, one per line, without any column title line. the primary identifier field
+is given by the Sync Tool configuration.  
+';
+
+$string['coursecheckformat_help'] = '
+The file is a simple list of course primary identifiers, one per line, without any column title line. the primary identifier field
+is given by the Sync Tool configuration.
+';
+
+$string['coursereinitializeformat_help'] = '
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+The first field must identify a course, dpending on the selected course primary identifier in configuration : 
+
+<li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
+<li><i>shortname</i>: Using the course shortname</li>
+<li><i>idnumber</i>: Using the IDNumber of the course</li>
+
+<p>Mandatory fields : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings, blog_associations, comments, modules</b>
+
+<p>Usual value is \'yes\' or \'no\' unless :</p>
+<li><i>roles</i>: a list of role shortnames, separed by spaces.</li>
+<li><i>local_roles</i>: \'all\' (roles and overrides), \'roles\' or \'overrides\'.</li>
+<li><i>grades</i>: \'all\' (items and grades), \'items\' or \'grades\'.</li>
+<li><i>groups</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
+<li><i>groupings</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
+<li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
+
+<p>Additional fields can be added for more specific control for modules: 
+<b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions, assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
+
+';
+
+$string['userformat_help'] = '
+User definition file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+
+<p>Mandatory fields: <b>username, firstname, lastname</b></p>
+
+
+<p>Optional fields: <b>idnumber, email, auth, icq, phone1, phone2, address, url, description, mailformat, maildisplay, htmleditor, autosubscribe, cohort, cohortid, course1, group1, type1, role1, enrol1, start1, end1, wwwroot1, password, oldusername</b></p>
+
+<p>Patterns are groups of fieldnames that should be used alltogether in an indexed form (fieldname<n>).</p>
+
+<p>Enrolment pattern: <b>course, group, type, role, enrol, start, end, wwwroot</b>. This pattern will allow enrol and setup user\'s course access in several courses. You may use several pattern instances numbered 1, 2? 3 etc. Leave all values blank for an unused pattern.</p>
+
+<p>Additionnaly you may use additional special fields for adding values in custome profile fields. The general form of those fiedls is: <i>user_profile_xxxxx</i></p>
+';
+
+$string['enrolformat_help'] = '
+Enrol cvs file is a CSV UTF-8 encoded file that automates enrol constructions in Moodle.
+
+<p>Mandatory fields: <b>rolename, uid, cid</b></p>
+
+<li><i>rolename</i>: the shortname of the role</li>
+<li><i>uid</i>: The relevant user id, depending on settings selection.</li>
+<li><i>cid</i>: The relevant course id, depending on settings selection.</li>
+
+<p>Optional fields: <b>hidden, starttime, endtime, enrol, cmd, g1 to g7</b>
+
+<li><i>cmd</i>: implicitely \'add\', but could be \'del\' for enrolment deletion. \'shift\' will delete all old roles and set this unique role.</li>
+<li><i>hidden:</i></li>
+<li><i>starttime, endtime</i>: Should be linux time stamps.</li>
+<li><i>enrol</i>: the enrolment method (manual, mnet, cohort, etc...). If column not set, only role assignements will be added.</li>
+<li><i>gcmd</i>: \'gadd\' or \'gaddcreate\', \'greplace\' or \'greplacecreate\', but could be \'gdel\' for group membership deletion</li>
+<li><i>g1 to g9</i>: up to 9 goupnames the enrolled user will be member of. The group is created if missing and using a \'gaddcreate\' or a \'greplacecreate\'.
+ 
+
+';
+
+$string['cohortformat_help'] = '
+';
+
+$string['userpicturesformat_help'] = '
 ';

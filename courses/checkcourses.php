@@ -37,7 +37,7 @@ if (!is_siteadmin()) {
 }
 
 $url = $CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php';
-$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('coursecheck', 'tool_sync'), null);
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
@@ -52,7 +52,7 @@ $canprocess = false;
 if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
-        $coursesmanager = new course_sync_manager(SYNC_COURSE_CHECK);
+        $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CHECK);
         $canprocess = true;
         $processedfile = $syncconfig->course_fileexistlocation;
     } else {
@@ -74,7 +74,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
 
-            $coursesmanager = new course_sync_manager(SYNC_COURSE_CHECK, $manualfilerec);
+            $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CHECK, $manualfilerec);
             $canprocess = true;
         } else {
             $errormes = "Failed loading a file";

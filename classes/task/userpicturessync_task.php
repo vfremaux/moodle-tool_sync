@@ -49,7 +49,7 @@ class userpicturessync_task extends \core\task\scheduled_task {
 
         // Process task.
         $syncconfig = get_config('tool_sync');
-        $userpicturesmanager = new \userpictures_sync_manager();
+        $userpicturesmanager = new \tool_sync\userpictures_sync_manager();
         $userpicturesmanager->cron($syncconfig);
 
         return true;

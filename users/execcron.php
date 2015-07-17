@@ -58,7 +58,7 @@ if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $usersmanager = new users_sync_manager();
+        $usersmanager = new \tool_sync\users_sync_manager();
         $processedfile = $syncconfig->users_filelocation;
         $canprocess = true;
     } else {
@@ -83,7 +83,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
     
-            $usersmanager = new users_sync_manager($manualfilerec);
+            $usersmanager = new \tool_sync\users_sync_manager($manualfilerec);
             $canprocess = true;
         } else {
             $errormes = "Failed loading a file";
