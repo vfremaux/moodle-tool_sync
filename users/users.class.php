@@ -75,6 +75,8 @@ class users_sync_manager extends sync_manager {
         $updateaccounts = true;
         $allowrenames   = false;
         $keepexistingemailsafe = true;
+        $notifypasswordsfornewusers = false;
+
         if (!$adminuser = get_admin()) {
             return;
         }
@@ -180,7 +182,7 @@ class users_sync_manager extends sync_manager {
 
         // Check for valid field names.
         foreach ($headers as $h) {
-            $header[] = trim($h); 
+            $header[] = trim($h);
             $patternized = implode('|', $patterns) . "\\d+";
             $metapattern = implode('|', $metas);
             if (!(isset($required[$h]) or isset($optionalDefaults[$h]) or isset($optional[$h]) or preg_match("/$patternized/", $h) or preg_match("/$metapattern/", $h))) {
@@ -283,7 +285,7 @@ class users_sync_manager extends sync_manager {
                             $user->password = '*NOPASS*';
                         }
                     } elseif ($name == 'username') {
-                        $user->username = core_text::strtolower($value);
+                        $user->username = \core_text::strtolower($value);
                     } else {
                         // Normal entry.
                         $user->{$name} = $value;
@@ -434,7 +436,7 @@ class users_sync_manager extends sync_manager {
                             $pref->value = 1;
                             $DB->insert_record('user_preferences', $pref);
 
-                            $pref = new StdClass();
+                            $pref = new \StdClass();
                             $pref->userid = $newuser->id;
                             $pref->name = 'auth_forcepasswordchange';
                             $pref->value = $forcepasswordchange;
@@ -506,7 +508,7 @@ class users_sync_manager extends sync_manager {
                                 }
                             }
 
-                            $coursecontext = context_course::instance($crec->id);
+                            $coursecontext = \context_course::instance($crec->id);
                             if (!empty($c->role)) {
                                 $role = $DB->get_record('role', array('shortname' => $c->role));
                                 if (!empty($c->enrol)) {

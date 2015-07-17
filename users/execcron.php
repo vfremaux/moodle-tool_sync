@@ -103,10 +103,10 @@ if ($canprocess) {
     echo '</pre>';
 
     $usermgtmanual = get_string('usermgtmanual', 'tool_sync');
-    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
+    $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
     
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
-    echo "<center>$cronrunmsg</center>";
+    echo "<center>$taskrunmsg</center>";
     echo '</fieldset>';
 }
 
