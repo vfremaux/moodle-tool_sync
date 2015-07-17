@@ -376,27 +376,30 @@ $string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\
         Il est egalement possible de déclencher ces scripts manuellement.
 ';
 
+$string['coursecreateformat'] = 'Format de fichier de création de cours';
 $string['coursecreateformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
-The first line must hold column titles in any order.
+Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration locale de l\'outil de synchronisation. 
+La première ligne doit comporter les titres de champs dans un ordre quelconque.
 
-<p>Two columns are mandatory, <b>shortname</b> and <b>fullname</b>. Shortname must not be already used in Moodle for the course
-to be properly created.</p>
+<p>Champs obligatoires : <b>shortname, fullname</b>.
 
-<p>Optional fields: <b>category, sortorder, summary, format, idnumber, showgrades, newsitems, startdate, marker, maxbytes, legacyfiles, showreports, visible, visibleold, groupmode, groupmodeforce, defaultgroupingid, lang, theme, timecreated, timemodified, self, guest, template</b></p>
+<li><i>shortname</i> : Doit être unique dans Moodle et ne doit donc pas correspondre à un cours existant.
+
+<p>Champs optionnels : <b>category, sortorder, summary, format, idnumber, showgrades, newsitems, startdate, marker, maxbytes, legacyfiles, showreports, visible, visibleold, groupmode, groupmodeforce, defaultgroupingid, lang, theme, timecreated, timemodified, self, guest, template</b></p>
 
 ';
 
+$string['coursedeleteformat'] = 'Format de fichier de suppression de cours';
 $string['coursedeleteformat_help'] = '
-The file is a simple list of course primary identifiers, one per line, without any column title line. the primary identifier field
-is given by the Sync Tool configuration.  
+Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à détruire, tel que défini dans la configuration locale de l\'outil de synchronisation.
 ';
 
+$string['coursecheckformat'] = 'Format de fichier de test d\'existence de cours';
 $string['coursecheckformat_help'] = '
-The file is a simple list of course primary identifiers, one per line, without any column title line. the primary identifier field
-is given by the Sync Tool configuration.
+Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à vérifier, tel que défini dans la configuration locale de l\'outil de synchronisation.
 ';
 
+$string['coursereinitializeformat'] = 'Format de fichier de réinitialisation de cours';
 $string['coursereinitializeformat_help'] = '
 Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
 The first line must hold column titles in any order.
@@ -421,23 +424,62 @@ The first field must identify a course, depending on the selected course primary
 
 ';
 
-$string['userformat'] = 'User creation/deletion/update file format';
+$string['userformat'] = 'Format du fichier de synchronisation des utilisateurs';
 $string['userformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
-The first line must hold column titles in any order.
-The first field must identify a user with a username.
+Le fichier de synchronisation des utilisateurs doit être un fichier text encodé en ISO ou UTF-8 selon la configuration générale de l\'outil de synchronisation. 
+La première ligne doit comporter les noms de champs au format moodle dans un ordre quelconque.
+Le premier champ doit identifier un utilisateur par son \'username\'.
 
-<p>Mandatory fields: <b>username, firstname, lastname, email</b></p>
+<p>Champs obligatoires : <b>username, firstname, lastname, email</b></p>
 
+<p>Champs facultatifs : <b>idnumber, email, auth, icq, phone1, phone2, address, url, description, mailformat, maildisplay, htmleditor, autosubscribe, cohort, cohortid, course1, group1, type1, role1, enrol1, start1, end1, wwwroot1, password, oldusername</b></p>
+
+<p>Les "patterns" sont des groupes de champs qui doivent être utilisés ensemble, et suivis d\'un index numérique (nomchamp<n>).</p>
+
+<p>Pattern d\'inscription : <b>course, group, type, role, enrol, start, end, wwwroot</b>. Ce pattern permet d\'inscrire immédiatement les utilisateurs créés ou modifiés à des cours. Vous pouvez utiliser plusieurs fois ce motif avec des indexes suivis (1, 2, 3...) etc. On peut ne pas utiliser sur une ligne l\'un des patterns mentionnés en laissant les champs vides.</p>
+
+<p>Il est possible d\'utiliser quelques formes supplémentaires pour ajouter des valeurs aux champs customisés de profil. La forme générale de ces champs est <i>user_profile_xxxxx</i></p>
 ';
 
+$string['enrolformat'] = 'Format de fichier d\'inscriptions';
 $string['enrolformat_help'] = '
+Le fichier d\'inscriptions est un fichier texte CSV encodé en UTF-8 ou ISO selon la configuration de l\'outil et automatise les entrées/sorties d\'inscriptions dans Moodle.
 
+<p>Champs obligatoires : <b>rolename, uid, cid</b></p>
+
+<li><i>rolename</i> : Le nom court du role (student, teacher, etc.)</li>
+<li><i>uid</i> : la valeur d\'identifiant de l\'utilisateur, selon la configuration choisie (id, idnumber, username ou email).</li>
+<li><i>cid</i> : la valeur d\'identifiant du cours, selon la configuration choisie (id, shortname ou idnumber).</li>
+
+<p>Champs facultatifs : <b>hidden, starttime, endtime, enrol, cmd, g1 à g7</b></p>
+
+<li><i>cmd</i> : implicitement \'add\', mais peut valoir \'del\' pour désincription. \'shift\' supprimera auparavent tous les anciens rôles de l\'utilisateur concerné dans le cours.</li>
+<li><i>hidden</i> :</li>
+<li><i>starttime, endtime</i> : Un temps linux en secondes.</li>
+<li><i>enrol</i> : la méthode d\'inscription (manual, mnet, cohort, etc...). Si cette colonne n\'existe pas, alors l\'opération ne fera qu\'ajouter des "autres rôles", sans inscription.</li>
+<li><i>gcmd</i> : \'gadd\' ou \'gaddcreate\', \'greplace\' ou \'greplacecreate\', mais peut être \'gdel\' pour une suppression de l\'appartenance au groupe.</li>
+<li><i>g1 to g9</i> : up to 9 goupnames the enrolled user will be member of. The group is created if missing and using a \'gaddcreate\' or a \'greplacecreate\'.</li>
 ';
 
+$string['cohortformat'] = 'Format de fichier d\'alimentation de cohortes';
 $string['cohortformat_help'] = '
+Le fichier de création de cohortes est un fichier texte ISO ou UTF-8 suivant la configuration locale.
+The first line must hold column titles in any order.
+
+<p>Mandatory fields: <b>cohortid, userid</b></p>
+
+<li><i>cohortid</i> : Un identifiant de cohorte, selon la configuration de l\'outil de synchronisation. Peut être l\'id, le nom, ou l\'idnumber.</li>
+<li><i>userid</i> : Un identifiant d\'utilisateur selon la configuration de l\'outil de synchonisation. Peut être l\'id, l\'email, le username, ou l\'idnumber.</li>
+
+<p>Optional fields: <b>cdescription, cidnumber</b></p>
+
+<li><i>cdescription</i> : Si la cohorte doit être créée, une description textuelle.</li>
+<li><i>cidnumber</i> : Si la cohorte doit être créée, l\'idnumber. Dans ce cas, l\'identifiant devra être choisi comme \'name\'.</li>
 ';
 
+$string['userpicturesformat'] = 'Format de transfert d\'images d\'avatars';
 $string['userpicturesformat_help'] = '
+Le fichier des avatars utilisateurs est une archive ZIP sans sous-répertoires avec la liste d\'images png, jpg ou gif des avatars utilisateurs, nommés par l\'identifiant primaire
+de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation. 
 ';
 

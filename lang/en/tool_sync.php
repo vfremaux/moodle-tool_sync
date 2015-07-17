@@ -424,7 +424,6 @@ The first line must hold column titles in any order.
 
 <p>Mandatory fields: <b>username, firstname, lastname</b></p>
 
-
 <p>Optional fields: <b>idnumber, email, auth, icq, phone1, phone2, address, url, description, mailformat, maildisplay, htmleditor, autosubscribe, cohort, cohortid, course1, group1, type1, role1, enrol1, start1, end1, wwwroot1, password, oldusername</b></p>
 
 <p>Patterns are groups of fieldnames that should be used alltogether in an indexed form (fieldname<n>).</p>
@@ -452,7 +451,6 @@ Enrol cvs file is a CSV UTF-8 or ISO encoded (depending on tool configuration) f
 <li><i>enrol</i>: the enrolment method (manual, mnet, cohort, etc...). If column not set, only role assignements will be added.</li>
 <li><i>gcmd</i>: \'gadd\' or \'gaddcreate\', \'greplace\' or \'greplacecreate\', but could be \'gdel\' for group membership deletion</li>
 <li><i>g1 to g9</i>: up to 9 goupnames the enrolled user will be member of. The group is created if missing and using a \'gaddcreate\' or a \'greplacecreate\'.
- 
 
 ';
 
