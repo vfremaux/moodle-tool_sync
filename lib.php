@@ -216,6 +216,11 @@ function tool_sync_capture_input_files($interactive = false) {
             continue;
         }
 
+        // Forget any file starting with '_' (could be an output file).
+        if (preg_match('/^_/', $entry)) {
+            continue;
+        }
+
         $filerec = new StdClass();
         $filerec->contextid = context_system::instance()->id;
         $filerec->component = 'tool_sync';

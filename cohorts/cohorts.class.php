@@ -224,7 +224,7 @@ class cohorts_sync_manager extends sync_manager {
         if (!empty($syncconfig->filearchive)) {
             $this->archive_input_file($filerec);
         }
-        
+
         if (!empty($syncconfig->filecleanup)) {
             $this->cleanup_input_file($filerec);
         }

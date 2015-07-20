@@ -28,51 +28,56 @@ $tasks = array(
     array(
         'classname' => '\tool_sync\task\usersync_task',
         'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
+        'minute' => '0',
+        'hour' => '*/6',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
+        'month' => '*',
+        'disabled' => 1,
     ),
 
     array(
         'classname' => '\tool_sync\task\enrolsync_task',
         'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
+        'minute' => '30',
+        'hour' => '*/6',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
+        'month' => '*',
+        'disabled' => 1,
     ),
 
     array(
         'classname' => '\tool_sync\task\userpicturessync_task',
         'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
+        'minute' => '0',
+        'hour' => '*/12',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
+        'month' => '*',
+        'disabled' => 1,
     ),
 
     array(
         'classname' => '\tool_sync\task\cohortsync_task',
         'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
+        'minute' => '15',
+        'hour' => '*/12',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
+        'month' => '*',
+        'disabled' => 1,
     ),
 
     array(
         'classname' => '\tool_sync\task\coursesync_task',
         'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
+        'minute' => '0',
+        'hour' => '*/12',
         'day' => '*',
         'dayofweek' => '*',
-        'month' => '*'
+        'month' => '*',
+        'disabled' => 1,
     ),
 );
 
