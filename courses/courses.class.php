@@ -1531,7 +1531,7 @@ class course_sync_manager extends sync_manager {
             $component = 'tool_sync';
             $filearea = 'temp';
             $itemid = $uniq;
-            if ($archive->extract_to_pathname(new zip_packer(), $tempdir)) {
+            if ($archive->extract_to_pathname(new \zip_packer(), $tempdir)) {
 
                 // Transaction
                 $transaction = $DB->start_delegated_transaction();
