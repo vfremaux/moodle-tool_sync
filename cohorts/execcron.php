@@ -41,7 +41,7 @@ set_time_limit(1800);
 raise_memory_limit('512M');
 
 $renderer = $PAGE->get_renderer('tool_sync');
-$cohortssmanager = new cohorts_sync_manager();
+$cohortssmanager = new \tool_sync\cohorts_sync_manager();
 $syncconfig = get_config('tool_sync');
 
 $url = new moodle_url('/admin/tool/sync/cohorts/execcron.php');
@@ -61,10 +61,10 @@ echo '</pre>';
 $address = @$syncconfig->cohorts_filelocation;
 
 $cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
-$cronrunmsg = get_string('cronrunmsg', 'tool_sync', $address);
+$taskrunmsg = get_string('taskrunmsg', 'tool_sync', $address);
 
 echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";
-echo "<center>$cronrunmsg</center>";
+echo "<center>$taskrunmsg</center>";
 echo '</fieldset>';
 
 // always return to main tool view.
