@@ -1547,7 +1547,7 @@ class course_sync_manager extends sync_manager {
                  * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
                  */
                 $controller = new \restore_controller($uniq, $newcourse_id, 
-                        \backup::INTERACTIVE_NO, backup::MODE_SAMESITE, $user_doing_the_restore,
+                        \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $user_doing_the_restore,
                         \backup::TARGET_NEW_COURSE );
                 $controller->execute_precheck();
                 $controller->execute_plan();
