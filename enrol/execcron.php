@@ -12,11 +12,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-require_login();
 
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 // Capture incoming files in <moodledata>/sync.
 tool_sync_capture_input_files(false);
@@ -37,6 +35,10 @@ $PAGE->set_heading($SITE->fullname);
 $form = new InputfileLoadform($url, array('localfile' => $syncconfig->enrol_filelocation));
 
 $canprocess = false;
+
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/admin/tool/sync/index.php'));
+}
 
 if ($data = $form->get_data()) {
 

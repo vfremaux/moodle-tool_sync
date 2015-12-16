@@ -36,6 +36,8 @@ class InputFileLoadForm extends moodleform {
 
         $form->addElement('filepicker', 'inputfile', get_string('filetoprocess', 'tool_sync'), $fileoptions);
 
+        $form->addElement('checkbox', 'simulate', get_string('simulate', 'tool_sync'));
+
         $this->add_action_buttons();
     }
 }

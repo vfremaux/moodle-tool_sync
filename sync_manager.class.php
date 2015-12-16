@@ -70,16 +70,16 @@ class sync_manager {
     /**
      * Initiates tryback buffer and adds the first headline.
      */
-    protected function init_tryback($headline) {
-        $this->trybackhead = $headline;
-        $this->tryback = '';
+    protected function init_tryback($headlines) {
+        $this->trybackhead = $headlines;
+        $this->trybackarr = '';
     }
 
     /**
      * Feeds a single line into the tryback buffer.
      */
     protected function feed_tryback($line) {
-        $this->tryback[] = $line;
+        $this->trybackarr[] = $line;
     }
 
     /**
@@ -87,7 +87,7 @@ class sync_manager {
      */
     public function write_tryback($originalfilerec) {
 
-        if (empty($this->tryback)) {
+        if (empty($this->trybackarr)) {
             return;
         }
 
@@ -96,8 +96,8 @@ class sync_manager {
         $path_parts = pathinfo($originalfilerec->filename);
         $trybackfilename = $path_parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$path_parts['extension'];
 
-        $buffer = $this->trybackhead."\n";
-        $buffer .= implode("\n", $this->tryback);
+        $buffer = implode("\n", $this->trybackhead)."\n";
+        $buffer .= implode("\n", $this->trybackarr);
 
         $filerec = $originalfilerec;
         $filerec->filename = $trybackfilename;
@@ -110,7 +110,7 @@ class sync_manager {
         // print_object($filerec);
         $fs->create_file_from_string($filerec, $buffer);
     }
-    
+
     protected function get_input_file($configlocation, $defaultlocation) {
         if (empty($configlocation)) {
             $filename = $defaultlocation;  // Default location
@@ -152,6 +152,7 @@ class sync_manager {
             $this->report(get_string('filenotfound', 'tool_sync', "{$filerec->filepath}{$filerec->filename}"));
             return false;
         } else {
+            ini_set('auto_detect_line_endings', true);
             $filereader = $inputfile->get_content_file_handle();
             return $filereader;
         }

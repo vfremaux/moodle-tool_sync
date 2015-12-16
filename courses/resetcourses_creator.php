@@ -29,11 +29,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-require_login();
 
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 $PAGE->requires->js('/admin/tool/sync/courses/js.js');
 

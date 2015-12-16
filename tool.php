@@ -44,5 +44,6 @@ class tool_plugin_sync {
         $frm->addElement('checkbox', 'tool_sync/filearchive', get_string('filearchive', 'tool_sync'));
         $frm->addElement('checkbox', 'tool_sync/filefailed', get_string('failedfile', 'tool_sync'));
         $frm->addElement('checkbox', 'tool_sync/filecleanup', get_string('filecleanup', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/eventcleanup', get_string('eventscleanup', 'tool_sync'), '', true);
     }
 }

@@ -19,7 +19,7 @@
  * @author Funck Thibaut
  */
 
-require_once('../../../../config.php');
+require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php');
 require_once($CFG->dirroot.'/course/lib.php');
@@ -28,11 +28,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-require_login();
 
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 // Capture incoming files in <moodledata>/sync.
 tool_sync_capture_input_files(false);
@@ -47,14 +45,20 @@ $url = new moodle_url('/admin/tool/sync/users/execcron.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('usermgtmanual', 'tool_sync'));
 $PAGE->set_url($url);
-$PAGE->set_title("$SITE->shortname");
+$PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->fullname);
 
 $form = new InputfileLoadform($url, array('localfile' => $syncconfig->users_filelocation));
 
 $canprocess = false;
 
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/admin/tool/sync/index.php'));
+}
+
 if ($data = $form->get_data()) {
+
+    $syncconfig->simulate = @$data->simulate;
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
@@ -82,7 +86,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filepath = $uploadedfile->get_filepath();
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
-    
+
             $usersmanager = new \tool_sync\users_sync_manager($manualfilerec);
             $canprocess = true;
         } else {
@@ -104,7 +108,7 @@ if ($canprocess) {
 
     $usermgtmanual = get_string('usermgtmanual', 'tool_sync');
     $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
-    
+
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
     echo "<center>$taskrunmsg</center>";
     echo '</fieldset>';

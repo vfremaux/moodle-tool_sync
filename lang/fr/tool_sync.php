@@ -55,6 +55,7 @@ $string['coursesmgtfiles'] = 'Configuration des opérations sur les cours';
 $string['coursesync'] = 'Synchronisation des cours';
 $string['courseupdated'] = 'Cours {$a->shortname} mis à jour.';
 $string['createtextreport'] = 'Souhaitez vous créer un rapport en format texte ?';
+$string['creatingcohort'] = 'La cohorte {$a} sera créée.';
 $string['criticaltime'] = 'Temps limite';
 $string['taskrunmsg'] = 'Execution du script sur {$a}<br/>.';
 $string['taskrunmsgnofile'] = 'Pas de fichier défini<br/>.';
@@ -162,6 +163,7 @@ $string['errorvalidationsearchmisses'] = 'Erreur ligne {$a->i} : Valeur du champ
 $string['errorvalidationstringlength'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (longueur &gt; {$a->length}).';
 $string['errorvalidationtimecheck'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (n\'est pas un temps valide).';
 $string['errorvalidationvalueset'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (doit être dans l\'ensemble {$a->set}).';
+$string['eventscleanup'] = 'Nettoyage des événéments générés (conseillé)';
 $string['execstartsat'] = 'Exécution démarrée à {$a} ';
 $string['executecoursecronmanually'] = 'Exécuter toutes les opérations de cours ';
 $string['existcoursesfile'] = 'Fichier de test d\'existance';
@@ -231,6 +233,7 @@ $string['processingfile'] = 'Examen du fichier : {$a}';
 $string['processresult'] = 'Résultat d\'exécution';
 $string['purge'] = 'Purger tous les rapports';
 $string['primaryidentity'] = 'champ d\'identité primaire';
+$string['registeringincohort'] = 'Inscription dans la cohorte {$a}';
 $string['reinitialisation'] = 'Réinitialiser des cours';
 $string['remoteenrolled'] = 'Utilisateur {$a->username} inscrit en tant que {$a->rolename} sur {$a->wwwroot} dans le cours {$a->coursename}';
 $string['remoteserviceerror'] = 'Erreur du service distant';
@@ -248,6 +251,8 @@ $string['storereport'] = 'Sauvegarder le rapport';
 $string['selecteditems'] = 'Cours sélectionnés pour la génération';
 $string['selectencoding'] = 'Sélectionner l\'encodage des fichiers source';
 $string['selectseparator'] = 'Vous pouvez choisir le séparateur de champs CSV. Ce séparateur est valide pour tous les fichiers de commande du synchroniseur.';
+$string['sendpasswordtousers'] = 'Envoyer les mots de passe aux utilisateurs';
+$string['simulate'] = 'Simuler l\'opération';
 $string['shortnametodelete'] = 'Cours à supprimer';
 $string['skippedline'] = 'Ligne ({$a}) ignorée (erreur de format colonne)';
 $string['startingcheck'] = 'Démarrage de la vérification d\'existence...';
@@ -316,6 +321,7 @@ $string['usersconfig'] = 'Configuration des opérations sur les utilisateurs';
 $string['userscronconfig'] = 'Activer la synchronisation par cron des utilisateurs';
 $string['usersfile'] = 'Fichier des utilisateurs';
 $string['usersupdated'] = 'Utilisateurs mis à jour ';
+$string['userpicturehash'] = 'Somme (MD5) de contrôle des avatars';
 $string['usersync'] = 'Synchronisation des utilisateurs';
 $string['userunknownremotely'] = 'L\'utilisateur {$a} n\'existe pas sur le distant';
 $string['utilities'] = 'Utilitaires';
@@ -451,7 +457,7 @@ Le fichier d\'inscriptions est un fichier texte CSV encodé en UTF-8 ou ISO selo
 <li><i>uid</i> : la valeur d\'identifiant de l\'utilisateur, selon la configuration choisie (id, idnumber, username ou email).</li>
 <li><i>cid</i> : la valeur d\'identifiant du cours, selon la configuration choisie (id, shortname ou idnumber).</li>
 
-<p>Champs facultatifs : <b>hidden, starttime, endtime, enrol, cmd, g1 à g7</b></p>
+<p>Champs facultatifs : <b>hidden, starttime, endtime, enrol, cmd, g1 à g9</b></p>
 
 <li><i>cmd</i> : implicitement \'add\', mais peut valoir \'del\' pour désincription. \'shift\' supprimera auparavent tous les anciens rôles de l\'utilisateur concerné dans le cours.</li>
 <li><i>hidden</i> :</li>

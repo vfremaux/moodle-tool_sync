@@ -57,6 +57,7 @@ $string['coursesmgtfiles'] = 'Course management command files';
 $string['coursesync'] = 'Courses synchronization';
 $string['courseupdated'] = 'Course {$a->shortname} updated.';
 $string['createtextreport'] = 'Do you want to create a text report?';
+$string['creatingcohort'] = 'Creating cohort {$a}';
 $string['criticaltime'] = 'Time limit';
 $string['taskrunmsg'] = 'Script execution on {$a}<br/>.';
 $string['taskrunmsgnofile'] = 'No file<br/>.';
@@ -169,6 +170,7 @@ $string['errorvalidationsearchmisses'] = 'Error at line {$a->i}: Invalid value f
 $string['errorvalidationstringlength'] = 'Error at line {$a->i}: Invalid value for field {$a->fieldname} (length &gt; {$a->length}).';
 $string['errorvalidationtimecheck'] = 'Error at line {$a->i}: Invalid value for field {$a->fieldname} (Bad Timestamp).';
 $string['errorvalidationvalueset'] = 'Error at line {$a->i}: Invalid value for field {$a->fieldname} (Must be one of {$a->set}).';
+$string['eventscleanup'] = 'Generated events cleanup';
 $string['execstartsat'] = 'Exec starts at {$a} ';
 $string['executecoursecronmanually'] = 'Execute all course tasks manually';
 $string['existcoursesfile'] = 'Course existance check command file';
@@ -241,6 +243,7 @@ $string['primaryidentity'] = 'Primary identity field';
 $string['reinitialisation'] = 'Reset courses';
 $string['remoteenrolled'] = 'User {$a->username} remote enrolled as {$a->rolename} on {$a->wwwroot} on course {$a->coursename}';
 $string['remoteserviceerror'] = 'Remote service error';
+$string['registeringincohort'] = 'Will register in cohort {$a}';
 $string['resetfile'] = 'Course Reset command file';
 $string['resetfilebuilder'] = 'Course Reset CSV file generator';
 $string['resetfileidentifier'] = 'Reinitialisation selection identifier';
@@ -267,6 +270,8 @@ $string['task_synccourses'] = 'CSV Course Synchronisation';
 $string['task_syncenrols'] = 'CSV Enrolment Synchronisation';
 $string['task_syncuserpictures'] = 'CSV User Picture Synchronisation';
 $string['task_syncusers'] = 'CSV Users Synchronisation';
+$string['sendpasswordtousers'] = 'Send password by mail to users';
+$string['simulate'] = 'Simulate result without altering data';
 $string['storereport'] = 'Store report file';
 $string['synccohorts'] = 'Cohorts synchronisation';
 $string['syncconfig'] = 'Synchronisation configuration';
@@ -326,6 +331,7 @@ $string['usersconfig'] = 'Configuration for user synchronisation';
 $string['userscronconfig'] = 'Enable synchronization cron users';
 $string['usersfile'] = 'File for syncing users ';
 $string['usersupdated'] = 'Users updated ';
+$string['userpicturehash'] = 'User picture checksum (MD5)';
 $string['usersync'] = 'Users synchronization';
 $string['userunknownremotely'] = 'User {$a} unkown on remote end';
 $string['utilities'] = 'Utilities';
@@ -443,7 +449,7 @@ Enrol cvs file is a CSV UTF-8 or ISO encoded (depending on tool configuration) f
 <li><i>uid</i>: The relevant user id, depending on settings selection.</li>
 <li><i>cid</i>: The relevant course id, depending on settings selection.</li>
 
-<p>Optional fields: <b>hidden, starttime, endtime, enrol, cmd, g1 to g7</b></p>
+<p>Optional fields: <b>hidden, starttime, endtime, enrol, cmd, g1 to g9</b></p>
 
 <li><i>cmd</i>: implicitely \'add\', but could be \'del\' for enrolment deletion. \'shift\' will delete all old roles and set this unique role.</li>
 <li><i>hidden:</i></li>

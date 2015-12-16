@@ -6,7 +6,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
-require_once("$CFG->dirroot/admin/tool/sync/tool.php");
+require_once($CFG->dirroot.'/admin/tool/sync/tool.php');
 
 class ToolForm extends moodleform {
 

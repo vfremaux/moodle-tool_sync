@@ -82,7 +82,6 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('static', 'coursesst2', '<hr>');
 
         $barr = array();
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/resetcourses.php\'');
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_RESET.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CREATE_DELETE.'\'');

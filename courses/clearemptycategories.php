@@ -31,10 +31,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
 require_login();
-
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_capability('tool/sync:configure', $systemcontext);
 
 $coursemanager = new \tool_sync\course_sync_manager('', null); // Do not trigger any command
 $renderer = $PAGE->get_renderer('tool_sync');

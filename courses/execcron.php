@@ -40,10 +40,7 @@ $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
 
 require_login();
-
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_capability('tool/sync:configure', $systemcontext);
 
 $url = new moodle_url('/admin/tool/sync/courses/execcron.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
@@ -68,6 +65,10 @@ if ($action == SYNC_COURSE_DELETE) {
 }
 
 $canprocess = false;
+
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/admin/tool/sync/index.php'));
+}
 
 if ($data = $form->get_data()) {
 

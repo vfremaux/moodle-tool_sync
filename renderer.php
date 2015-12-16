@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+if (!defined('MOODLE_INTERNAL')) die('You cannot use this script this way');
+
 class tool_sync_renderer {
     
     function print_return_button() {
@@ -34,7 +36,7 @@ class tool_sync_renderer {
     
     function print_delete_course_creator($syncconfig) {
 
-        $str = '<form name="form_exemple" method="post" action="#" onSubmit="return select_all(this)">';
+        $str = '<form name="form_deletion" method="post" action="#" onSubmit="return select_all(this)">';
         $str .= '<center>';
         $str .= '<table class="generaltable" width="80%">';
         $str .= '<tr class="r0" valign="top">';

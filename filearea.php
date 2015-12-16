@@ -36,7 +36,7 @@ if (empty($returnurl)) {
 }
 
 $context = context_system::instance();
-require_capability('moodle/site:config', $context);
+require_capability('tool/sync:configure', $context);
 
 $title = get_string('syncfiles', 'tool_sync');
 

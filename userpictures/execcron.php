@@ -4,7 +4,7 @@
  *
  */
 
-require_once('../../../../config.php');
+require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
@@ -13,10 +13,7 @@ $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
 
 require_login();
-
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_capability('tool/sync:configure', $systemcontext);
 
 // Capture incoming files in <moodledata>/sync.
 tool_sync_capture_input_files(false);
@@ -34,6 +31,17 @@ $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_ur
 $PAGE->navigation->add(get_string('userpicturesmgtmanual', 'tool_sync'));
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
+
+$action = optional_param('action', 'proces', PARAM_TEXT);
+
+if ($action == 'registerallpictures') {
+    $form = new ConfirmForm($url);
+} elseif ($action == 'configregisterallpictures') {
+}
+
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/admin/tool/sync/index.php'));
+}
 
 echo $OUTPUT->header();
 

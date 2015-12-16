@@ -19,7 +19,7 @@
  * @package tool-sync
  */
 
-require_once('../../../../config.php');
+require('../../../../config.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
@@ -30,12 +30,9 @@ $PAGE->set_context($systemcontext);
 $syncconfig = get_config('tool_sync');
 
 require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 $renderer = $PAGE->get_renderer('tool_sync');
-
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
 
 $PAGE->requires->js('/admin/tool/sync/courses/js.js');
 
