@@ -21,11 +21,18 @@ $string['cohortmanualsync'] = 'Exécution de la synchronisation des cohortes';
 $string['cohortmgtmanual'] = 'Gestion manuelle des cohortes';
 $string['cohortsconfig'] = 'Configuration de la synchronisation des cohortes';
 $string['cohortsync'] = 'Synchonisation des cohortes';
-$string['cohortuseridentifier'] = 'Identifiant d\'utilisteur';
+$string['cohortuseridentifier'] = 'Identifiant d\'utilisateur';
+$string['cohortsstarting'] = 'Cohort sync starting...';
+$string['cohortcreated'] = 'Cohorte {$a->name} ajoutée';
+$string['cohortmemberadded'] = 'Utilisateur {$a->username} ({$a->idnumber})  ajouté à la cohorte {$a->cname}';
+$string['cohortmemberremoved'] = 'Utilisateur {$a->username} ({$a->idnumber}) supprimé de la cohorte {$a->cname}';
+$string['cohortalreadymember'] = 'L\'utilisateur {$a->username} ({$a->idnumber}) est déjà membre de {$a->cname}';
+$string['cohortusernotfound'] = 'L\'utilisateur {$a->identifier} identifié par {$a->uid} n\'a pas été trouvé.';
+$string['cohortnotfound'] = 'La cohorte {$a->identifier} identifié par {$a->cid} n\'a pas été trouvée. La création n\'est pas possible.';
 $string['commandfile'] = 'Fichier de commande';
 $string['communicationerror'] = 'Erreur de communication avec le distant. Erreurs : {$a}';
 $string['configdefaultcmd'] = 'Configuration par défaut pour la colonne cmd';
-$string['configuration'] = 'Configuration';
+$string['configuration'] = 'Configuration du format des fichiers d\'entrée';
 $string['confirm'] = 'Confirmer';
 $string['confirmdelete'] = 'Supprimer les cours avec ce fichier';
 $string['coursecheck'] = 'Vérification des cours';
@@ -48,8 +55,11 @@ $string['coursesmgtfiles'] = 'Configuration des opérations sur les cours';
 $string['coursesync'] = 'Synchronisation des cours';
 $string['courseupdated'] = 'Cours {$a->shortname} mis à jour.';
 $string['createtextreport'] = 'Souhaitez vous créer un rapport en format texte ?';
+$string['creatingcohort'] = 'La cohorte {$a} sera créée.';
 $string['criticaltime'] = 'Temps limite';
-$string['cronrunmsg'] = 'Execution du script sur {$a}<br/>.';
+$string['taskrunmsg'] = 'Execution du script sur {$a}<br/>.';
+$string['taskrunmsgnofile'] = 'Pas de fichier défini<br/>.';
+$string['runlocalfiles'] = 'Lancer tous les traitements';
 $string['csvseparator'] = 'Séparateur de champs CSV';
 $string['day_fri'] = 'Vendredi';
 $string['day_mon'] = 'Lundi';
@@ -153,6 +163,7 @@ $string['errorvalidationsearchmisses'] = 'Erreur ligne {$a->i} : Valeur du champ
 $string['errorvalidationstringlength'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (longueur &gt; {$a->length}).';
 $string['errorvalidationtimecheck'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (n\'est pas un temps valide).';
 $string['errorvalidationvalueset'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (doit être dans l\'ensemble {$a->set}).';
+$string['eventscleanup'] = 'Nettoyage des événéments générés (conseillé)';
 $string['execstartsat'] = 'Exécution démarrée à {$a} ';
 $string['executecoursecronmanually'] = 'Exécuter toutes les opérations de cours ';
 $string['existcoursesfile'] = 'Fichier de test d\'existance';
@@ -222,6 +233,7 @@ $string['processingfile'] = 'Examen du fichier : {$a}';
 $string['processresult'] = 'Résultat d\'exécution';
 $string['purge'] = 'Purger tous les rapports';
 $string['primaryidentity'] = 'champ d\'identité primaire';
+$string['registeringincohort'] = 'Inscription dans la cohorte {$a}';
 $string['reinitialisation'] = 'Réinitialiser des cours';
 $string['remoteenrolled'] = 'Utilisateur {$a->username} inscrit en tant que {$a->rolename} sur {$a->wwwroot} dans le cours {$a->coursename}';
 $string['remoteserviceerror'] = 'Erreur du service distant';
@@ -239,6 +251,8 @@ $string['storereport'] = 'Sauvegarder le rapport';
 $string['selecteditems'] = 'Cours sélectionnés pour la génération';
 $string['selectencoding'] = 'Sélectionner l\'encodage des fichiers source';
 $string['selectseparator'] = 'Vous pouvez choisir le séparateur de champs CSV. Ce séparateur est valide pour tous les fichiers de commande du synchroniseur.';
+$string['sendpasswordtousers'] = 'Envoyer les mots de passe aux utilisateurs';
+$string['simulate'] = 'Simuler l\'opération';
 $string['shortnametodelete'] = 'Cours à supprimer';
 $string['skippedline'] = 'Ligne ({$a}) ignorée (erreur de format colonne)';
 $string['startingcheck'] = 'Démarrage de la vérification d\'existence...';
@@ -307,6 +321,7 @@ $string['usersconfig'] = 'Configuration des opérations sur les utilisateurs';
 $string['userscronconfig'] = 'Activer la synchronisation par cron des utilisateurs';
 $string['usersfile'] = 'Fichier des utilisateurs';
 $string['usersupdated'] = 'Utilisateurs mis à jour ';
+$string['userpicturehash'] = 'Somme (MD5) de contrôle des avatars';
 $string['usersync'] = 'Synchronisation des utilisateurs';
 $string['userunknownremotely'] = 'L\'utilisateur {$a} n\'existe pas sur le distant';
 $string['utilities'] = 'Utilitaires';
@@ -364,4 +379,113 @@ $string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\
         </li>
         <li>Le fichier .csv pour l\'enrollement des apprenants et la gestion des groupes.
         </li></il>
-        Il est egalement possible de déclencher ces scripts manuellement.';
+        Il est egalement possible de déclencher ces scripts manuellement.
+';
+
+$string['coursecreateformat'] = 'Format de fichier de création de cours';
+$string['coursecreateformat_help'] = '
+Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration locale de l\'outil de synchronisation. 
+La première ligne doit comporter les titres de champs dans un ordre quelconque.
+
+<p>Champs obligatoires : <b>shortname, fullname</b>.
+
+<li><i>shortname</i> : Doit être unique dans Moodle et ne doit donc pas correspondre à un cours existant.
+
+<p>Champs optionnels : <b>category, sortorder, summary, format, idnumber, showgrades, newsitems, startdate, marker, maxbytes, legacyfiles, showreports, visible, visibleold, groupmode, groupmodeforce, defaultgroupingid, lang, theme, timecreated, timemodified, self, guest, template</b></p>
+
+';
+
+$string['coursedeleteformat'] = 'Format de fichier de suppression de cours';
+$string['coursedeleteformat_help'] = '
+Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à détruire, tel que défini dans la configuration locale de l\'outil de synchronisation.
+';
+
+$string['coursecheckformat'] = 'Format de fichier de test d\'existence de cours';
+$string['coursecheckformat_help'] = '
+Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à vérifier, tel que défini dans la configuration locale de l\'outil de synchronisation.
+';
+
+$string['coursereinitializeformat'] = 'Format de fichier de réinitialisation de cours';
+$string['coursereinitializeformat_help'] = '
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+The first line must hold column titles in any order.
+The first field must identify a course, depending on the selected course primary identifier in configuration : 
+
+<li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
+<li><i>shortname</i>: Using the course shortname</li>
+<li><i>idnumber</i>: Using the IDNumber of the course</li>
+
+<p>Mandatory fields : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings, blog_associations, comments, modules</b>
+
+<p>Usual value is \'yes\' or \'no\' unless :</p>
+<li><i>roles</i>: a list of role shortnames, separed by spaces.</li>
+<li><i>local_roles</i>: \'all\' (roles and overrides), \'roles\' or \'overrides\'.</li>
+<li><i>grades</i>: \'all\' (items and grades), \'items\' or \'grades\'.</li>
+<li><i>groups</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
+<li><i>groupings</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
+<li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
+
+<p>Additional fields can be added for more specific control for modules: 
+<b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions, assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
+
+';
+
+$string['userformat'] = 'Format du fichier de synchronisation des utilisateurs';
+$string['userformat_help'] = '
+Le fichier de synchronisation des utilisateurs doit être un fichier text encodé en ISO ou UTF-8 selon la configuration générale de l\'outil de synchronisation. 
+La première ligne doit comporter les noms de champs au format moodle dans un ordre quelconque.
+Le premier champ doit identifier un utilisateur par son \'username\'.
+
+<p>Champs obligatoires : <b>username, firstname, lastname, email</b></p>
+
+<p>Champs facultatifs : <b>idnumber, email, auth, icq, phone1, phone2, address, url, description, mailformat, maildisplay, htmleditor, autosubscribe, cohort, cohortid, course1, group1, type1, role1, enrol1, start1, end1, wwwroot1, password, oldusername</b></p>
+
+<p>Les "patterns" sont des groupes de champs qui doivent être utilisés ensemble, et suivis d\'un index numérique (nomchamp<n>).</p>
+
+<p>Pattern d\'inscription : <b>course, group, type, role, enrol, start, end, wwwroot</b>. Ce pattern permet d\'inscrire immédiatement les utilisateurs créés ou modifiés à des cours. Vous pouvez utiliser plusieurs fois ce motif avec des indexes suivis (1, 2, 3...) etc. On peut ne pas utiliser sur une ligne l\'un des patterns mentionnés en laissant les champs vides.</p>
+
+<p>Il est possible d\'utiliser quelques formes supplémentaires pour ajouter des valeurs aux champs customisés de profil. La forme générale de ces champs est <i>user_profile_xxxxx</i></p>
+';
+
+$string['enrolformat'] = 'Format de fichier d\'inscriptions';
+$string['enrolformat_help'] = '
+Le fichier d\'inscriptions est un fichier texte CSV encodé en UTF-8 ou ISO selon la configuration de l\'outil et automatise les entrées/sorties d\'inscriptions dans Moodle.
+
+<p>Champs obligatoires : <b>rolename, uid, cid</b></p>
+
+<li><i>rolename</i> : Le nom court du role (student, teacher, etc.)</li>
+<li><i>uid</i> : la valeur d\'identifiant de l\'utilisateur, selon la configuration choisie (id, idnumber, username ou email).</li>
+<li><i>cid</i> : la valeur d\'identifiant du cours, selon la configuration choisie (id, shortname ou idnumber).</li>
+
+<p>Champs facultatifs : <b>hidden, starttime, endtime, enrol, cmd, g1 à g9</b></p>
+
+<li><i>cmd</i> : implicitement \'add\', mais peut valoir \'del\' pour désincription. \'shift\' supprimera auparavent tous les anciens rôles de l\'utilisateur concerné dans le cours.</li>
+<li><i>hidden</i> :</li>
+<li><i>starttime, endtime</i> : Un temps linux en secondes.</li>
+<li><i>enrol</i> : la méthode d\'inscription (manual, mnet, cohort, etc...). Si cette colonne n\'existe pas, alors l\'opération ne fera qu\'ajouter des "autres rôles", sans inscription.</li>
+<li><i>gcmd</i> : \'gadd\' ou \'gaddcreate\', \'greplace\' ou \'greplacecreate\', mais peut être \'gdel\' pour une suppression de l\'appartenance au groupe.</li>
+<li><i>g1 to g9</i> : up to 9 goupnames the enrolled user will be member of. The group is created if missing and using a \'gaddcreate\' or a \'greplacecreate\'.</li>
+';
+
+$string['cohortformat'] = 'Format de fichier d\'alimentation de cohortes';
+$string['cohortformat_help'] = '
+Le fichier de création de cohortes est un fichier texte ISO ou UTF-8 suivant la configuration locale.
+The first line must hold column titles in any order.
+
+<p>Mandatory fields: <b>cohortid, userid</b></p>
+
+<li><i>cohortid</i> : Un identifiant de cohorte, selon la configuration de l\'outil de synchronisation. Peut être l\'id, le nom, ou l\'idnumber.</li>
+<li><i>userid</i> : Un identifiant d\'utilisateur selon la configuration de l\'outil de synchonisation. Peut être l\'id, l\'email, le username, ou l\'idnumber.</li>
+
+<p>Optional fields: <b>cdescription, cidnumber</b></p>
+
+<li><i>cdescription</i> : Si la cohorte doit être créée, une description textuelle.</li>
+<li><i>cidnumber</i> : Si la cohorte doit être créée, l\'idnumber. Dans ce cas, l\'identifiant devra être choisi comme \'name\'.</li>
+';
+
+$string['userpicturesformat'] = 'Format de transfert d\'images d\'avatars';
+$string['userpicturesformat_help'] = '
+Le fichier des avatars utilisateurs est une archive ZIP sans sous-répertoires avec la liste d\'images png, jpg ou gif des avatars utilisateurs, nommés par l\'identifiant primaire
+de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation. 
+';
+

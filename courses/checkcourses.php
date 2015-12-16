@@ -29,12 +29,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-require_login();
 
-// Security.
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 $url = $CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php';
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));

@@ -49,6 +49,12 @@ function tool_sync_create_course_deletion_file($selection) {
     $fs->create_file_from_string($filerec, $content);
 }
 
+/**
+ * Scans for and display the list of empty course categories (recusively)
+ * @param int $parentcatid parent category
+ * @param arrayref $scannedids accumulator of scanned categories
+ * @param arrayref $path the relative textual path to the current category
+ */
 function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
     global $CFG, $DB;
 
@@ -98,8 +104,9 @@ function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
 
 /**
  * checks locally if a deployable/publishable backup is available
- * @param reference $loopback variable given to setup an XMLRPC loopback message for testing
- * @return boolean
+ * @param int $courseid the courseid where to locate a backup
+ * @param string $filearea the filearea to consider
+ * @return false or a stored_file object
  */
 function tool_sync_locate_backup_file($courseid, $filearea) {
 
@@ -115,6 +122,10 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
     return false;
 }
 
+/**
+ * completes unqualified key names
+ * @param object $cfg a configuration object.
+ */
 function tool_sync_config_add_sync_prefix($cfg){
 
     $formobj = new StdClass();
@@ -146,6 +157,7 @@ function tool_sync_read($filereader, $length, &$config){
 /**
  * Checks if the token is a path to an archive (.mbz)
  * If not, should be s course shortname.
+ * @param $str string to check 
  * @return true is a shortname, false elsewhere
  */
 function tool_sync_is_course_identifier($str) {

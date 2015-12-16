@@ -191,7 +191,9 @@ class enrol_sync_manager extends sync_manager {
             $uidentifieroptions = array('idnumber', 'username', 'email', 'id');
             $uidentifiername = $uidentifieroptions[0 + @$syncconfig->enrol_useridentifier];
 
+            $e->courseby = $cidentifiername;
             $e->myuser = $record['uid']; // user identifier
+            $e->userby = $uidentifiername;
             $e->mycourse = $record['cid']; // course identifier
 
             if (!$user = $DB->get_record('user', array($uidentifiername => $record['uid'])) ) {
@@ -374,15 +376,15 @@ class enrol_sync_manager extends sync_manager {
                 }
                 $this->report(get_string('errorbadcmd', 'tool_sync', $e));
             }
-            
-            if (!empty($record['gcmd'])){
-                if ($record['gcmd'] == 'gadd' || $record['gcmd'] == 'gaddcreate'){
-                    for ($i = 1 ; $i < 10 ; $i++){
-                        if (!empty($record['g'.$i])){
+
+            if (!empty($record['gcmd'])) {
+                if ($record['gcmd'] == 'gadd' || $record['gcmd'] == 'gaddcreate') {
+                    for ($i = 1 ; $i < 10 ; $i++) {
+                        if (!empty($record['g'.$i])) {
                             if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
                                 $groupid[$i] = $gid;
                             } else {
-                                if ($record['gcmd'] == 'gaddcreate'){
+                                if ($record['gcmd'] == 'gaddcreate') {
                                     $groupsettings = new \StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
@@ -414,11 +416,11 @@ class enrol_sync_manager extends sync_manager {
                             }
                         }
                     }
-                } elseif ($record['gcmd'] == 'greplace' || $record['gcmd'] == 'greplacecreate'){
+                } elseif ($record['gcmd'] == 'greplace' || $record['gcmd'] == 'greplacecreate') {
                     groups_delete_group_members($course->id, $user->id); 
                     $this->report(get_string('groupassigndeleted', 'tool_sync', $e));
-                    for ($i = 1 ; $i < 10 ; $i++){
-                        if (!empty($record['g'.$i])){
+                    for ($i = 1 ; $i < 10 ; $i++) {
+                        if (!empty($record['g'.$i])) {
                             if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
                                 $groupid[$i] = $gid;
                             } else {
@@ -478,8 +480,63 @@ class enrol_sync_manager extends sync_manager {
             $this->cleanup_input_file($filerec);
         }
 
+        if (!empty($syncconfig->eventcleanup)) {
+
+            $admin = get_admin();
+
+            $sql = "
+                DELETE FROM
+                {logstore_standard_log}
+                WHERE
+                origin = 'cli' AND
+                userid = ? AND
+                eventname LIKE '%user_enrolment_updated'
+            ";
+            $DB->execute($sql, array($admin->id));
+
+            $sql = "
+                DELETE FROM
+                {logstore_standard_log}
+                WHERE
+                origin = 'cli' AND
+                userid = ? AND
+                eventname LIKE '%user_enrolment_created'
+            ";
+            $DB->execute($sql, array($admin->id));
+
+            $sql = "
+                DELETE FROM
+                {logstore_standard_log}
+                WHERE
+                origin = 'cli' AND
+                userid = ? AND
+                eventname LIKE '%user_enrolment_deleted'
+            ";
+            $DB->execute($sql, array($admin->id));
+
+            $sql = "
+                DELETE FROM
+                {logstore_standard_log}
+                WHERE
+                origin = 'cli' AND
+                userid = ? AND
+                eventname LIKE '%role_assigned'
+            ";
+            $DB->execute($sql, array($admin->id));
+
+            $sql = "
+                DELETE FROM
+                {logstore_standard_log}
+                WHERE
+                origin = 'cli' AND
+                userid = ? AND
+                eventname LIKE '%role_unassigned'
+            ";
+            $DB->execute($sql, array($admin->id));
+        }
+
         $this->report("\n".get_string('endofreport', 'tool_sync'));
-        
+
         return true;
     }
 }

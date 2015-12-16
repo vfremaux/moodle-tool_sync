@@ -82,7 +82,6 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('static', 'coursesst2', '<hr>');
 
         $barr = array();
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/resetcourses.php\'');
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_RESET.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CREATE_DELETE.'\'');
@@ -1547,7 +1546,7 @@ class course_sync_manager extends sync_manager {
                  * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
                  */
                 $controller = new \restore_controller($uniq, $newcourse_id, 
-                        \backup::INTERACTIVE_NO, backup::MODE_SAMESITE, $user_doing_the_restore,
+                        \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $user_doing_the_restore,
                         \backup::TARGET_NEW_COURSE );
                 $controller->execute_precheck();
                 $controller->execute_plan();

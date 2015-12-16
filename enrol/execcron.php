@@ -12,11 +12,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-require_login();
 
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 // Capture incoming files in <moodledata>/sync.
 tool_sync_capture_input_files(false);
@@ -38,11 +36,15 @@ $form = new InputfileLoadform($url, array('localfile' => $syncconfig->enrol_file
 
 $canprocess = false;
 
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/admin/tool/sync/index.php'));
+}
+
 if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $enrolsmanager = new enrol_sync_manager();
+        $enrolsmanager = new \tool_sync\enrol_sync_manager();
         $processedfile = $syncconfig->enrol_filelocation;
         $canprocess = true;
     } else {
@@ -67,7 +69,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
     
-            $enrolsmanager = new enrol_sync_manager($manualfilerec);
+            $enrolsmanager = new \tool_sync\enrol_sync_manager($manualfilerec);
             $canprocess = true;
         } else {
             $errormes = "Failed loading a file";
@@ -87,10 +89,10 @@ if ($canprocess) {
     echo '</pre>';
 
     $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
-    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
+    $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
 
     echo "<br/><fieldset><legend><strong>$enrolmgtmanual</strong></legend>";
-    echo "<center>$cronrunmsg</center>";
+    echo "<center>$taskrunmsg</center>";
     echo '</fieldset>';
 }
 

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+if (!defined('MOODLE_INTERNAL')) die('You cannot use this script this way');
+
 require_once('courses/courses.class.php');
 require_once('users/users.class.php');
 require_once('enrol/enrols.class.php');
@@ -81,7 +83,7 @@ function tool_sync_get_all_courses($orderby = 'shortname') {
 
     $sql = "
         SELECT
-            IF(ass.roleid IS NOT NULL , CONCAT( c.id, '_', ass.roleid ) , CONCAT( c.id, '_', '0' ) ) AS recid, 
+            CASE WHEN ass.roleid IS NOT NULL THEN CONCAT( c.id, '_', ass.roleid ) ELSE CONCAT( c.id, '_', '0' ) END AS recid, 
             c.id,
             c.shortname, 
             c.fullname, 
@@ -145,9 +147,11 @@ function tool_sync_parsetime($time, $default = 0) {
 /**
  * Captures input files from a system administrator accessible location
  * and store them into tool_sync filearea
- * Synchronisation checks for a lock.txt file NOT being present. A readlock.txt
- * file is written as weak semaphore process. Readlock.txt signal will avoid
- * twice concurrent execution of file retireval. 
+ * Synchronisation checks for a lock.txt file NOT being present. A lock.txt
+ * file is written as weak semaphore process. lock.txt signal will avoid
+ * twice concurrent execution of file retrieval. 
+ * the retrieval is sensible to a alock.txt external lock written by the remote side
+ * when feeding remotely the files.
  */
 function tool_sync_capture_input_files($interactive = false) {
     global $CFG;
@@ -158,7 +162,7 @@ function tool_sync_capture_input_files($interactive = false) {
         mkdir($syncinputdir, 0777);
     }
 
-    $lockfile = $CFG->dataroot.'/sync/lock.txt';
+    $lockfile = $CFG->dataroot.'/sync/alock.txt';
 
     if (file_exists($lockfile)) {
         $fileinfo = stat($lockfile);
@@ -173,7 +177,7 @@ function tool_sync_capture_input_files($interactive = false) {
         return;
     }
 
-    $readlockfile = $CFG->dataroot.'/sync/readlock.txt';
+    $readlockfile = $CFG->dataroot.'/sync/lock.txt';
     if (file_exists($readlockfile)) {
         $fileinfo = stat($lockfile);
         if ($fileinfo['timecreated'] < (time() - HOURSEC * 3)) {
@@ -207,10 +211,12 @@ function tool_sync_capture_input_files($interactive = false) {
         if (preg_match('/^\./', $entry)) {
             continue;
         }
+
         // Ignore dirs. Supposed to be a flat storage.
         if (is_dir($syncinputdir.'/'.$entry)) {
             continue;
         }
+
         // Forget any locking file.
         if (preg_match('/lock/', $entry)) {
             continue;
@@ -247,4 +253,8 @@ function tool_sync_capture_input_files($interactive = false) {
  * TODO write notification code
  */
 function sync_notify_new_user_password($user, $value) {
+}
+
+function trim_array_values(&$e) {
+    $e = trim($e);
 }

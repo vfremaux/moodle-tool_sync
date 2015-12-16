@@ -42,7 +42,7 @@ class cohorts_sync_manager extends sync_manager {
         $frm->addElement('text', 'tool_sync/cohorts_filelocation', get_string('cohortfilelocation', 'tool_sync'));
         $frm->setType('tool_sync/cohorts_filelocation', PARAM_TEXT);
 
-        $identifieroptions = array('0' => 'idnumber', '1' => 'username', '2' => 'email', '3' => 'id');
+        $identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
         $frm->addElement('select', 'tool_sync/cohorts_useridentifier', get_string('cohortuseridentifier', 'tool_sync'), $identifieroptions);
 
         $identifieroptions = array('0' => 'idnumber', '1' => 'name', '2' => 'id');
@@ -157,6 +157,9 @@ class cohorts_sync_manager extends sync_manager {
         }
         $linenum = 2; // since header is line 1
 
+        // Header is validated.
+        $this->init_tryback(implode(';', $headers));
+
         $userscohortassign = 0;
         $usercohortunassign = 0;
         $userserrors  = 0;
@@ -185,7 +188,7 @@ class cohorts_sync_manager extends sync_manager {
             $uid = $UIDS[$syncconfig->cohorts_useridentifier];
             if (!$user = $DB->get_record('user', array( $uid => $record['userid'] ))) {
                 // @TODO trak in log, push in runback file
-                $e = new \StdClass;
+                $e = new \StdClass();
                 $e->uid = $uid;
                 $e->identifier = $record['userid'];
                 $this->report(get_string('cohortusernotfound', 'tool_sync', $e));
@@ -270,6 +273,11 @@ class cohorts_sync_manager extends sync_manager {
         if (!empty($syncconfig->filecleanup)) {
             $this->cleanup_input_file($filerec);
         }
+
+        if (!empty($syncconfig->filefailed)) {
+            $this->write_tryback($filerec);
+        }
+
         return true;
     }
 }

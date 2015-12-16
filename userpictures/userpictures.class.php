@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_sync;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('You cannot use this script this way!');
 }
@@ -56,8 +58,13 @@ class userpictures_sync_manager extends sync_manager {
 
         $frm->addElement('static', 'userpicturesst1', '<hr>');
 
+        $barr = array();
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/userpictures/execcron.php\'');
         $frm->addElement('button', 'manualuserpictures', get_string('manualuserpicturesrun', 'tool_sync'), $attribs);
+        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action=registerallpictures\'');
+        $barr[] =& $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
+
+        $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
 
     }
 
@@ -66,8 +73,8 @@ class userpictures_sync_manager extends sync_manager {
 
         $fs = get_file_storage();
         
-        $filerec = new StdClass();
-        $contextid = context_system::instance()->id;
+        $filerec = new \StdClass();
+        $contextid = \context_system::instance()->id;
         $component = 'tool_sync';
         $filearea = 'syncfiles';
         $itemid = 0;
@@ -133,7 +140,7 @@ class userpictures_sync_manager extends sync_manager {
 
             // files cleanup
 
-            $filerec = new StdClass();
+            $filerec = new \StdClass();
             $filerec->contextid = $f->get_contextid();
             $filerec->component = $f->get_component();
             $filerec->filearea = $f->get_filearea();
@@ -238,7 +245,7 @@ class userpictures_sync_manager extends sync_manager {
 
         // userfield names are safe, so don't quote them.
         if (!($user = $DB->get_record('user', array ($userfield => $uservalue, 'deleted' => 0)))) {
-            $a = new StdClass();
+            $a = new \StdClass();
             $a->userfield = clean_param($userfield, PARAM_CLEANHTML);
             $a->uservalue = clean_param($uservalue, PARAM_CLEANHTML);
             $this->report(get_string('uploadpicture_usernotfound', 'tool_uploaduser', $a));

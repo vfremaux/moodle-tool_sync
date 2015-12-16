@@ -31,12 +31,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
 require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
-
-$coursemanager = new course_sync_manager('', null); // Do not trigger any command
+$coursemanager = new \tool_sync\course_sync_manager('', null); // Do not trigger any command
 $renderer = $PAGE->get_renderer('tool_sync');
 
 $cleancatnamestr = get_string('cleancategories', 'tool_sync');
@@ -45,7 +42,7 @@ set_time_limit(300);
 
 list($usec, $sec) = explode(' ', microtime());
 $time_start = ((float)$usec + (float)$sec);
-$url = $CFG->wwwroot.'/admin/tool/sync/courses/clearemptycategories.php';
+$url = new moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
 $PAGE->set_url($url);
 $PAGE->navigation->add($cleancatnamestr);
 $PAGE->set_title("$site->shortname: $cleancatnamestr");

@@ -29,17 +29,15 @@ require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-require_login();
 
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 $PAGE->requires->js('/admin/tool/sync/courses/js.js');
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
-$coursesmanager = new course_sync_manager('', null);
+$coursesmanager = new \tool_sync\course_sync_manager('', null);
 
 $selection = optional_param_array('selection', '', PARAM_TEXT);
 if ($selection) {
