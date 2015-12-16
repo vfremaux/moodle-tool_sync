@@ -34,11 +34,7 @@ require_once($CFG->dirroot.'/lib/uploadlib.php');
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
 require_login();
-
-// security
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_capability('tool/sync:configure', $systemcontext);
 
 $strenrolname = get_string('enrolname', 'tool_sync');
 $strdeletecourses = get_string('coursedeletion', 'tool_sync');
@@ -48,7 +44,7 @@ set_time_limit(1200);
 
 list($usec, $sec) = explode(' ', microtime());
 $time_start = ((float)$usec + (float)$sec);
-$url = $CFG->wwwroot.'/admin/tool/sync/courses/deletecourses.php';
+$url = new moodle_url('/admin/tool/sync/courses/deletecourses.php');
 $PAGE->navigation->add($strenrolname);
 $PAGE->navigation->add($strdeletecourses);
 $PAGE->set_url($url);
@@ -66,7 +62,7 @@ $canprocess = false;
 if ($data = $form->get_data()) {
 
     if ($data->uselocal) {
-        $coursesmanager = new course_sync_manager(SYNC_COURSE_CREATE_DELETE);
+        $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CREATE_DELETE);
         $canprocess = true;
         $processedfile = $syncconfig->course_filecreatelocation;
     } else {
@@ -88,7 +84,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
 
-            $coursesmanager = new course_sync_manager(SYNC_COURSE_CREATE_DELETE, $manualfilerec);
+            $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CREATE_DELETE, $manualfilerec);
             $canprocess = true;
         } else {
             $errormes = "Failed loading a file";

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_sync;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('You cannot use this script this way!');
 }
@@ -68,16 +70,16 @@ class sync_manager {
     /**
      * Initiates tryback buffer and adds the first headline.
      */
-    protected function init_tryback($headline) {
-        $this->trybackhead = $headline;
-        $this->tryback = '';
+    protected function init_tryback($headlines) {
+        $this->trybackhead = $headlines;
+        $this->trybackarr = '';
     }
 
     /**
      * Feeds a single line into the tryback buffer.
      */
     protected function feed_tryback($line) {
-        $this->tryback[] = $line;
+        $this->trybackarr[] = $line;
     }
 
     /**
@@ -85,7 +87,7 @@ class sync_manager {
      */
     public function write_tryback($originalfilerec) {
 
-        if (empty($this->tryback)) {
+        if (empty($this->trybackarr)) {
             return;
         }
 
@@ -94,8 +96,8 @@ class sync_manager {
         $path_parts = pathinfo($originalfilerec->filename);
         $trybackfilename = $path_parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$path_parts['extension'];
 
-        $buffer = $this->trybackhead."\n";
-        $buffer .= implode("\n", $this->tryback);
+        $buffer = implode("\n", $this->trybackhead)."\n";
+        $buffer .= implode("\n", $this->trybackarr);
 
         $filerec = $originalfilerec;
         $filerec->filename = $trybackfilename;
@@ -108,7 +110,7 @@ class sync_manager {
         // print_object($filerec);
         $fs->create_file_from_string($filerec, $buffer);
     }
-    
+
     protected function get_input_file($configlocation, $defaultlocation) {
         if (empty($configlocation)) {
             $filename = $defaultlocation;  // Default location
@@ -121,8 +123,8 @@ class sync_manager {
             $filepath = preg_replace('#//#', '/', '/'.$filepath.'/');
         }
 
-        $filerec = new StdClass();
-        $filerec->contextid = context_system::instance()->id;
+        $filerec = new \StdClass();
+        $filerec->contextid = \context_system::instance()->id;
         $filerec->component = 'tool_sync';
         $filerec->filearea = 'syncfiles';
         $filerec->itemid = 0;
@@ -141,11 +143,16 @@ class sync_manager {
 
         $fs = get_file_storage();
 
+        if ($filerec->filepath == '/./') {
+            $filerec->filepath = '/';
+        }
+
         $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
         if (!$inputfile) {
             $this->report(get_string('filenotfound', 'tool_sync', "{$filerec->filepath}{$filerec->filename}"));
             return false;
         } else {
+            ini_set('auto_detect_line_endings', true);
             $filereader = $inputfile->get_content_file_handle();
             return $filereader;
         }

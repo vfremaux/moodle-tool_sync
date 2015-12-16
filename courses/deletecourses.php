@@ -33,11 +33,7 @@ require_once($CFG->dirroot.'/lib/uploadlib.php');
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
 require_login();
-
-// security
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
+require_capability('tool/sync:configure', $systemcontext);
 
 $strenrolname = get_string('enrolname', 'tool_sync');
 $strdeletecourses = get_string('coursedeletion', 'tool_sync');

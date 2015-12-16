@@ -32,9 +32,6 @@ require_capability('tool/sync:configure', $context);
 
 tool_sync_capture_input_files(true);
 
-if (!is_siteadmin()) {
-    print_error('erroradminrequired', 'tool_sync');
-}
 if (! $site = get_site()) {
     print_error('errornosite', 'tool_sync');
 }
@@ -95,7 +92,7 @@ if ($data = $form->get_data()) {
             $syncconfig->$datakey = $value;
         }
     }
-    
+
     redirect(new moodle_url('/admin/tool/sync/index.php', array('resultmessage' => get_string('changessaved'))));
 }
 
@@ -107,6 +104,8 @@ $PAGE->set_title($SITE->fullname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->navbar->add(get_string('toolindex', 'tool_sync'));
 $PAGE->set_pagelayout('admin');
+$PAGE->set_pagetype('admin-index');
+
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('title', 'tool_sync'));

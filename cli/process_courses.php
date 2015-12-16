@@ -26,7 +26,7 @@ global $CLI_VMOODLE_PRECHECK;
 
 $CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
 
-require_once('../../../../config.php');
+require('../../../../config.php');
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions
 
 // Now get cli options.
@@ -121,7 +121,7 @@ switch ($options['action']) {
         break;
 }
 
-$manager = new courses_sync_manager($controlfiles, $action);
+$manager = new \tool_sync\course_sync_manager($controlfiles, $action);
 $manager->cron();
 
 if ($options['verbose']) {
