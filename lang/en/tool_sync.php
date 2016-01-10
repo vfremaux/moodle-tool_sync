@@ -244,6 +244,7 @@ $string['reinitialisation'] = 'Reset courses';
 $string['remoteenrolled'] = 'User {$a->username} remote enrolled as {$a->rolename} on {$a->wwwroot} on course {$a->coursename}';
 $string['remoteserviceerror'] = 'Remote service error';
 $string['registeringincohort'] = 'Will register in cohort {$a}';
+$string['registerallpictures'] = 'Register all user pictures checksums';
 $string['resetfile'] = 'Course Reset command file';
 $string['resetfilebuilder'] = 'Course Reset CSV file generator';
 $string['resetfileidentifier'] = 'Reinitialisation selection identifier';

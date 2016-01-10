@@ -61,25 +61,22 @@ class userpictures_sync_manager extends sync_manager {
         $barr = array();
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/userpictures/execcron.php\'');
         $frm->addElement('button', 'manualuserpictures', get_string('manualuserpicturesrun', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action=registerallpictures\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
-
     }
 
     function cron($syncconfig) {
         global $USER, $CFG;
 
         $fs = get_file_storage();
-        
+
         $filerec = new \StdClass();
         $contextid = \context_system::instance()->id;
         $component = 'tool_sync';
         $filearea = 'syncfiles';
         $itemid = 0;
         $areafiles = $fs->get_area_files($contextid, $component, $filearea, $itemid);
-        
+
         // Searching in area what matches userpicture archives
         if (!empty($areafiles)) {
             foreach ($areafiles as $f) {
@@ -162,7 +159,7 @@ class userpictures_sync_manager extends sync_manager {
         return true;
     }
 
-    function get_userfields(){
+    function get_userfields() {
 
         $ufs = array (
             0 => 'username',
@@ -261,6 +258,7 @@ class userpictures_sync_manager extends sync_manager {
         if (sync_my_save_profile_image($user->id, $file)) {
             $DB->set_field('user', 'picture', 1, array('id' => $user->id));
             $this->report(get_string('uploadpicture_userupdated', 'tool_uploaduser', $user->username));
+            sync_register_image_checksum($user->id, $file);
             return PIX_FILE_UPDATED;
         } else {
             $this->report(get_string('uploadpicture_cannotsave', 'tool_uploaduser', $user->username));

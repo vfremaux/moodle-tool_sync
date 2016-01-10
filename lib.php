@@ -42,6 +42,22 @@ function tool_sync_report(&$report, $message, $onscreen = true){
 }
 
 /**
+ * Reads a line in a stream converting to utf8 if necessary
+ * @param resource $filereader the opened stream
+ * @param int $length max length of read
+ * @param objectref $config the surrounding configuration
+ * @return a string or false if no more data
+ */
+function tool_sync_read($filereader, $length, &$config) {
+    $input = fgets($filereader, 1024);
+
+    if ($config->encoding != 'UTF-8') {
+        return utf8_encode($input);
+    }
+    return $input;
+}
+
+/**
  * Check a CSV input line format for empty or commented lines
  * Ensures compatbility to UTF-8 BOM or unBOM formats
  */
@@ -66,10 +82,6 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
     }
 
     $text = preg_replace("/\n?\r?/", '', $text);
-
-    if ($config->encoding != 'UTF-8') {
-        $text = utf8_encode($text);
-    }
 
     return preg_match('/^$/', $text) || preg_match('/^(\(|\[|-|#|\/| )/', $text);
 }

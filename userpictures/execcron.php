@@ -1,5 +1,21 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * @package tool_sync
  * @author Funck Thibaut
  *
  */
@@ -32,15 +48,24 @@ $PAGE->navigation->add(get_string('userpicturesmgtmanual', 'tool_sync'));
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
-$action = optional_param('action', 'proces', PARAM_TEXT);
+$action = optional_param('action', 'process', PARAM_TEXT);
 
 if ($action == 'registerallpictures') {
-    $form = new ConfirmForm($url);
-} elseif ($action == 'configregisterallpictures') {
-}
-
-if ($form->is_cancelled()) {
-    redirect(new moodle_url('/admin/tool/sync/index.php'));
+    $confirmurl = new moodle_url('/admin/tool/sync/userpictures/execcron.php', array('action' => 'confirmregisterallpictures'));
+    $cancelurl = new moodle_url('/admin/tool/sync/index.php');
+    echo $OUTPUT->header();
+    echo $OUTPUT->confirm(get_string('confirm'), $confirmurl, $cancelurl);
+    echo $OUTPUT->footer();
+    exit;
+} elseif ($action == 'confirmregisterallpictures') {
+    echo $OUTPUT->header();
+    echo '<pre>';
+    echo '<h3>Updating user pictures</h3>';
+    update_all_user_picture_hashes(true);
+    echo '</pre>';
+    echo $OUTPUT->continue_button(new moodle_url('/admin/tool/sync/index.php'));
+    echo $OUTPUT->footer();
+    exit;
 }
 
 echo $OUTPUT->header();

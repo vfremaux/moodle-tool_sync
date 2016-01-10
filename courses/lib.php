@@ -139,22 +139,6 @@ function tool_sync_config_add_sync_prefix($cfg){
 }
 
 /**
- * Reads a line in a stream converting to utf8 if necessary
- * @param resource $filereader the opened stream
- * @param int $length max length of read
- * @param objectref $config the surrounding configuration
- * @return a string or false if no more data
- */
-function tool_sync_read($filereader, $length, &$config){
-    $input = fgets($filereader, 1024);
-
-    if ($config->encoding != 'UTF-8') {
-        return utf8_encode($input);
-    }
-    return $input;
-}
-
-/**
  * Checks if the token is a path to an archive (.mbz)
  * If not, should be s course shortname.
  * @param $str string to check 

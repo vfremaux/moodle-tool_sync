@@ -234,6 +234,7 @@ $string['processresult'] = 'Résultat d\'exécution';
 $string['purge'] = 'Purger tous les rapports';
 $string['primaryidentity'] = 'champ d\'identité primaire';
 $string['registeringincohort'] = 'Inscription dans la cohorte {$a}';
+$string['registerallpictures'] = 'Enregistrer les sommes de contrôle de tous les avatars';
 $string['reinitialisation'] = 'Réinitialiser des cours';
 $string['remoteenrolled'] = 'Utilisateur {$a->username} inscrit en tant que {$a->rolename} sur {$a->wwwroot} dans le cours {$a->coursename}';
 $string['remoteserviceerror'] = 'Erreur du service distant';
@@ -407,25 +408,25 @@ Ce fichier est une simple liste textuelle (un item par ligne) des identifiants p
 
 $string['coursereinitializeformat'] = 'Format de fichier de réinitialisation de cours';
 $string['coursereinitializeformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+Le fichier de réinitialisation des cours peut être au format ISO ou UTF-8 suivant les réglages généraux de l\'outil Sync Tool. 
 The first line must hold column titles in any order.
-The first field must identify a course, depending on the selected course primary identifier in configuration : 
+Le premier champ de chaque ligne doit désigner un cours, suivant ce qui a été choisi comme identifiant primaire dans la configuration de l\'outil de cours : 
 
-<li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
-<li><i>shortname</i>: Using the course shortname</li>
-<li><i>idnumber</i>: Using the IDNumber of the course</li>
+<li><i>id</i>: L\'identifiant numérique interne du cours.</li>
+<li><i>shortname</i>: Le nom court du cours</li>
+<li><i>idnumber</i>: Le numéro d\'identification du cours</li>
 
-<p>Mandatory fields : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings, blog_associations, comments, modules</b>
+<p>Champs obligatoires : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings, blog_associations, comments, modules</b>
 
-<p>Usual value is \'yes\' or \'no\' unless :</p>
-<li><i>roles</i>: a list of role shortnames, separed by spaces.</li>
-<li><i>local_roles</i>: \'all\' (roles and overrides), \'roles\' or \'overrides\'.</li>
-<li><i>grades</i>: \'all\' (items and grades), \'items\' or \'grades\'.</li>
-<li><i>groups</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
-<li><i>groupings</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
-<li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
+<p>Les valeurs courantes sont \'yes\' ou \'no\' sauf :</p>
+<li><i>roles</i>: une liste de noms courts de roles, séparés par des espaces.</li>
+<li><i>local_roles</i>: \'all\' (rôles et surcharges de rôles), \'roles\' (assignations de rôles seulement) ou \'overrides\' (surcharges seulement).</li>
+<li><i>grades</i>: \'all\' (items et notes), \'items\' (définition des items de notes seulement) ou \'grades\' (notes seulement).</li>
+<li><i>groups</i>: \'all\' (groupes et membres) ou \'members\' (affectations aux groupes seulement).</li>
+<li><i>groupings</i>: \'all\' (groupements et composition des groupements) ou \'members\' (composition des groupements seulement).</li>
+<li><i>modules</i>: \'all\' (tous les modules), ou une liste de types de modules à réinitialiser.</li>
 
-<p>Additional fields can be added for more specific control for modules: 
+<p>Des champs supplémentaires peuvent être ajoutés pour un contrôle plus fin sur les modules :
 <b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions, assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
 
 ';
@@ -470,14 +471,15 @@ Le fichier d\'inscriptions est un fichier texte CSV encodé en UTF-8 ou ISO selo
 $string['cohortformat'] = 'Format de fichier d\'alimentation de cohortes';
 $string['cohortformat_help'] = '
 Le fichier de création de cohortes est un fichier texte ISO ou UTF-8 suivant la configuration locale.
-The first line must hold column titles in any order.
+La première ligne doit contenir le nom des colonnes de données, dans n\'importe quel ordre. Les lignes suivantes contiennent les données selon l\'ordre
+defini par la première ligne.
 
-<p>Mandatory fields: <b>cohortid, userid</b></p>
+<p>Champs obligatoires : <b>cohortid, userid</b></p>
 
 <li><i>cohortid</i> : Un identifiant de cohorte, selon la configuration de l\'outil de synchronisation. Peut être l\'id, le nom, ou l\'idnumber.</li>
 <li><i>userid</i> : Un identifiant d\'utilisateur selon la configuration de l\'outil de synchonisation. Peut être l\'id, l\'email, le username, ou l\'idnumber.</li>
 
-<p>Optional fields: <b>cdescription, cidnumber</b></p>
+<p>Champs facultatifs : <b>cdescription, cidnumber</b></p>
 
 <li><i>cdescription</i> : Si la cohorte doit être créée, une description textuelle.</li>
 <li><i>cidnumber</i> : Si la cohorte doit être créée, l\'idnumber. Dans ce cas, l\'identifiant devra être choisi comme \'name\'.</li>
