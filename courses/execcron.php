@@ -15,7 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * @package   tool_sync
+ * @category  tool
  * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -33,14 +37,16 @@ raise_memory_limit('512M');
 // Capture incoming files in <moodledata>/sync.
 tool_sync_capture_input_files(false);
 
+// Security.
+
 $systemcontext = context_system::instance();
 $PAGE->set_context(null);
+require_login();
+require_capability('tool/sync:configure', $systemcontext);
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
 
-require_login();
-require_capability('tool/sync:configure', $systemcontext);
 
 $url = new moodle_url('/admin/tool/sync/courses/execcron.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));

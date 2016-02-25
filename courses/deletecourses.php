@@ -15,24 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A moodle addon to quickly remove a number of courses by uploading an
- *       unformatted text file containing the shortnames of the courses
- *       each on its own line
- *
+ * @package   tool_sync
+ * @category  tool
  * @author Funck Thibaut
- *
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once('../../../../config.php');
+require('../../../../config.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/lib/uploadlib.php');
 
+// Security.
+
+require_login();
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-require_login();
 require_capability('tool/sync:configure', $systemcontext);
 
 $strenrolname = get_string('enrolname', 'tool_sync');
@@ -43,7 +44,7 @@ set_time_limit(300);
 
 list($usec, $sec) = explode(' ', microtime());
 $time_start = ((float)$usec + (float)$sec);
-$url = $CFG->wwwroot.'/admin/tool/sync/courses/deletecourses.php';
+$url = new moodle_url('/admin/tool/sync/courses/deletecourses.php');
 $PAGE->navigation->add($strenrolname);
 $PAGE->navigation->add($strdeletecourses);
 $PAGE->set_url($url);

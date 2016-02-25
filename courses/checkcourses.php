@@ -15,11 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * @package   tool_sync
+ * @category  tool
  * @author Funck Thibaut
- * @package tool-sync
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once('../../../../config.php');
+require('../../../../config.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php');
@@ -27,13 +30,14 @@ require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
-$systemcontext = context_system::instance();
-$PAGE->set_context($systemcontext);
+// Security.
 
 require_login();
+$systemcontext = context_system::instance();
+$PAGE->set_context($systemcontext);
 require_capability('tool/sync:configure', $systemcontext);
 
-$url = $CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php';
+$url = new moodle_url('/admin/tool/sync/courses/checkcourses.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('coursecheck', 'tool_sync'), null);
 $PAGE->set_url($url);

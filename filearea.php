@@ -17,9 +17,9 @@
 /**
  * Manage files in folder in private area.
  *
- * @package   core_user
- * @category  files
- * @copyright 2010 Petr Skoda (http://skodak.org)
+ * @package   tool_sync
+ * @category  tool
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,14 +27,15 @@ require('../../../config.php');
 require_once($CFG->dirroot.'/admin/tool/sync/files_form.php');
 require_once($CFG->dirroot.'/repository/lib.php');
 
-require_login();
-
 $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
 if (empty($returnurl)) {
     $returnurl = new moodle_url('/admin/tool/sync/index.php');
 }
 
+// Security.
+
+require_login();
 $context = context_system::instance();
 require_capability('tool/sync:configure', $context);
 

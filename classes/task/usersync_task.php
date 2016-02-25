@@ -14,15 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package tool_sync
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright (C) 2014 onwards Microsoft Open Technologies, Inc. (http://msopentech.com/)
- */
 namespace tool_sync\task;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * @package   tool_sync
+ * @category  tool
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/logmuter.class.php');
 
 /**
  * Scheduled task to sync users by file.
@@ -42,6 +47,9 @@ class usersync_task extends \core\task\scheduled_task {
      * Do the job.
      */
     public function execute() {
+        $logmuter = new logmuter();
+        $logmuter->activate();
+
         // Ensure we have all input files.
         tool_sync_capture_input_files(false);
 
@@ -49,6 +57,8 @@ class usersync_task extends \core\task\scheduled_task {
         $syncconfig = get_config('tool_sync');
         $usersmanager = new \tool_sync\users_sync_manager();
         $usersmanager->cron($syncconfig);
+
+        $logmuter->deactivate();
         return true;
     }
 }

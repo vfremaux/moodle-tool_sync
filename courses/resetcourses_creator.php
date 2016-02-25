@@ -15,9 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @author Valery Fremaux
- * @package admin/tool
- * @subpackage sync
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -27,9 +29,10 @@ require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
+// Security.
+
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-
 require_login();
 require_capability('tool/sync:configure', $systemcontext);
 

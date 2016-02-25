@@ -16,16 +16,14 @@
 
 namespace tool_sync;
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('You cannot use this script this way!');
-}
-
+defined('MOODLE_INTERNAL') || die();
 /**
-* @author Valery Fremaux
-* @package enrol
-* @subpackage sync
-*
-**/
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/lib.php');

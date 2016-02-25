@@ -15,12 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A moodle addon to quickly remove a number of courses by uploading an
- *       unformatted text file containing the shortnames of the courses
- *       each on its own line
- *
+ * @package   tool_sync
+ * @category  tool
  * @author Funck Thibaut
- *
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -30,6 +29,8 @@ require_once($CFG->libdir.'/moodlelib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 require_once($CFG->dirroot.'/lib/uploadlib.php');
+
+// Security.
 
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);

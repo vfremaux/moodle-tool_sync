@@ -16,22 +16,21 @@
 
 namespace tool_sync;
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('You cannot use this script this way!');
-}
-
+defined('MOODLE_INTERNAL') || die();
 /**
-* @author Funck Thibaut
-* @package tool-sync
-*
-**/
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/group/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
 
 /**
- * The Enrol Plugin Manager manages role assignaitns and enrollements from a CSV input file.
+ * The Enrol Plugin Manager manages role assignations and enrollements from a CSV input file.
  *
  */
 class enrol_sync_manager extends sync_manager {
@@ -115,7 +114,7 @@ class enrol_sync_manager extends sync_manager {
         }
 
         $headers = explode($csv_delimiter2, $text);
-        
+
         array_walk($headers, 'trim_array_values');
 
         foreach ($headers as $h) {
@@ -229,7 +228,7 @@ class enrol_sync_manager extends sync_manager {
             $context = \context_course::instance($course->id);
 
             // Get enrolment plugin and method.
-            if ($enrolments = enrol_get_instances($course->id, true)){
+            if ($enrolments = enrol_get_instances($course->id, true)) {
                 $enrol = array_pop($enrolments);
                 $enrolcomponent = 'enrol_'.$enrol->enrol;
                 $enrolinstance = $enrol->id;
@@ -249,16 +248,20 @@ class enrol_sync_manager extends sync_manager {
             }
 
             // start process record
-            
-            if($record['cmd'] == 'del' || $record['cmd'] == 'delete'){
-                if (!empty($record['enrol'])){
 
-                    // unenrol also removes all role assigniations
-                    try{
-                        $enrolplugin->unenrol_user($enrol, $user->id);
-                        $this->report(get_string('unenrolled', 'tool_sync', $e));
-                    } catch (Exception $exc) {
-                        $this->report(get_string('errorunenrol', 'tool_sync', $e));
+            if ($record['cmd'] == 'del' || $record['cmd'] == 'delete') {
+                if (!empty($record['enrol'])) {
+
+                    // unenrol also removes all role assignations
+                    if (empty($syncconfig->simulate)) {
+                        try {
+                            $enrolplugin->unenrol_user($enrol, $user->id);
+                            $this->report(get_string('unenrolled', 'tool_sync', $e));
+                        } catch (Exception $exc) {
+                            $this->report(get_string('errorunenrol', 'tool_sync', $e));
+                        }
+                    } else {
+                        $this->report('SIMULATION : '.get_string('unenrolled', 'tool_sync', $e));
                     }
 
                 } else {
@@ -266,42 +269,59 @@ class enrol_sync_manager extends sync_manager {
                         // avoids weird behaviour of role assignement in other assignement admin
                         $enrolcomponent = '';
                         $enrolinstance = 0;
-                        if(!role_unassign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, time())) {
-                            $this->report(get_string('errorunassign', 'tool_sync', $e));
+
+                        if (empty($syncconfig->simulate)) {
+                            if (!role_unassign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, time())) {
+                                $this->report(get_string('errorunassign', 'tool_sync', $e));
+                            } else {
+                                $this->report(get_string('unassign', 'tool_sync', $e));
+                            }
                         } else {
-                            $this->report(get_string('unassign', 'tool_sync', $e));
+                            $this->report('SIMULATION : '.get_string('unassign', 'tool_sync', $e));
                         }
                     } else {
-                        if(!role_unassign(null, $user->id, $context->id, $enrolcomponent, $enrolinstance)) {
-                            $this->report(get_string('errorunassign', 'tool_sync', $e));
+                        if (empty($syncconfig->simulate)) {
+                            if(!role_unassign(null, $user->id, $context->id, $enrolcomponent, $enrolinstance)) {
+                                $this->report(get_string('errorunassign', 'tool_sync', $e));
+                            } else {
+                                $this->report(get_string('unassignall', 'tool_sync', $e));
+                            }
                         } else {
-                            $this->report(get_string('unassignall', 'tool_sync', $e));
+                            $this->report('SIMULATION : '.get_string('unassignall', 'tool_sync', $e));
                         }
                     }
                 }
 
-            } elseif ($record['cmd'] == 'add'){
+            } elseif ($record['cmd'] == 'add') {
                 if ($role = $DB->get_record('role', array('shortname' => $record['rolename']))) {
 
-                    if (!empty($record['enrol'])){
+                    if (!empty($record['enrol'])) {
                         // Uses manual enrolment plugin to enrol AND assign role properly
                         // enrollment with explicit role does role_assignation
-                        try {
-                            $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'], $record['endtime'], ENROL_USER_ACTIVE);
-                            $this->report(get_string('enrolled', 'tool_sync', $e));
-                        } catch (Exception $exc){
-                            $this->report(get_string('errorenrol', 'tool_sync', $e));
+                        if (empty($syncconfig->simulate)) {
+                            try {
+                                $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'], $record['endtime'], ENROL_USER_ACTIVE);
+                                $this->report(get_string('enrolled', 'tool_sync', $e));
+                            } catch (Exception $exc){
+                                $this->report(get_string('errorenrol', 'tool_sync', $e));
+                            }
+                        } else {
+                            $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
                         }
                     } else {
                         if (!$DB->get_record('role_assignments', array('roleid' => $role->id, 'contextid' => $context->id, 'userid' => $user->id, 'component' => ''))) {
-                            if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])) {
-                            // if(!role_assign($role->id, $user->id, $context->id)){
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($text);
+                            if (empty($syncconfig->simulate)) {
+                                if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])) {
+                                // if(!role_assign($role->id, $user->id, $context->id)){
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($text);
+                                    }
+                                    $this->report(get_string('errorline', 'tool_sync')." $i : $mycmd $myrole $myuser $mycourse : $user->lastname $user->firstname == $role->shortname ==> $course->shortname");
+                                } else {
+                                    $this->report(get_string('assign', 'tool_sync', $e));
                                 }
-                                $this->report(get_string('errorline', 'tool_sync')." $i : $mycmd $myrole $myuser $mycourse : $user->lastname $user->firstname == $role->shortname ==> $course->shortname");
                             } else {
-                                $this->report(get_string('assign', 'tool_sync', $e));
+                                $this->report('SIMULATION : '.get_string('assign', 'tool_sync', $e));
                             }
                         } else {
                             $this->report(get_string('alreadyassigned', 'tool_sync', $e));
@@ -321,11 +341,15 @@ class enrol_sync_manager extends sync_manager {
 
                     // unenrol also unassign all roles
                     if (!empty($record['enrol'])) {
-                        try {
-                            $enrolplugin->unenrol_user($enrol, $user->id);
-                            $this->report(get_string('unenrolled', 'tool_sync', $e));
-                        } catch (Exception $exc) {
-                            $this->report(get_string('errorunenrol', 'tool_sync', $e));
+                        if (empty($syncconfig->simulate)) {
+                            try {
+                                $enrolplugin->unenrol_user($enrol, $user->id);
+                                $this->report(get_string('unenrolled', 'tool_sync', $e));
+                            } catch (Exception $exc) {
+                                $this->report(get_string('errorunenrol', 'tool_sync', $e));
+                            }
+                        } else {
+                            $this->report('SIMULATION : '.get_string('unenrolled', 'tool_sync', $e));
                         }
                     } else {
                         if ($roles = get_user_roles($context, $user->id)) {
@@ -333,10 +357,14 @@ class enrol_sync_manager extends sync_manager {
                                 // Weird behaviour
                                 $enrolcomponent = '';
                                 $enrolinstance = 0;
-                                if (!role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent, $enrolinstance)) {
-                                    $this->report(get_string('unassignerror', 'tool_sync', $e));
+                                if (empty($syncconfig->simulate)) {
+                                    if (!role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent, $enrolinstance)) {
+                                        $this->report(get_string('unassignerror', 'tool_sync', $e));
+                                    } else {
+                                        $this->report(get_string('unassign', 'tool_sync', $e));
+                                    }
                                 } else {
-                                    $this->report(get_string('unassign', 'tool_sync', $e));
+                                    $this->report('SIMULATION : '.get_string('unassign', 'tool_sync', $e));
                                 }
                             }
                         }
@@ -345,20 +373,28 @@ class enrol_sync_manager extends sync_manager {
                     // maybe we need enrol this user (if first time in shift list)
                     // enrolement does perform role_assign
                     if (!empty($record['enrol'])) {
-                        try {
-                            $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'], $record['endtime'], ENROL_USER_ACTIVE);
-                            $this->report(get_string('enrolled', 'tool_sync', $e));
-                        } catch(Exception $exc){
-                            $this->report(get_string('errorenrol', 'tool_sync', $e));
+                        if (empty($syncconfig->simulate)) {
+                            try {
+                                $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'], $record['endtime'], ENROL_USER_ACTIVE);
+                                $this->report(get_string('enrolled', 'tool_sync', $e));
+                            } catch(Exception $exc){
+                                $this->report(get_string('errorenrol', 'tool_sync', $e));
+                            }
+                        } else {
+                            $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
                         }
                     } else {
-                        if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])) {
-                            if (!empty($syncconfig->filefailed)) {
-                                $this->feed_tryback_file($text);
+                        if (empty($syncconfig->simulate)) {
+                            if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, $record['starttime'])) {
+                                if (!empty($syncconfig->filefailed)) {
+                                    $this->feed_tryback_file($text);
+                                }
+                                $this->report(get_string('errorassign', 'tool_sync', $e));
+                            } else {
+                                $this->report(get_string('assign', 'tool_sync', $e));
                             }
-                            $this->report(get_string('errorassign', 'tool_sync', $e));
                         } else {
-                            $this->report(get_string('assign', 'tool_sync', $e));
+                            $this->report('SIMULATION : '.get_string('assign', 'tool_sync', $e));
                         }
                     }
 
@@ -388,37 +424,49 @@ class enrol_sync_manager extends sync_manager {
                                     $groupsettings = new \StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
-                                    if ($gid = groups_create_group($groupsettings)) {
-                                        $groupid[$i] = $gid;
-                                        $e->group = $record['g'.$i];
-                                        $this->report(get_string('groupcreated', 'tool_sync', $e));
+                                    if (empty($syncconfig->simulate)) {
+                                        if ($gid = groups_create_group($groupsettings)) {
+                                            $groupid[$i] = $gid;
+                                            $e->group = $record['g'.$i];
+                                            $this->report(get_string('groupcreated', 'tool_sync', $e));
+                                        } else {
+                                            $e->group = $record['g'.$i];
+                                            $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                        }
                                     } else {
                                         $e->group = $record['g'.$i];
-                                        $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                        $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
+                                        $gid = 999999; // Simulate a created gtoup
                                     }
                                 } else {
                                     $e->group = $record['g'.$i];
-                                    $this->report(get_string('groupunknown','tool_sync',$e));
+                                    $this->report(get_string('groupunknown', 'tool_sync', $e));
                                     continue;
                                 }
                             }
 
-                            $e->group = $record['g'.$i];
-                            
                             if (count(get_user_roles($context, $user->id))) {
-                                if (groups_add_member($groupid[$i], $user->id)) {
-                                    $this->report(get_string('addedtogroup','tool_sync',$e));
+                                if (empty($syncconfig->simulate)) {
+                                    if (groups_add_member($groupid[$i], $user->id)) {
+                                        $this->report(get_string('addedtogroup', 'tool_sync', $e));
+                                    } else {
+                                        $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
+                                    }
                                 } else {
-                                    $this->report(get_string('addedtogroupnot','tool_sync',$e));
+                                    $this->report('SIMULTION : '.get_string('addedtogroup', 'tool_sync', $e));
                                 }
                             } else {
-                                $this->report(get_string('addedtogroupnotenrolled','',$record['g'.$i]));
+                                $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$i]));
                             }
                         }
                     }
                 } elseif ($record['gcmd'] == 'greplace' || $record['gcmd'] == 'greplacecreate') {
-                    groups_delete_group_members($course->id, $user->id); 
-                    $this->report(get_string('groupassigndeleted', 'tool_sync', $e));
+                    if (empty($syncconfig->simulate)) {
+                        groups_delete_group_members($course->id, $user->id);
+                        $this->report(get_string('groupassigndeleted', 'tool_sync', $e));
+                    } else {
+                        $this->report('SIMULATION : '.get_string('groupassigndeleted', 'tool_sync', $e));
+                    }
                     for ($i = 1 ; $i < 10 ; $i++) {
                         if (!empty($record['g'.$i])) {
                             if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
@@ -428,25 +476,33 @@ class enrol_sync_manager extends sync_manager {
                                     $groupsettings = new \StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
-                                    if ($gid = groups_create_group($groupsettings)) {
-                                        $groupid[$i] = $gid;
-                                        $e->group = $record['g'.$i];
-                                        $this->report(get_string('groupcreated', 'tool_sync', $e));
+                                    if (empty($syncconfig->simulate)) {
+                                        if ($gid = groups_create_group($groupsettings)) {
+                                            $groupid[$i] = $gid;
+                                            $e->group = $record['g'.$i];
+                                            $this->report(get_string('groupcreated', 'tool_sync', $e));
+                                        } else {
+                                            $e->group = $record['g'.$i];
+                                            $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                        }
                                     } else {
-                                        $e->group = $record['g'.$i];
-                                        $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                        $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
                                     }
                                 } else {
                                     $e->group = $record['g'.$i];
-                                    $this->report(get_string('groupunknown','tool_sync',$e));
+                                    $this->report(get_string('groupunknown', 'tool_sync', $e));
                                 }
                             }
-                            
+
                             if (count(get_user_roles($context, $user->id))) {
-                                if (groups_add_member($groupid[$i], $user->id)) {
-                                    $this->report(get_string('addedtogroup','tool_sync',$e));
+                                if (empty($syncconfig->simulate)) {
+                                    if (groups_add_member($groupid[$i], $user->id)) {
+                                        $this->report(get_string('addedtogroup', 'tool_sync', $e));
+                                    } else {
+                                        $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
+                                    }
                                 } else {
-                                    $this->report(get_string('addedtogroupnot','tool_sync',$e));
+                                    $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
                                 }
                             } else {
                                 $this->report(get_string('addedtogroupnotenrolled','',$record['g'.$i]));
@@ -472,67 +528,69 @@ class enrol_sync_manager extends sync_manager {
             $this->write_tryback($filerec);
         }
 
-        if (!empty($syncconfig->filearchive)) {
-            $this->archive_input_file($filerec);
-        }
-
-        if (!empty($syncconfig->filecleanup)) {
-            $this->cleanup_input_file($filerec);
-        }
-
-        if (!empty($syncconfig->eventcleanup)) {
-
-            $admin = get_admin();
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%user_enrolment_updated'
-            ";
-            $DB->execute($sql, array($admin->id));
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%user_enrolment_created'
-            ";
-            $DB->execute($sql, array($admin->id));
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%user_enrolment_deleted'
-            ";
-            $DB->execute($sql, array($admin->id));
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%role_assigned'
-            ";
-            $DB->execute($sql, array($admin->id));
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%role_unassigned'
-            ";
-            $DB->execute($sql, array($admin->id));
+        if (empty($syncconfig->simulate)) {
+            if (!empty($syncconfig->filearchive)) {
+                $this->archive_input_file($filerec);
+            }
+    
+            if (!empty($syncconfig->filecleanup)) {
+                $this->cleanup_input_file($filerec);
+            }
+    
+            if (!empty($syncconfig->eventcleanup)) {
+    
+                $admin = get_admin();
+    
+                $sql = "
+                    DELETE FROM
+                    {logstore_standard_log}
+                    WHERE
+                    origin = 'cli' AND
+                    userid = ? AND
+                    eventname LIKE '%user_enrolment_updated'
+                ";
+                $DB->execute($sql, array($admin->id));
+    
+                $sql = "
+                    DELETE FROM
+                    {logstore_standard_log}
+                    WHERE
+                    origin = 'cli' AND
+                    userid = ? AND
+                    eventname LIKE '%user_enrolment_created'
+                ";
+                $DB->execute($sql, array($admin->id));
+    
+                $sql = "
+                    DELETE FROM
+                    {logstore_standard_log}
+                    WHERE
+                    origin = 'cli' AND
+                    userid = ? AND
+                    eventname LIKE '%user_enrolment_deleted'
+                ";
+                $DB->execute($sql, array($admin->id));
+    
+                $sql = "
+                    DELETE FROM
+                    {logstore_standard_log}
+                    WHERE
+                    origin = 'cli' AND
+                    userid = ? AND
+                    eventname LIKE '%role_assigned'
+                ";
+                $DB->execute($sql, array($admin->id));
+    
+                $sql = "
+                    DELETE FROM
+                    {logstore_standard_log}
+                    WHERE
+                    origin = 'cli' AND
+                    userid = ? AND
+                    eventname LIKE '%role_unassigned'
+                ";
+                $DB->execute($sql, array($admin->id));
+            }
         }
 
         $this->report("\n".get_string('endofreport', 'tool_sync'));

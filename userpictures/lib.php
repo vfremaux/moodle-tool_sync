@@ -1,16 +1,35 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
- * A local library revamped from 
- * @author Valery Fremaux (valery.fremaux@gmail.com)
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @see /admin/tool/uploaduser/picture.php 
+ *
+ * A local library revamped from 
  *
  * The essential reasons of the revamping are : 
  * - getting a real separate library for functions (original functions embedded in page script) 
  * - changing notifications to message logging output
- */
-
-/**
+ *
  * Create a unique temporary directory with a given prefix name,
  * inside a given directory, with given permissions. Return the
  * full path to the newly created temp directory.
@@ -21,8 +40,6 @@
  *
  * @return string The full path to the temp directory.
  */
-
-if (!defined('MOODLE_INTERNAL')) die('You cannot use this script this way');
 
 /**
  * Create a unique temporary directory with a given prefix name,

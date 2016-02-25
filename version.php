@@ -18,7 +18,7 @@
  * Flat file enrolment plugin version specification.
  *
  * @package    tool_sync
- * @copyright  2013 Valery Fremaux 
+ * @copyright  2010 Valery Fremaux 
  * @author     Valery Fremaux
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,4 +30,4 @@ $plugin->requires  = 2014041100;        // Requires this Moodle version
 $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_RC;
 // $plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
-$plugin->release = '2.7.0 (Build 2015070400)';
+$plugin->release = '2.7.0 (Build 2015112600)';

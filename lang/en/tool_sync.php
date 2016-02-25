@@ -58,6 +58,7 @@ $string['coursesync'] = 'Courses synchronization';
 $string['courseupdated'] = 'Course {$a->shortname} updated.';
 $string['createtextreport'] = 'Do you want to create a text report?';
 $string['creatingcohort'] = 'Creating cohort {$a}';
+$string['creatingcoursefromarchive'] = 'Creating course with {$a}';
 $string['criticaltime'] = 'Time limit';
 $string['taskrunmsg'] = 'Script execution on {$a}<br/>.';
 $string['taskrunmsgnofile'] = 'No file<br/>.';
