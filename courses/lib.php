@@ -138,7 +138,7 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
 function tool_sync_config_add_sync_prefix($cfg){
 
     $formobj = new StdClass();
-    
+
     foreach($cfg as $key => $value){
         $fullkey = 'tool_sync/'.$key;
         $formobj->$fullkey = $value;

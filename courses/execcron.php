@@ -47,7 +47,6 @@ require_capability('tool/sync:configure', $systemcontext);
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
 
-
 $url = new moodle_url('/admin/tool/sync/courses/execcron.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('coursesync', 'tool_sync'));
