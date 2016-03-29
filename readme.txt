@@ -42,4 +42,5 @@ Drop the folder into the <moodleroot>/admin/tool directory.
 2015112600 : Adds handling for storing a hash of incoming user picture (before processing) so it can be
 given back to sender and checked for changes.
 
+2016032400 : Adding the LogMuter class to avoid tons of logs when syncing.
  

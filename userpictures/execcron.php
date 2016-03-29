@@ -15,9 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package tool_sync
- * @author Funck Thibaut
- *
+ * @package   tool_sync
+ * @category  tool
+ * @author    Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>, <valery@edunao.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -25,9 +27,10 @@ require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
 
+// Security.
+
 $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
-
 require_login();
 require_capability('tool/sync:configure', $systemcontext);
 
@@ -48,24 +51,15 @@ $PAGE->navigation->add(get_string('userpicturesmgtmanual', 'tool_sync'));
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
-$action = optional_param('action', 'process', PARAM_TEXT);
+$action = optional_param('action', 'proces', PARAM_TEXT);
 
 if ($action == 'registerallpictures') {
-    $confirmurl = new moodle_url('/admin/tool/sync/userpictures/execcron.php', array('action' => 'confirmregisterallpictures'));
-    $cancelurl = new moodle_url('/admin/tool/sync/index.php');
-    echo $OUTPUT->header();
-    echo $OUTPUT->confirm(get_string('confirm'), $confirmurl, $cancelurl);
-    echo $OUTPUT->footer();
-    exit;
-} elseif ($action == 'confirmregisterallpictures') {
-    echo $OUTPUT->header();
-    echo '<pre>';
-    echo '<h3>Updating user pictures</h3>';
-    update_all_user_picture_hashes(true);
-    echo '</pre>';
-    echo $OUTPUT->continue_button(new moodle_url('/admin/tool/sync/index.php'));
-    echo $OUTPUT->footer();
-    exit;
+    $form = new ConfirmForm($url);
+} elseif ($action == 'configregisterallpictures') {
+}
+
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/admin/tool/sync/index.php'));
 }
 
 echo $OUTPUT->header();

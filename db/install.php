@@ -24,7 +24,25 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot.'/admin/tool/sync/users/courses.class.php');
-require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
-require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrol.class.php');
+function xmldb_tool_sync_install(){
+    global $USER, $DB, $CFG;
 
+    // Will add a custom user info field to stroe avatar checksum
+
+    if (!$DB->record_exists('user_info_field', array('shortname' => 'userpicturehash'))) {
+        $rec = new StdClass();
+        $rec->shortname = 'userpicturehash';
+        $rec->name = get_string('userpicturehash', 'tool_sync');
+        $rec->datatype = 'textarea';
+        $rec->description = '';
+        $rec->descriptionformat = 0;
+        $rec->required = 0;
+        $rec->locked = 1;
+        $rec->visible = 0;
+        $rec->categoryid = 0;
+        $rec->sortorder = 999;
+        $DB->insert_record('user_info_field', $rec);
+    }
+
+    return true;
+}
