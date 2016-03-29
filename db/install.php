@@ -14,6 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 function xmldb_tool_sync_install(){
     global $USER, $DB, $CFG;
 
@@ -33,4 +43,6 @@ function xmldb_tool_sync_install(){
         $rec->sortorder = 999;
         $DB->insert_record('user_info_field', $rec);
     }
+
+    return true;
 }

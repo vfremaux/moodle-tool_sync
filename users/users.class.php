@@ -16,9 +16,14 @@
 
 namespace tool_sync;
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('You cannot use this script this way!');
-}
+defined('MOODLE_INTERNAL') || die();
+/**
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 /** The following flags are set in the configuration
  * @author Funck Thibaut
@@ -729,7 +734,7 @@ class users_sync_manager extends sync_manager {
                                         // In case this block is installed, mark access authorisations in the user's profile.
                                         if (file_exists($CFG->dirroot.'/blocks/user_mnet_hosts/xlib.php')) {
                                             include_once($CFG->dirroot.'/blocks/user_mnet_hosts/xlib.php');
-                                            if ($result = user_mnet_host_add_access($user, $c->wwwroot)) {
+                                            if ($result = user_mnet_hosts_add_access($user, $c->wwwroot)) {
                                                 if (preg_match('/error/', $result)) {
                                                     $this->report(get_string('errorsettingremoteaccess', 'tool_sync', $result));
                                                 } else {

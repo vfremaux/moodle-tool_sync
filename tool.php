@@ -16,11 +16,14 @@
 
 namespace tool_sync;
 
+defined('MOODLE_INTERNAL') || die;
+
 /**
-* @package enrol
-* @subpackage sync
-* @author Funck Thibaut
-*/
+ * @package   tool_sync
+ * @category  tool
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');

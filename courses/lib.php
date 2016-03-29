@@ -14,6 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * @package   tool_sync
+ * @category  tool
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 /**
  * An helper function to create the course deletion file from a selection
  */
@@ -129,7 +138,7 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
 function tool_sync_config_add_sync_prefix($cfg){
 
     $formobj = new StdClass();
-    
+
     foreach($cfg as $key => $value){
         $fullkey = 'tool_sync/'.$key;
         $formobj->$fullkey = $value;

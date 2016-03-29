@@ -14,12 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-if (!defined('MOODLE_INTERNAL')) die('You cannot use this script this way');
+defined('MOODLE_INTERNAL') || die;
 
-require_once('courses/courses.class.php');
-require_once('users/users.class.php');
-require_once('enrol/enrols.class.php');
-require_once('userpictures/userpictures.class.php');
+/**
+ * @package   tool_sync
+ * @category  tool
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
 
 define('SYNC_COURSE_CHECK', 0x001);
 define('SYNC_COURSE_CREATE', 0x002);

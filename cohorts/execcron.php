@@ -15,20 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
-* @package tool
-* @subpackage @sync
-*
-*/
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
 
-$systemcontext = context_system::instance();
-$PAGE->set_context($systemcontext);
+// Security.
 
 require_login();
+$systemcontext = context_system::instance();
+$PAGE->set_context($systemcontext);
 require_capability('tool/sync:configure', $systemcontext);
 
 // Capture incoming files in <moodledata>/sync.

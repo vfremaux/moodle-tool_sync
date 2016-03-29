@@ -16,9 +16,15 @@
 
 namespace tool_sync;
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('You cannot use this script this way!');
-}
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * @package   tool_sync
+ * @category  tool
+ * @author    Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 // The following flags are set in the configuration
 // $CFG->users_filelocation:       where is the file we are looking for?

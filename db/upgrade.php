@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
- * Language customization report upgrades
- *
- * @package    tool
- * @subpackage delivery
- * @copyright  2010 David Mudrak <david.mudrak@gmail.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   tool_sync
+ * @category  tool
+ * @author Funck Thibaut
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 function xmldb_tool_sync_upgrade($oldversion) {
@@ -31,7 +32,6 @@ function xmldb_tool_sync_upgrade($oldversion) {
     if ($oldversion < 2015112600) {
         require_once($CFG->dirroot.'/admin/tool/sync/db/install.php');
         xmldb_tool_sync_install();
-        upgrade_plugin_savepoint(true, 2015112600, 'tool', 'sync');
     }
 
     return true;

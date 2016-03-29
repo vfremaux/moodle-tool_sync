@@ -16,9 +16,14 @@
 
 namespace tool_sync;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
+ * @package   tool_sync
+ * @category  tool
  * @author Funck Thibaut
- *
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
@@ -471,10 +476,14 @@ class course_sync_manager extends sync_manager {
                     }
                     $data = (object)$data;
 
-                    $status = reset_course_userdata($data);
+                    if (empty($syncconfig->simulate)) {
+                        $status = reset_course_userdata($data);
+                        $this->report("Summary:", false);
+                    } else {
+                        $this->report("SIMULATION Summary:", false);
+                    }
 
                     // array operation ligne par ligne avec array component / item / error
-                    $this->report("Summary:", false);
                     foreach ($status as $line) {
 
                         $str = $line['component'] ." : ";
@@ -587,12 +596,16 @@ class course_sync_manager extends sync_manager {
                         continue;
                     }
 
-                    if (delete_course($c->id, false)) {
-                        $deleted++;
-                        $this->report(get_string('coursedeleted', 'tool_sync', $cid));
+                    if (empty($syncconfig->simulate)) {
+                        if (delete_course($c->id, false)) {
+                            $deleted++;
+                            $this->report(get_string('coursedeleted', 'tool_sync', $cid));
+                        }
+                    } else {
+                        $this->report('SIMULATION : '.get_string('coursedeleted', 'tool_sync', $cid));
                     }
                 }
-                if ($deleted) {
+                if ($deleted && empty($syncconfig->simulate)) {
                     fix_course_sortorder();
                 }
                 fclose($filereader);
@@ -600,11 +613,13 @@ class course_sync_manager extends sync_manager {
                 if (!empty($syncconfig->filefailed)) {
                     $this->write_tryback($filerec);
                 }
-                if (!empty($syncconfig->filearchive)) {
-                    $this->archive_input_file($filerec);
-                }
-                if (!empty($syncconfig->filecleanup)) {
-                    $this->cleanup_input_file($filerec);
+                if (empty($syncconfig->simulate)) {
+                    if (!empty($syncconfig->filearchive)) {
+                        $this->archive_input_file($filerec);
+                    }
+                    if (!empty($syncconfig->filecleanup)) {
+                        $this->cleanup_input_file($filerec);
+                    }
                 }
             }
         }
@@ -851,12 +866,12 @@ class course_sync_manager extends sync_manager {
                         $curstatus = 0;
         
                         foreach ($bulkcourse['category'] as $catindex => $catname) {
-                            $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent);
+                            $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent, $syncconfig);
                             switch ($curstatus) {
                                   case 1: // Skipped the category, already exists.
                                       break;
                                   case 2: // Created a category.
-                                    $cat_c++;
+                                      $cat_c++;
                                       break;
                                   default:
                                     $cat_e += count($bulkcourse['category']) - $catindex;
@@ -889,7 +904,7 @@ class course_sync_manager extends sync_manager {
                         $this->report(get_string('errorcategoryparenterror', 'tool_sync', $e));
                         continue;
                     } else {
-                        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $validate);
+                        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $validate, $syncconfig);
                         $e = new \StdClass;
                         $e->coursename = $bulkcourse['shortname'];
                         $e->shortname = $bulkcourse['shortname'];
@@ -1389,7 +1404,7 @@ class course_sync_manager extends sync_manager {
         return ((float)$usec + (float)$sec);
     }
 
-    function fast_get_category_ex($hname, &$hstatus, $hparent = 0) {
+    function fast_get_category_ex($hname, &$hstatus, $hparent = 0, $syncconfig = null) {
         // Find category with the given name and parentID, or create it, in both cases returning a category ID
         /* $hstatus:
             -1  :   Failed to create category
@@ -1419,16 +1434,20 @@ class course_sync_manager extends sync_manager {
             $cat->visible = 1;
             $cat->depth = $parent->depth + 1;
             $cat->timemodified = time();
-            if ($cat->id = $DB->insert_record('course_categories', $cat)) {
-                $hstatus = 2;
-
-                // Must post update.
-                $cat->path = $parent->path.'/'.$cat->id;
-                $DB->update_record('course_categories', $cat);
-                // We must make category context.
-                \context_helper::create_instances(CONTEXT_COURSECAT);
+            if (empty($synconfig->simulate)) {
+                if ($cat->id = $DB->insert_record('course_categories', $cat)) {
+                    $hstatus = 2;
+    
+                    // Must post update.
+                    $cat->path = $parent->path.'/'.$cat->id;
+                    $DB->update_record('course_categories', $cat);
+                    // We must make category context.
+                    \context_helper::create_instances(CONTEXT_COURSECAT);
+                } else {
+                    return -1;
+                }
             } else {
-                $hstatus = -1;
+                return 999999; // Simulate a category id
             }
             return $cat->id;
         }
@@ -1437,7 +1456,7 @@ class course_sync_manager extends sync_manager {
     /**
      * create a course.
      */
-    function fast_create_course_ex($hcategoryid, $course, $headers, $validate) { 
+    function fast_create_course_ex($hcategoryid, $course, $headers, $validate, $syncconfig) { 
         global $CFG, $DB, $USER;
 
         if (!is_array($course) || !is_array($headers) || !is_array($validate)) {
@@ -1515,7 +1534,7 @@ class course_sync_manager extends sync_manager {
                 $archive = $fs->create_file_from_pathname($filerec, $course['template']);
             }
 
-            tool_sync_report($CFG->tool_sync_courselog, "Creating course with ".$archive->get_filename()."\n");
+            $this->report(get_string('creatingcoursefromarchive', 'tool_sync', $archive->get_filename()));
 
             $uniq = rand(1, 9999);
 
@@ -1549,7 +1568,9 @@ class course_sync_manager extends sync_manager {
                         \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $user_doing_the_restore,
                         \backup::TARGET_NEW_COURSE );
                 $controller->execute_precheck();
-                $controller->execute_plan();
+                if (empty($syncconfig->simulate)) {
+                    $controller->execute_plan();
+                }
 
                 // Commit
                 $transaction->allow_commit();
@@ -1565,10 +1586,12 @@ class course_sync_manager extends sync_manager {
                         }
                         $newcourse->$field = $value;
                     }
-                    try {
-                        $DB->update_record('course', $newcourse);
-                    } catch(Exception $e) {
-                        mtrace('failed updating');
+                    if (empty($syncconfig->simulate)) {
+                        try {
+                            $DB->update_record('course', $newcourse);
+                        } catch(Exception $e) {
+                            mtrace('failed updating');
+                        }
                     }
                 } else {
                     return -23;
@@ -1578,93 +1601,102 @@ class course_sync_manager extends sync_manager {
             }
         } else {
             // Create default course.
-            $newcourse = create_course($courserec);
-            $format = (!isset($course['format'])) ? 'topics' : $course['format'] ; // may be useless
-            if (isset($course['topics'])) {
-                // Any topic headings specified ?
-                $maxfilledtopics = 1;
-                foreach ($course['topics'] as $dtopicno => $dtopicname) {
-                    if (!empty($dtopicname)) {
-                        // We guess the max declared topic.
-                        $maxfilledtopics = $dtopicno;
-                    }
-                    if (strstr($dtopicname, '|') === false) {
-                        $sectionname = $dtopicname;
-                        $sectionsummary = '';
-                    } else {
-                        list($sectionname, $sectionsummary) = explode('|', $dtopicname);
-                    }
-
-                    if (!$sectiondata = $DB->get_record('course_sections', array('section' => $dtopicno, 'course' => $newcourse->id))) { 
-                        // Avoid overflowing topic headings.
-                        $csection = new \StdClass;
-                        $csection->course = $newcourse->id;
-                        $csection->section = $dtopicno;
-                        $csection->name = $sectionname;
-                        $csection->summary = $sectionsummary;
-                        $csection->sequence = '';
-                        $csection->visible = 1;
-                        if (!$DB->insert_record('course_sections', $csection)) {
+            if (empty($syncconfig->simulate)) { 
+                $newcourse = create_course($courserec);
+                $format = (!isset($course['format'])) ? 'topics' : $course['format'] ; // may be useless
+                if (isset($course['topics'])) {
+                    // Any topic headings specified ?
+                    $maxfilledtopics = 1;
+                    foreach ($course['topics'] as $dtopicno => $dtopicname) {
+                        if (!empty($dtopicname)) {
+                            // We guess the max declared topic.
+                            $maxfilledtopics = $dtopicno;
                         }
-                    } else {
-                        $sectiondata->summary = $sectionname;
-                        $sectiondata->name = $sectionsummary;
-                        $DB->update_record('course_sections', $sectiondata);
+                        if (strstr($dtopicname, '|') === false) {
+                            $sectionname = $dtopicname;
+                            $sectionsummary = '';
+                        } else {
+                            list($sectionname, $sectionsummary) = explode('|', $dtopicname);
+                        }
+    
+                        if (!$sectiondata = $DB->get_record('course_sections', array('section' => $dtopicno, 'course' => $newcourse->id))) { 
+                            // Avoid overflowing topic headings.
+                            $csection = new \StdClass;
+                            $csection->course = $newcourse->id;
+                            $csection->section = $dtopicno;
+                            $csection->name = $sectionname;
+                            $csection->summary = $sectionsummary;
+                            $csection->sequence = '';
+                            $csection->visible = 1;
+                            if (!$DB->insert_record('course_sections', $csection)) {
+                            }
+                        } else {
+                            $sectiondata->summary = $sectionname;
+                            $sectiondata->name = $sectionsummary;
+                            $DB->update_record('course_sections', $sectiondata);
+                        }
                     }
-                }
-                if (!isset($course['topics'][0])) {
-                    if (!$DB->get_record('course_sections', array('section' => 0, 'course' => $newcourse->id))) {
+                    if (!isset($course['topics'][0])) {
+                        if (!$DB->get_record('course_sections', array('section' => 0, 'course' => $newcourse->id))) {
+                            $csection = new \StdClass;
+                            $csection->course = $newcourse->id;
+                            $csection->section = 0;
+                            $csection->name = '';
+                            $csection->summary = '';
+                            $csection->sequence = '';
+                            $csection->visible = 1;
+                            if (!$DB->insert_record('course_sections', $csection)) {
+                                return -3;
+                            }
+                        }
+                    }
+    
+                    // finally we can bind the course to have $maxfilledtopics topics
+                    $new = 0;
+                    if (!$formatoptions = $DB->get_record('course_format_options', array('courseid' => $newcourse->id, 'name' => 'numsections', 'format' => $format))) {
+                        $formatoptions = new \StdClass();
+                        $new = 1;
+                    }
+                    $formatoptions->courseid = $newcourse->id;
+                    $formatoptions->format = $format;
+                    $formatoptions->name = 'numsections';
+                    $formatoptions->section = 0;
+                    $formatoptions->value = $maxfilledtopics;
+                    if ($new) {
+                        $DB->insert_record('course_format_options', $formatoptions);
+                    } else {
+                        $DB->update_record('course_format_options', $formatoptions);
+                    }
+                } else {
+                    $numsections = get_config('numsections', 'moodlecourse');
+                    for ($i = 1 ; $i < $numsections ; $i++) {
+                        // use course default to reshape the course creation
                         $csection = new \StdClass;
                         $csection->course = $newcourse->id;
-                        $csection->section = 0;
+                        $csection->section = $i;
                         $csection->name = '';
                         $csection->summary = '';
                         $csection->sequence = '';
                         $csection->visible = 1;
-                        if (!$DB->insert_record('course_sections', $csection)) {
-                            return -3;
+                        try {
+                            $DB->insert_record('course_sections', $csection);
+                        } catch(Exception $e) {
                         }
                     }
                 }
+                rebuild_course_cache($newcourse->id, true);
 
-                // finally we can bind the course to have $maxfilledtopics topics
-                $new = 0;
-                if (!$formatoptions = $DB->get_record('course_format_options', array('courseid' => $newcourse->id, 'name' => 'numsections', 'format' => $format))) {
-                    $formatoptions = new \StdClass();
-                    $new = 1;
+                if (!$context = \context_course::instance($newcourse->id)) {
+                    return -6;
                 }
-                $formatoptions->courseid = $newcourse->id;
-                $formatoptions->format = $format;
-                $formatoptions->name = 'numsections';
-                $formatoptions->section = 0;
-                $formatoptions->value = $maxfilledtopics;
-                if ($new) {
-                    $DB->insert_record('course_format_options', $formatoptions);
-                } else {
-                    $DB->update_record('course_format_options', $formatoptions);
-                }
+
             } else {
-                $numsections = get_config('numsections', 'moodlecourse');
-                for ($i = 1 ; $i < $numsections ; $i++) {
-                    // use course default to reshape the course creation
-                    $csection = new \StdClass;
-                    $csection->course = $newcourse->id;
-                    $csection->section = $i;
-                    $csection->name = '';
-                    $csection->summary = '';
-                    $csection->sequence = '';
-                    $csection->visible = 1;
-                    try {
-                        $DB->insert_record('course_sections', $csection);
-                    } catch(Exception $e) {
-                    }
-                }
+                $newcourse = new \StdClass;
+                $newcourse->shortname = 'SIMUL';
+                $newcourse->fullname = 'Simulation';
+                $newcourse->id = 999999;
+                $this->report('SIMULATION : '.get_string('coursecreated', 'tool_sync'));
             }
-            rebuild_course_cache($newcourse->id, true);
-        }
-
-        if (!$context = \context_course::instance($newcourse->id)) {
-            return -6;
         }
 
         if (isset($course['teachers_enrol']) && (count($course['teachers_enrol']) > 0)) { 
@@ -1679,8 +1711,10 @@ class course_sync_manager extends sync_manager {
                     $roleassignrec->timemodified = $course['timecreated'];
                     $roleassignrec->modifierid = 0;
                     $roleassignrec->enrol = 'manual';
-                    if (!$DB->insert_record('role_assignments', $roleassignrec)) {
-                        return -4;
+                    if (empty($syncconfig->simulate)) {
+                        if (!$DB->insert_record('role_assignments', $roleassignrec)) {
+                            return -4;
+                        }
                     }
                 }
             }
