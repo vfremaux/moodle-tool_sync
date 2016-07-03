@@ -55,13 +55,21 @@ class users_sync_manager extends sync_manager {
 
         $frm->addElement('checkbox', 'tool_sync/sendpasswordtousers', get_string('sendpasswordtousers', 'tool_sync'));
 
-        $identifieroptions = array('idnumber' => 'idnumber', 'username' => 'username', 'email' => 'email');
+        $identifieroptions = $this->get_userfields();
         $frm->addElement('select', 'tool_sync/primaryidentity', get_string('primaryidentity', 'tool_sync'), $identifieroptions);
+        $frm->setDefault('tool_sync/primaryidentity', 'idnumber');
         $frm->setType('tool_sync/primaryidentity', PARAM_TEXT);
 
         $params = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/users/execcron.php\'');
         $frm->addElement('button', 'manualusers', get_string('manualuserrun', 'tool_sync'), $params);
 
+    }
+
+    function get_userfields() {
+        return array('id' => 'id',
+                     'idnumber' => 'idnumber',
+                     'username' => 'username',
+                     'email' => 'email');
     }
 
     // Override the get_access_icons() function.
@@ -769,6 +777,7 @@ class users_sync_manager extends sync_manager {
             $this->cleanup_input_file($filerec);
         }
 
+        /*
         if (!empty($syncconfig->eventcleanup)) {
             $admin = get_admin();
 
@@ -802,6 +811,7 @@ class users_sync_manager extends sync_manager {
             ";
             $DB->execute($sql, array($admin->id));
         }
+        */
         return true;
     }
 }
