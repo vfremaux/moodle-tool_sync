@@ -283,12 +283,12 @@ class course_sync_manager extends sync_manager {
 
                     // processing local role assigns and overrides
                     if ($record['local_roles'] == 'all') {
-                        $data['reset_local_roles'] = 1;
-                        $data['reset_local_overrides'] = 1;
+                        $data['reset_roles_local'] = 1;
+                        $data['reset_roles_overrides'] = 1;
                     } elseif ($record['local_roles'] == 'roles') {
-                        $data['reset_local_roles'] = 1;
+                        $data['reset_roles_local'] = 1;
                     } elseif ($record['local_roles'] == 'overrides') {
-                        $data['reset_local_overrides'] = 1;
+                        $data['reset_roles_overrides'] = 1;
                     } else {
                         $this->report(get_string('nolocalroletoprocess', 'tool_sync', $i), false);
                     }
