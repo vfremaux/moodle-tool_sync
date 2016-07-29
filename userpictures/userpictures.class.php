@@ -98,7 +98,7 @@ class userpictures_sync_manager extends sync_manager {
         $overwritepicture = $syncconfig->userpictures_overwrite;
 
         if (!array_key_exists($userfield, $userfields)) {
-            $this->report(get_string('uploadpicture_baduserfield','admin'));
+            $this->report(get_string('uploadpicture_baduserfield', 'admin'));
             return;
         } 
 
@@ -128,7 +128,7 @@ class userpictures_sync_manager extends sync_manager {
             } else {
                 $results = array ('errors' => 0,'updated' => 0);
 
-                $this->process_directory($zipdir, $userfields[$userfield], $overwritepicture, $results);
+                $this->process_directory($zipdir, $userfield, $overwritepicture, $results);
 
                 // Finally remove the temporary directory with all the user images and print some stats.
                 remove_dir($zipdir);
@@ -160,12 +160,13 @@ class userpictures_sync_manager extends sync_manager {
         return true;
     }
 
-    function get_userfields(){
+    function get_userfields() {
 
         $ufs = array (
-            0 => 'username',
-            1 => 'idnumber',
-            2 => 'id' );
+            'id' => 'id',
+            'idnumber' => 'idnumber',
+            'username' => 'username',
+            'email' => 'email' );
 
         return $ufs;
     }
