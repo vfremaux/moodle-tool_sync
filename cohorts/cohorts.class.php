@@ -48,11 +48,13 @@ class cohorts_sync_manager extends sync_manager {
         $frm->addElement('text', 'tool_sync/cohorts_filelocation', get_string('cohortfilelocation', 'tool_sync'));
         $frm->setType('tool_sync/cohorts_filelocation', PARAM_TEXT);
 
-        $identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
-        $frm->addElement('select', 'tool_sync/cohorts_useridentifier', get_string('cohortuseridentifier', 'tool_sync'), $identifieroptions);
+        $frm->addElement('select', 'tool_sync/cohorts_useridentifier', get_string('cohortuseridentifier', 'tool_sync'), $this->get_userfields());
+        $frm->setDefault('tool_sync/cohorts_useridentifier', 'idnumber');
+        $frm->setType('tool_sync/cohorts_useridentifier', PARAM_TEXT);
 
-        $identifieroptions = array('0' => 'idnumber', '1' => 'name', '2' => 'id');
-        $frm->addElement('select', 'tool_sync/cohorts_cohortidentifier', get_string('cohortcohortidentifier', 'tool_sync'), $identifieroptions);
+        $frm->addElement('select', 'tool_sync/cohorts_cohortidentifier', get_string('cohortcohortidentifier', 'tool_sync'), $this->get_cohortfields());
+        $frm->setDefault('tool_sync/cohorts_cohortidentifier', 'idnumber');
+        $frm->setType('tool_sync/cohorts_cohortidentifier', PARAM_TEXT);
 
         $frm->addElement('static', 'usersst1', '<hr>');
 
@@ -63,6 +65,19 @@ class cohorts_sync_manager extends sync_manager {
 
     /// Override the get_access_icons() function
     public function get_access_icons($course) {
+    }
+
+    function get_userfields() {
+        return array('id' => 'id',
+                     'idnumber' => 'idnumber',
+                     'username' => 'username',
+                     'email' => 'email');
+    }
+
+    function get_cohortfields() {
+        return array('id' => 'id',
+                     'idnumber' => 'idnumber',
+                     'name' => 'name');
     }
 
     /**
@@ -187,11 +202,11 @@ class cohorts_sync_manager extends sync_manager {
             }
 
             // Find assignable items.
-            $UIDS = array('idnumber', 'username', 'email', 'id');
+            $userfields = $this->get_userfields();
             if (empty($syncconfig->cohorts_useridentifier)) {
                 $syncconfig->cohorts_useridentifier = 0;
             }
-            $uid = $UIDS[$syncconfig->cohorts_useridentifier];
+            $uid = $userfields[$syncconfig->cohorts_useridentifier];
             if (!$user = $DB->get_record('user', array( $uid => $record['userid'] ))) {
                 // @TODO trak in log, push in runback file
                 $e = new \StdClass();
@@ -201,11 +216,11 @@ class cohorts_sync_manager extends sync_manager {
                 continue;
             }
 
-            $CIDS = array('idnumber', 'name', 'id');
+            $cohortfields = $this->get_cohortfields();
             if (empty($syncconfig->cohorts_cohortidentifier)) {
                 $syncconfig->cohorts_cohortidentifier = 0;
             }
-            $cid = $CIDS[$syncconfig->cohorts_cohortidentifier];
+            $cid = $cohortfields[$syncconfig->cohorts_cohortidentifier];
             if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))) {
                 if ((!$autocreatecohorts || $syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohort'])) {
                     // @TODO trak in log, push in runback file
