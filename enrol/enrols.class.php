@@ -40,11 +40,9 @@ class enrol_sync_manager extends sync_manager {
         $frm->addElement('text', 'tool_sync/enrol_filelocation', get_string('enrolfilelocation', 'tool_sync'));
         $frm->setType('tool_sync/enrol_filelocation', PARAM_TEXT);
 
-        $identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
-        $frm->addElement('select', 'tool_sync/enrol_courseidentifier', get_string('enrolcourseidentifier', 'tool_sync'), $identifieroptions);
+        $frm->addElement('select', 'tool_sync/enrol_courseidentifier', get_string('enrolcourseidentifier', 'tool_sync'), $this->get_coursefields());
 
-        $identifieroptions = array('0' => 'idnumber', '1' => 'username', '2' => 'email', '3' => 'id');
-        $frm->addElement('select', 'tool_sync/enrol_useridentifier', get_string('enroluseridentifier', 'tool_sync'), $identifieroptions);
+        $frm->addElement('select', 'tool_sync/enrol_useridentifier', get_string('enroluseridentifier', 'tool_sync'), $this->get_userfields());
 
         $frm->addElement('advcheckbox', 'tool_sync/enrol_mailadmins', get_string('enrolemailcourseadmins', 'tool_sync'), '', array('group' => 1), array(0, 1));
 
@@ -53,6 +51,17 @@ class enrol_sync_manager extends sync_manager {
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/enrol/execcron.php\'');
         $frm->addElement('button', 'manualenrols', get_string('manualenrolrun', 'tool_sync'), $attribs);
 
+    }
+
+    function get_userfields() {
+        return array('id' => 'id', 
+                     'idnumber' => get_string('idnumber'),
+                     'username' => get_string('username'),
+                     'email' => get_string('email'));
+    }
+
+    function get_coursefields() {
+        return array('id' => 'id', 'idnumber' => 'idnumber', 'shortname' => get_string('shortname'));
     }
 
     function cron($syncconfig) {

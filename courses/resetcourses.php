@@ -16,7 +16,7 @@
 
 /**
  * @author Funck Thibaut
- * @package tool-sync
+ * @package tool_sync
  */
 
 require_once('../../../../config.php');

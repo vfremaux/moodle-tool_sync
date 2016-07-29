@@ -74,7 +74,7 @@ class ToolForm extends moodleform {
 
         // $mform->addElement('header', get_string('optionheader', 'tool_sync'));
         $mainmanager->form_elements($mform);
-        
+
         $this->add_action_buttons();
 
     }
