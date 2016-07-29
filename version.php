@@ -18,7 +18,7 @@
  * Flat file enrolment plugin version specification.
  *
  * @package    tool_sync
- * @copyright  2010 Valery Fremaux 
+ * @copyright  2013 Valery Fremaux 
  * @author     Valery Fremaux
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

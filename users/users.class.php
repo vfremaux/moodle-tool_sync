@@ -33,6 +33,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
 require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/group/lib.php');
 
 class users_sync_manager extends sync_manager {
 
@@ -420,7 +421,7 @@ class users_sync_manager extends sync_manager {
                         try {
                             // This triggers event as required.
                             if (!$syncconfig->simulate) {
-                                user_update_user($user);
+                                user_update_user($user, false);
                                 $this->report(get_string('useraccountupdated', 'tool_sync', "$user->firstname $user->lastname as [$user->username] ($idnumber)"));
                             } else {
                                 $this->report('SIMULATION : '.get_string('useraccountupdated', 'tool_sync', "$user->firstname $user->lastname as [$user->username] ($idnumber)"));
@@ -460,7 +461,7 @@ class users_sync_manager extends sync_manager {
                     try {
                         // This will also trigger the event.
                         if (!$syncconfig->simulate) {
-                            $user->id = user_create_user($user);
+                            $user->id = user_create_user($user, false);
                             $this->report(get_string('useraccountadded', 'tool_sync', "$user->id , $user->username "));
                             $usersnew++;
                             if (empty($user->password) && $createpassword) {
@@ -635,7 +636,7 @@ class users_sync_manager extends sync_manager {
                                     if ($gid) {
                                         if (count(get_user_roles($coursecontext, $user->id))) {
                                             if (!$syncconfig->simulate) {
-                                                if (add_user_to_group($gid, $user->id)) {
+                                                if (groups_add_member($gid, $user->id)) {
                                                     $this->report(get_string('addedtogroup', '',$c->group));
                                                 } else {
                                                     $this->report(get_string('addedtogroupnot', '',$c->group));

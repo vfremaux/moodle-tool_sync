@@ -135,16 +135,16 @@ class course_sync_manager extends sync_manager {
                         'events' => 1,
                         'logs' => 1,
                         'notes' => 1,
-                        'completion' => 1,
                         'grades' => 1,
                         'roles' => 1,
                         'local_roles' => 1,
                         'groups' => 1,
                         'groupings' => 1,
-                        'blog_associations' => 1,
-                        'comments' => 1,
                         'modules' => 1);
                 $optional = array(
+                        'blog_associations' => 1,
+                        'comments' => 1,
+                        'completion' => 1,
                         'forum_all' => 1,
                         'forum_subscriptions' => 1,
                         'glossary_all' => 1, /*glossary*/
@@ -254,8 +254,8 @@ class course_sync_manager extends sync_manager {
                         $this->report(get_string('noeventstoprocess', 'tool_sync', $i), false);
                     }
 
-                    // Processing events.
-                    if ($record['blog_associations'] == 'yes') {
+                    // Processing blog associations.
+                    if (!array_key_exists('blog_associations', $record) || ($record['blog_associations'] == 'yes')) {
                         $data['delete_blog_associations'] = 1;
                     } else {
                         $this->report(get_string('noblogstoprocess', 'tool_sync', $i), false);
@@ -275,7 +275,7 @@ class course_sync_manager extends sync_manager {
                     }
 
                     // processing comments
-                    if ($record['comments'] == 'yes') {
+                    if (!array_key_exists('comments', $record) || ($record['comments'] == 'yes')) {
                         $data['reset_comments'] = 1;
                     } else {
                         $this->report(get_string('nocommentstoprocess', 'tool_sync', $i), false);
@@ -306,16 +306,21 @@ class course_sync_manager extends sync_manager {
                     }
 
                     // processing role assignations
-                    $roles = explode(' ', $record['roles']);
-                    $reset_roles = array();
-                    $nbrole = 0;
-                    foreach ($roles as $rolename) {
-                        if ($role = $DB->get_record('role', array('shortname' => $rolename))) {
-                            $reset_roles[$nbrole] = $role->id;
-                            $data['unenrol_users'][$nbrole] = $role->id;
-                            $nbrole++;
-                        } else {
-                            $this->report("[Error] role $rolename unkown.\n");
+                    if ($record['roles'] == 'all') {
+                        $roles = $DB->get_record('roles');
+                        foreach ($roles as $role) {
+                            $data['unenrol_users'][] = $role->id;
+                        }
+                    } else {
+                        $roles = explode(' ', $record['roles']);
+                        $nbrole = 0;
+                        foreach ($roles as $rolename) {
+                            if ($role = $DB->get_record('role', array('shortname' => $rolename))) {
+                                $data['unenrol_users'][$nbrole] = $role->id;
+                                $nbrole++;
+                            } else {
+                                $this->report("[Error] role $rolename unkown.\n");
+                            }
                         }
                     }
 
