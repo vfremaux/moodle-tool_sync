@@ -1,4 +1,7 @@
-function selectcourses(courses, courseselection){
+
+function selectcourses(courses, courseselection) {
+
+    var selection;
 
     selection = courses.selectedIndex;
     if (selection != -1) {
@@ -55,7 +58,7 @@ function priorite_champ(selection, mode) {
 
     if (mode == 'up' && old_place > 0) {
         new_place = old_place - 1;
-    } elseif ((mode == 'down') && (old_place < selection.length-1)) {
+    } else if ((mode == 'down') && (old_place < selection.length-1)) {
         new_place = old_place+1;
     }
 

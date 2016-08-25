@@ -26,6 +26,7 @@ require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 // Security.
 
@@ -51,21 +52,74 @@ $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
+$form = new InputfileLoadform($url, array('localfile' => $syncconfig->cohorts_filelocation));
+
+$canprocess = false;
+
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/admin/tool/sync/index.php'));
+}
+
+if ($data = $form->get_data()) {
+
+    $syncconfig->simulate = @$data->simulate;
+
+    if (!empty($data->uselocal)) {
+        // Use the server side stored file.
+        $usersmanager = new \tool_sync\users_sync_manager();
+        $processedfile = $syncconfig->cohorts_filelocation;
+        $canprocess = true;
+    } else {
+        // Use the just uploaded file.
+
+        $fs = get_file_storage();
+        $usercontext = context_user::instance($USER->id);
+
+        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
+
+            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
+
+            // Take last as former is the / directory.
+            $uploadedfile = array_pop($areafiles);
+
+            $manualfilerec = new StdClass();
+            $manualfilerec->contextid = $usercontext->id;
+            $manualfilerec->component = 'user';
+            $manualfilerec->filearea = 'draft';
+            $manualfilerec->itemid = $data->inputfile;
+            $manualfilerec->filepath = $uploadedfile->get_filepath();
+            $manualfilerec->filename = $uploadedfile->get_filename();
+            $processedfile = $manualfilerec->filename;
+
+            $usersmanager = new \tool_sync\cohorts_sync_manager($manualfilerec);
+            $canprocess = true;
+        } else {
+            $errormes = "Failed loading a file";
+        }
+    }
+}
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading_with_help(get_string('cohortmgtmanual', 'tool_sync'), 'cohortsync', 'tool_sync');
 
-echo '<pre>';
-$cohortssmanager->cron($syncconfig);
-echo '</pre>';
-$address = @$syncconfig->cohorts_filelocation;
+$form->display();
 
-$cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
-$taskrunmsg = get_string('taskrunmsg', 'tool_sync', $address);
+if ($canprocess) {
 
-echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";
-echo "<center>$taskrunmsg</center>";
-echo '</fieldset>';
+    $address = @$syncconfig->cohorts_filelocation;
+
+    $cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
+    $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $address);
+
+    echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";
+    echo "<center>$taskrunmsg</center>";
+
+    echo '<pre>';
+    $cohortssmanager->cron($syncconfig);
+    echo '</pre>';
+
+    echo '</fieldset>';
+}
 
 // always return to main tool view.
 echo $renderer->print_return_button();
