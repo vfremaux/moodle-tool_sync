@@ -105,15 +105,16 @@ echo $OUTPUT->heading_with_help(get_string('enrolmgtmanual', 'tool_sync'), 'enro
 $form->display();
 
 if ($canprocess) {
-    echo '<pre>';
-    $enrolsmanager->cron($syncconfig);
-    echo '</pre>';
-
     $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
     $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
 
     echo "<br/><fieldset><legend><strong>$enrolmgtmanual</strong></legend>";
     echo "<center>$taskrunmsg</center>";
+
+    echo '<pre>';
+    $enrolsmanager->cron($syncconfig);
+    echo '</pre>';
+
     echo '</fieldset>';
 }
 
