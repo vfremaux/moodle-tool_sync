@@ -30,7 +30,6 @@ require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 $action = optional_param('action', SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE_DELETE, PARAM_INT);
-
 set_time_limit(1800);
 raise_memory_limit('512M');
 
@@ -61,7 +60,7 @@ if ($action == SYNC_COURSE_DELETE) {
 } else if ($action == SYNC_COURSE_CHECK) {
     $form = new InputfileLoadform($url, array('localfile' => $syncconfig->course_fileexistlocation));
     $singlecommand = true;
-} else if ($action == SYNC_COURSE_CREATE_DELETE) {
+} else if ($action == SYNC_COURSE_CREATE) {
     $form = new InputfileLoadform($url, array('localfile' => $syncconfig->course_fileuploadlocation));
     $singlecommand = true;
 } else {
@@ -76,7 +75,6 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
-
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
         $coursesmanager = new \tool_sync\course_sync_manager($action);
@@ -106,7 +104,7 @@ if ($data = $form->get_data()) {
             $manualfilerec->filepath = $uploadedfile->get_filepath();
             $manualfilerec->filename = $uploadedfile->get_filename();
             $processedfile = $manualfilerec->filename;
-    
+
             $coursesmanager = new \tool_sync\course_sync_manager($action, $manualfilerec);
             $canprocess = true;
         } else {
@@ -119,51 +117,50 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading_with_help(get_string('coursesync', 'tool_sync'), 'coursesync', 'tool_sync');
 
-if ($action & SYNC_COURSE_CHECK) {
-    if ($syncconfig->course_fileexistlocation) {
-        $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_fileexistlocation);
-        echo "<center>$taskrunmsg</center>";
-    } else {
-        $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
-        echo "<center>$taskrunmsg</center>";
-    }
-}
-
-if ($action & SYNC_COURSE_DELETE) {
-    if ($syncconfig->course_filedeletelocation) {
-        $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_filedeletelocation);
-        echo "<center>$taskrunmsg</center>";
-    } else {
-        $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
-        echo "<center>$taskrunmsg</center>";
-    }
-}
-
-if ($action & SYNC_COURSE_CREATE_DELETE) {
-    if ($syncconfig->course_fileuploadlocation) {
-        $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_fileuploadlocation);
-        echo "<center>$taskrunmsg</center>";
-    } else {
-        $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
-        echo "<center>$taskrunmsg</center>";
-    }
-}
-
+$formdata = new StdClass;
+$formdata->action = $action;
+$form->set_data($formdata);
 $form->display();
 
 if ($canprocess) {
+
+    $coursemgtmanual = get_string('coursemgtmanual', 'tool_sync');
+    echo "<br/><fieldset><legend><strong>$coursemgtmanual</strong></legend>";
+
+    if ($action & SYNC_COURSE_CHECK) {
+        if ($syncconfig->course_fileexistlocation) {
+            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_fileexistlocation);
+            echo "<center>$taskrunmsg</center>";
+        } else {
+            $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
+            echo "<center>$taskrunmsg</center>";
+        }
+    }
+    
+    if ($action & SYNC_COURSE_DELETE) {
+        if ($syncconfig->course_filedeletelocation) {
+            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_filedeletelocation);
+            echo "<center>$taskrunmsg</center>";
+        } else {
+            $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
+            echo "<center>$taskrunmsg</center>";
+        }
+    }
+    
+    if ($action & SYNC_COURSE_CREATE) {
+        if ($syncconfig->course_fileuploadlocation) {
+            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_fileuploadlocation);
+            echo "<center>$taskrunmsg</center>";
+        } else {
+            $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
+            echo "<center>$taskrunmsg</center>";
+        }
+    }
+
+    echo '</fieldset>';
     echo '<pre>';
     $coursesmanager->cron($syncconfig);
     echo '</pre>';
-
-    if ($singlecommand) {
-        $coursemgtmanual = get_string('coursemgtmanual', 'tool_sync');
-        $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
-
-        echo "<br/><fieldset><legend><strong>$coursemgtmanual</strong></legend>";
-        echo "<center>$taskrunmsg</center>";
-        echo '</fieldset>';
-    }
 }
 
 // always return to main tool view.

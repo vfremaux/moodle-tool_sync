@@ -31,3 +31,8 @@ $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnost
 $plugin->maturity = MATURITY_RC;
 // $plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
 $plugin->release = '2.9.0 (Build 2016030800)';
+
+// Non Moodle fields
+// This fields will help overmanagement code builders without forcing upgrade to play
+$plugin->codeversion = 2016030800.00;
+$plugin->codeincrement = 0;

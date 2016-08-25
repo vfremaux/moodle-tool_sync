@@ -89,7 +89,7 @@ class course_sync_manager extends sync_manager {
         $barr = array();
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_RESET.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CREATE_DELETE.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CREATE.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('manualuploadrun', 'tool_sync'), $attribs);
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_DELETE.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('manualdeleterun', 'tool_sync'), $attribs);
