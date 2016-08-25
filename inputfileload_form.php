@@ -33,6 +33,9 @@ class InputFileLoadForm extends moodleform {
 
         $fileoptions = array('maxfiles' => 1);
 
+        $form->addElement('hidden', 'action');
+        $form->setType('action', PARAM_TEXT);
+
         if (!empty($this->_customdata['localfile'])) {
             $form->addElement('submit', 'uselocal', get_string('uselocal', 'tool_sync', $this->_customdata['localfile']));
         }

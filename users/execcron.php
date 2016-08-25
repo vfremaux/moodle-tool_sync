@@ -106,15 +106,17 @@ echo $OUTPUT->heading_with_help(get_string('usermgtmanual', 'tool_sync'), 'users
 $form->display();
 
 if ($canprocess) {
-    echo '<pre>';
-    $usersmanager->cron($syncconfig);
-    echo '</pre>';
 
     $usermgtmanual = get_string('usermgtmanual', 'tool_sync');
     $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
 
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
     echo "<center>$taskrunmsg</center>";
+
+    echo '<pre>';
+    $usersmanager->cron($syncconfig);
+    echo '</pre>';
+
     echo '</fieldset>';
 }
 
