@@ -59,7 +59,7 @@ class userpictures_sync_manager extends sync_manager {
         $barr = array();
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/userpictures/execcron.php\'');
         $frm->addElement('button', 'manualuserpictures', get_string('manualuserpicturesrun', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action=registerallpictures\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?what=registerallpictures\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);

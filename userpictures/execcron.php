@@ -51,18 +51,17 @@ $PAGE->navigation->add(get_string('userpicturesmgtmanual', 'tool_sync'));
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
-$action = optional_param('action', 'proces', PARAM_TEXT);
+$action = optional_param('what', 'process', PARAM_TEXT);
 
-if ($action == 'registerallpictures') {
-    $form = new ConfirmForm($url);
-} elseif ($action == 'configregisterallpictures') {
-}
-
-if ($form->is_cancelled()) {
-    redirect(new moodle_url('/admin/tool/sync/index.php'));
-}
 
 echo $OUTPUT->header();
+
+if (!optional_param('confirm', false, PARAM_BOOL)) {
+    echo $OUTPUT->heading(get_string('userpicturesmanualsync', 'tool_sync'));
+    echo $OUTPUT->confirm(get_string('confirm'), new moodle_url('/admin/tool/sync/userpictures/execcron.php', array('confirm' => 1)), new moodle_url('/admin/tool/sync/index.php'));
+    echo $OUTPUT->footer();
+    die;
+}
 
 echo $OUTPUT->heading_with_help(get_string('userpicturesync', 'tool_sync'), 'userpicturesync', 'tool_sync');
 
