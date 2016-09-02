@@ -233,8 +233,8 @@ class cohorts_sync_manager extends sync_manager {
             }
 
             // make cohort if cohort info explicit and not existing
+            $t = time();
             if (!$cohort) {
-                $t = time();
                 $cohort = new \StdClass();
                 $cohort->name = $record['cohortid'];
                 $cohort->description = @$record['cdescription'];
