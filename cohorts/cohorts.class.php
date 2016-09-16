@@ -56,6 +56,14 @@ class cohorts_sync_manager extends sync_manager {
         $frm->setDefault('tool_sync/cohorts_cohortidentifier', 'idnumber');
         $frm->setType('tool_sync/cohorts_cohortidentifier', PARAM_TEXT);
 
+        $frm->addElement('checkbox', 'tool_sync/cohorts_autocreate', get_string('cohortautocreate', 'tool_sync'));
+        $frm->setDefault('tool_sync/cohorts_autocreate', 1);
+        $frm->setType('tool_sync/cohorts_autocreate', PARAM_BOOL);
+
+        $frm->addElement('checkbox', 'tool_sync/cohorts_syncdelete', get_string('cohortsyncdelete', 'tool_sync'));
+        $frm->setDefault('tool_sync/cohorts_syncdelete', 1);
+        $frm->setType('tool_sync/cohorts_syncdelete', PARAM_BOOL);
+
         $frm->addElement('static', 'usersst1', '<hr>');
 
         $params = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/cohorts/execcron.php\'');
@@ -88,9 +96,11 @@ class cohorts_sync_manager extends sync_manager {
 
         $systemcontext = \context_system::instance();
 
+        $config = get_config('tool_sync');
+
         // Internal process controls
-        $syncdeletions = true;
-        $autocreatecohorts = true;
+        $syncdeletions = 0 + @$config->cohorts_syncdelete;
+        $autocreatecohorts = 0 + @$config->cohorts_autocreate;
 
         if (!$adminuser = get_admin()) {
             // print_error('errornoadmin', 'tool_sync');
@@ -222,30 +232,29 @@ class cohorts_sync_manager extends sync_manager {
             }
             $cid = $cohortfields[$syncconfig->cohorts_cohortidentifier];
             if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))) {
-                if ((!$autocreatecohorts || $syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohort'])) {
-                    // @TODO trak in log, push in runback file
-                    $e = new \StdClass;
-                    $e->cid = $cid;
-                    $e->identifier = $record['cohortid'];
-                    $this->report(get_string('cohortnotfound', 'tool_sync', $e));
-                    continue;
+                if (!$autocreatecohorts) {
+                    if (($syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohort'])) {
+                        // @TODO trak in log, push in runback file
+                        $e = new \StdClass;
+                        $e->cid = $cid;
+                        $e->identifier = $record['cohortid'];
+                        $this->report(get_string('cohortnotfound', 'tool_sync', $e));
+                        continue;
+                    }
+                } else {
+                    // Make cohort if cohort info explicit and not existing.
+                    $t = time();
+                    $cohort = new \StdClass();
+                    $cohort->name = $record['cohortid'];
+                    $cohort->description = @$record['cdescription'];
+                    $cohort->idnumber = @$record['cidnumber'];
+                    $cohort->descriptionformat = FORMAT_MOODLE;
+                    $cohort->contextid = $systemcontext->id;
+                    $cohort->timecreated = $t;
+                    $cohort->timemodified = $t;
+                    $cohort->id = $DB->insert_record('cohort', $cohort);
+                    $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
                 }
-            }
-
-            // make cohort if cohort info explicit and not existing
-            $t = time();
-            if (!$cohort) {
-                $cohort = new \StdClass();
-                $cohort->name = $record['cohortid'];
-                $cohort->description = @$record['cdescription'];
-                $cohort->idnumber = @$record['cidnumber'];
-                $cohort->descriptionformat = FORMAT_MOODLE;
-                $cohort->contextid = $systemcontext->id;
-                $cohort->timecreated = $t;
-                $cohort->timemodified = $t;
-                $cohort->id = $DB->insert_record('cohort', $cohort);
-
-                $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
             }
 
             // bind user to cohort
