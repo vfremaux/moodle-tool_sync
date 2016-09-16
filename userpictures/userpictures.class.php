@@ -59,7 +59,7 @@ class userpictures_sync_manager extends sync_manager {
         $barr = array();
         $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/userpictures/execcron.php\'');
         $frm->addElement('button', 'manualuserpictures', get_string('manualuserpicturesrun', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action=registerallpictures\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?what=registerallpictures\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
@@ -166,6 +166,7 @@ class userpictures_sync_manager extends sync_manager {
             'id' => 'id',
             'idnumber' => 'idnumber',
             'username' => 'username',
+            'hostedusername' => 'username@mnethostid',
             'email' => 'email' );
 
         return $ufs;
@@ -243,7 +244,15 @@ class userpictures_sync_manager extends sync_manager {
         $uservalue = substr($basename, 0, strlen($basename) - strlen($extension) - 1);
 
         // userfield names are safe, so don't quote them.
-        if (!($user = $DB->get_record('user', array ($userfield => $uservalue, 'deleted' => 0)))) {
+
+        if ($userfield == 'hostedusername') {
+            list($username, $mnethostid) = explode('@', $uservalue);
+            $user = $DB->get_record('user', array ('username' => $username, 'mnethostid' => $mnethostid, 'deleted' => 0));
+        } else {
+            $user = $DB->get_record('user', array ($userfield => $uservalue, 'mnethostid' => $CFG->mnet_localhost_id, 'deleted' => 0));
+        }
+
+        if (!$user) {
             $a = new \StdClass();
             $a->userfield = clean_param($userfield, PARAM_CLEANHTML);
             $a->uservalue = clean_param($uservalue, PARAM_CLEANHTML);
