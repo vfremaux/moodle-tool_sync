@@ -691,6 +691,7 @@ class course_sync_manager extends sync_manager {
                                 'theme' => array(1,50,0),
                                 'showreports' => array(4,'0,1'),
                                 'guest' => array(4,'0,1'),
+                                'self' => array(4,'0,1'),
                                 'template' => array(1,0,0),
                                 'topic' => array(1,0,0),
                                 'teacher_account' => array(6,0),
@@ -787,7 +788,7 @@ class course_sync_manager extends sync_manager {
                     unset($courseteachers);
 
                     // Set course array to defaults
-                    foreach ($optional as $key => $value) { 
+                    foreach ($optional as $key => $value) {
                         $coursetocreate[$key] = $value;
                     }
 
@@ -798,10 +799,12 @@ class course_sync_manager extends sync_manager {
                         $cf = $headers[$key];
 
                         if (preg_match(TOPIC_FIELD, $cf, $matches)) {
-                              $coursetopics[$matches[2]] = $this->validate_as($value, $matches[1], $i, $cf);
+                            // Register a topic definition.
+                            $coursetopics[$matches[2]] = $this->validate_as($value, $matches[1], $i, $cf);
                         } elseif (preg_match(TEACHER_FIELD, $cf, $matches)) {
-                              $tmp = $this->validate_as(trim($value), $matches[1].$matches[3], $i, $cf);
-                              (isset($tmp) && ($tmp != '')) and ($courseteachers[$matches[2]][$matches[3]] = $tmp);
+                            // Register a teacher account request.
+                            $tmp = $this->validate_as(trim($value), $matches[1].$matches[3], $i, $cf);
+                            (isset($tmp) && ($tmp != '')) and ($courseteachers[$matches[2]][$matches[3]] = $tmp);
                         } else {
                             $coursetocreate[$cf] = $this->validate_as($value, $cf, $i); // Accept value if it passed validation
                         }
@@ -809,6 +812,7 @@ class course_sync_manager extends sync_manager {
                     $coursetocreate['topics'] = $coursetopics;
 
                     if (isset($courseteachers)) {
+                        // Process teacher requests.
                         foreach ($courseteachers as $key => $value) { // Deep validate course teacher info on second pass
                               if (isset($value) && (count($value) > 0)) {
                                 if (!(isset($value['_account']) && $this->check_is_in($value['_account']))) {
@@ -989,7 +993,7 @@ class course_sync_manager extends sync_manager {
                                 }
                             break;
                         }
-                      }
+                    }
                 } else {
                     if (!empty($syncconfig->forcecourseupdate)) {
 
@@ -1044,7 +1048,7 @@ class course_sync_manager extends sync_manager {
                         }
 
                         foreach($bulkcourse as $key => $value) {
-                            if (isset($oldcourse->$key) && $key != 'id' && $key != 'category') {
+                            if (isset($oldcourse->$key) && $key != 'id' && $key != 'category' && $key != 'self' && $key != 'guest') {
                                 $oldcourse->$key = $value;
                             }
                         }
@@ -1059,11 +1063,14 @@ class course_sync_manager extends sync_manager {
                             $e->shortname = $oldcourse->shortname;
                             $this->report(get_string('errorcourseupdated', 'tool_sync', $e));
                         }
+
+                        $this->update_enrols($oldcourse, $bulkcourse['self'], $bulkcourse['guest']);
                     } else {
                         $this->report(get_string('courseexists', 'tool_sync', $a));
                           // Skip course, already exists
                     }
-                      $s++;
+
+                    $s++;
                 }
                 $t++;
             }
@@ -1162,7 +1169,8 @@ class course_sync_manager extends sync_manager {
                             'theme' => array(1,50,0),
                             'cost' => array(1,10,0),
                             'showreports' => array(4,'0,1'),
-                            'guest' => array(4,'0,1,2'),
+                            'guest' => array(4,'0,1'),
+                            'self' => array(4,'0,1'),
                             'enrollable' => array(4,'0,1'),
                             'enrolstartdate' => array(3),
                             'enrolenddate' => array(3),
@@ -1475,6 +1483,12 @@ class course_sync_manager extends sync_manager {
             }
         }
 
+        $guest = $course['guest'];
+        $self = $course['self'];
+        unset($course['guest']);
+        unset($course['self']);
+
+
         // Dynamically Create Query Based on number of headings excluding Teacher[1,2,...] and Topic[1,2,...]
         // Added for increased functionality with newer versions of moodle
         // Author: Ashley Gooding & Cole Spicer
@@ -1485,7 +1499,7 @@ class course_sync_manager extends sync_manager {
 
         foreach ($headers as $i => $col) {
             $col = strtolower($col);
-            if (preg_match(TOPIC_FIELD, $col) || preg_match(TEACHER_FIELD, $col) || $col == 'category') {
+            if (preg_match(TOPIC_FIELD, $col) || preg_match(TEACHER_FIELD, $col) || $col == 'category' || $col == 'guest' || $col == 'self') {
                 continue;
             }
             if ($col == 'expirythreshold') {
@@ -1562,7 +1576,7 @@ class course_sync_manager extends sync_manager {
                 // Create new course
                 $categoryid             = $hcategoryid; // e.g. 1 == Miscellaneous
                 $user_doing_the_restore = $USER->id; // e.g. 2 == admin
-                $newcourse_id           = \restore_dbops::create_new_course('', '', $hcategoryid );
+                $newcourse_id           = \restore_dbops::create_new_course('', '', $hcategoryid);
 
                 /*
                  * Restore backup into course.
@@ -1608,6 +1622,7 @@ class course_sync_manager extends sync_manager {
             // Create default course.
             if (empty($syncconfig->simulate)) { 
                 $newcourse = create_course($courserec);
+
                 $format = (!isset($course['format'])) ? 'topics' : $course['format'] ; // may be useless
                 if (isset($course['topics'])) {
                     // Any topic headings specified ?
@@ -1695,6 +1710,8 @@ class course_sync_manager extends sync_manager {
                     return -6;
                 }
 
+                $this->update_enrols($newcourse, $self, $guest);
+
             } else {
                 $newcourse = new \StdClass;
                 $newcourse->shortname = 'SIMUL';
@@ -1708,7 +1725,7 @@ class course_sync_manager extends sync_manager {
             // Any teachers specified?
             foreach ($course['teachers_enrol'] as $dteacherno => $dteacherdata) {
                 if (isset($dteacherdata['_account'])) {
-                    $roleid = $DB->get_field('role', 'shortname', null);
+                    $roleid = $DB->get_field('role', 'id', array('shortname' => 'teacher'));
                     $roleassignrec = new \StdClass;
                     $roleassignrec->roleid = $roleid;
                     $roleassignrec->contextid = $context->id;
@@ -1720,6 +1737,10 @@ class course_sync_manager extends sync_manager {
                         if (!$DB->insert_record('role_assignments', $roleassignrec)) {
                             return -4;
                         }
+                        $e = new StdClass;
+                        $e->rolename = 'Teacher';
+                        $e->contextid = $context->id;
+                        $this->report(get_string('roleassigned', 'tool_sync', $e));
                     }
                 }
             }
@@ -1820,5 +1841,49 @@ class course_sync_manager extends sync_manager {
         }
 
         $fs->create_file_from_string($filerec, $content);
+    }
+
+    function update_enrols($course, $self, $guest) {
+        global $DB;
+
+        if (!empty($guest)) {
+            mtrace('Adding guest access to course '.$course->id."\n");
+            if (!$enrolrec = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'guest'))) {
+                $instance = array(
+                    'status' => 0,
+                );
+                $enrol = enrol_get_plugin('guest');
+                $enrol->add_instance($course, $instance);
+            } else {
+                $enrolrec->status = 0;
+                $DB->update_record('enrol', $enrolrec);
+            }
+        } else {
+            // Remove access
+            if ($enrolrec = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'guest'))) {
+                $enrolrec->status = 1;
+                $DB->update_record('enrol', $enrolrec);
+            }
+        }
+
+        if (!empty($self)) {
+            mtrace('Adding self access to course '.$course->id."\n");
+            if (!$enrolrec = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'self'))) {
+                $instance = array(
+                    'status' => 0,
+                );
+                $enrol = enrol_get_plugin('self');
+                $enrol->add_instance($course, $instance);
+            } else {
+                $enrolrec->status = 0;
+                $DB->update_record('enrol', $enrolrec);
+            }
+        } else {
+            // Remove access.
+            if ($enrolrec = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'self'))) {
+                $enrolrec->status = 1;
+                $DB->update_record('enrol', $enrolrec);
+            }
+        }
     }
 }

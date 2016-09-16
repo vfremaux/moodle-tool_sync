@@ -30,6 +30,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 $action = optional_param('action', SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE_DELETE, PARAM_INT);
+
 set_time_limit(1800);
 raise_memory_limit('512M');
 
