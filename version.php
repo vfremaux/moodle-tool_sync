@@ -34,5 +34,4 @@ $plugin->release = '2.9.0 (Build 2016030800)';
 
 // Non Moodle fields
 // This fields will help overmanagement code builders without forcing upgrade to play
-$plugin->codeversion = 2016030800.00;
-$plugin->codeincrement = 0;
+$plugin->codeincrement = '2.9.0003';
