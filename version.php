@@ -25,14 +25,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016030800;
+$plugin->version  = 2016030802;
 $plugin->requires  = 2014041100;        // Requires this Moodle version
 $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics)
 $plugin->maturity = MATURITY_RC;
 // $plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
-$plugin->release = '2.7.0 (Build 2016030800)';
+$plugin->release = '2.7.0 (Build 2016030802)';
 
 // Non Moodle fields
 // This fields will help overmanagement code builders without forcing upgrade to play
-$plugin->codeversion = 2016030800.00;
-$plugin->codeincrement = 0;
+$plugin->codeincrement = '2.7.0003';
