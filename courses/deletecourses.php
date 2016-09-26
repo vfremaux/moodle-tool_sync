@@ -43,7 +43,7 @@ $strchoose = get_string('choose');
 set_time_limit(300);
 
 list($usec, $sec) = explode(' ', microtime());
-$time_start = ((float)$usec + (float)$sec);
+$timestart = ((float)$usec + (float)$sec);
 $url = new moodle_url('/admin/tool/sync/courses/deletecourses.php');
 $PAGE->navigation->add($strenrolname);
 $PAGE->navigation->add($strdeletecourses);
@@ -88,6 +88,9 @@ if ($canprocess) {
     echo '<pre>';
     $coursesmanager->cron($syncconfig);
     echo '</pre>';
+    list($usec, $sec) = explode(' ', microtime());
+    $timeend = ((float)$usec + (float)$sec);
+    $elapsed = $timeend - $timestart;
 
     $usermgtmanual = get_string('deletingcourses', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);

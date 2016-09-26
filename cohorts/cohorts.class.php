@@ -88,8 +88,8 @@ class cohorts_sync_manager extends sync_manager {
     }
 
     /**
-    *
-    */
+     *
+     */
     public function cron($syncconfig) {
         global $CFG, $DB;
 
@@ -97,7 +97,7 @@ class cohorts_sync_manager extends sync_manager {
 
         $config = get_config('tool_sync');
 
-        // Internal process controls
+        // Internal process controls.
         $autocreatecohorts = 0 + @$config->cohorts_autocreate;
 
         if (!get_admin()) {
@@ -115,17 +115,17 @@ class cohorts_sync_manager extends sync_manager {
             return;
         }
 
-        $csv_encode = '/\&\#44/';
+        $csvencode = '/\&\#44/';
         if (isset($syncconfig->csvseparator)) {
-            $csv_delimiter = '\\' . $syncconfig->csvseparator;
-            $csv_delimiter2 = $syncconfig->csvseparator;
+            $csvdelimiter = '\\' . $syncconfig->csvseparator;
+            $csvdelimiter2 = $syncconfig->csvseparator;
 
             if (isset($CFG->CSV_ENCODE)) {
-                $csv_encode = '/\&\#' . $CFG->CSV_ENCODE . '/';
+                $csvencode = '/\&\#' . $CFG->CSV_ENCODE . '/';
             }
         } else {
-            $csv_delimiter = "\;";
-            $csv_delimiter2 = ";";
+            $csvdelimiter = "\;";
+            $csvdelimiter2 = ";";
         }
 
         /*
@@ -142,7 +142,7 @@ class cohorts_sync_manager extends sync_manager {
 
         // Make arrays of valid fields for error checking.
         $required = array('userid' => 1, 'cohortid' => 1);
-        $optionalDefaults = array();
+        $optionaldefaults = array();
         $optional = array('cmd', 'cdescription', 'cidnumber');
         $patterns = array();
         $metas = array();
@@ -157,15 +157,15 @@ class cohorts_sync_manager extends sync_manager {
             $i++;
         }
 
-        $headers = explode($csv_delimiter2, $text);
+        $headers = explode($csvdelimiter2, $text);
 
         // Check for valid field names.
         foreach ($headers as $h) {
-            $header[] = trim($h); 
+            $header[] = trim($h);
             $patternized = implode('|', $patterns) . "\\d+";
             $metapattern = implode('|', $metas);
-            if (!(isset($required[$h]) || 
-                    isset($optionalDefaults[$h]) ||
+            if (!(isset($required[$h]) ||
+                    isset($optionaldefaults[$h]) ||
                             isset($optional[$h]) ||
                                     preg_match("/$patternized/", $h) ||
                                             preg_match("/$metapattern/", $h))) {
@@ -202,12 +202,12 @@ class cohorts_sync_manager extends sync_manager {
                 $i++;
                 continue;
             }
-            $valueset = explode($csv_delimiter2, $text);
+            $valueset = explode($csvdelimiter2, $text);
 
             $record = array();
             foreach ($valueset as $key => $value) {
                 // Decode encoded commas.
-                $record[$header[$key]] = preg_replace($csv_encode, $csv_delimiter2, trim($value));
+                $record[$header[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
             }
 
             // Find assignable items.
@@ -259,7 +259,8 @@ class cohorts_sync_manager extends sync_manager {
 
             // Bind user to cohort.
             if (!array_key_exists('cmd', $record) || $record['cmd'] == 'add') {
-                if (!$cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
+                $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
+                if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
                     $cohortmembership = new \StdClass();
                     $cohortmembership->userid = $user->id;
                     $cohortmembership->cohortid = ''.@$cohort->id;
@@ -280,7 +281,8 @@ class cohorts_sync_manager extends sync_manager {
                     $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
                 }
             } else if ($record['cmd'] == 'del') {
-                if ($cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
+                $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
+                if ($cohortmembership = $DB->get_record('cohort_members', $params)) {
                     $DB->delete_records('cohort_members', array('id' => $cohortmembership->id));
                     $userscohortunassign++;
 

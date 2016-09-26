@@ -137,7 +137,7 @@ if ($canprocess) {
             echo "<center>$taskrunmsg</center>";
         }
     }
-    
+
     if ($action & SYNC_COURSE_DELETE) {
         if ($syncconfig->course_filedeletelocation) {
             $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_filedeletelocation);
@@ -147,7 +147,7 @@ if ($canprocess) {
             echo "<center>$taskrunmsg</center>";
         }
     }
-    
+
     if ($action & SYNC_COURSE_CREATE) {
         if ($syncconfig->course_fileuploadlocation) {
             $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_fileuploadlocation);

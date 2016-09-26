@@ -21,7 +21,7 @@
  * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
- 
+
 $string['automation'] = 'Feeders and automation';
 $string['addedtogroup'] = 'User {$a->myuser} added to group {$a->group}';
 $string['addedtogroupnot'] = 'User {$a->myuser} NOT added to group {$a->group}';
@@ -29,7 +29,7 @@ $string['alreadyassigned'] = 'User {$a->myuser} already assigned to {$a->myrole}
 $string['archivecontrolfiles'] = 'Archivates command files after sync has run';
 $string['assign'] = 'Role "{$a->myrole}" added for {$a->myuser} in course {$a->mycourse}';
 $string['backtoprevious'] = 'Back to previous screen';
-$string['boxdescription'] =  'Management tool syncs current user and group using txt and csv files called by cron.<br/><br/>Simply specify the directories of the files <br/>It is also possible to trigger these scripts manually.';
+$string['boxdescription'] = 'Management tool syncs current user and group using txt and csv files called by cron.<br/><br/>Simply specify the directories of the files <br/>It is also possible to trigger these scripts manually.';
 $string['builddeletefile'] = 'Generate a deletion command file';
 $string['buildresetfile'] = 'Generate a reinitialisation CSV file';
 $string['button'] = 'Save the configuration tools';
@@ -128,7 +128,7 @@ $string['enrolsconfig'] = 'configuration for enrol synchronisation';
 $string['enrolscronconfig'] = 'Enable synchronization cron enrolments';
 $string['enrolsync'] = 'Automation of enrolments';
 $string['enroluseridentifier'] = 'User identifier field';
-$string['enterfilename'] = 'Enter the file name to be viewed:' ;
+$string['enterfilename'] = 'Enter the file name to be viewed:';
 $string['erroradminrequired'] = 'You must be an administrator to edit courses in this way.';
 $string['errorbackupfile'] = 'Something was wrong with the backup file (Error code: {$a->error}).';
 $string['errorinputconditions'] = 'Incorrect course create input condition in function call.';
@@ -327,7 +327,7 @@ $string['uploadusers2'] = 'User account synchronisation';
 $string['uselocal'] = 'Use the local file: {$a}';
 $string['useraccountadded'] = 'User account added: {$a} ';
 $string['useraccountupdated'] = 'User account changed: {$a} ';
-$string['usercollision'] = 'Error : User username collision when creating for {$a} ';
+$string['usercollision'] = 'Error : User username collision when creating for {$a}';
 $string['usercreatedremotely'] = 'User {$a->username} created on {$a->wwwroot} ';
 $string['usercronprocessing'] = 'User Accounts Synchronisation';
 $string['userexistsremotely'] = 'User {$a} exists on remote end';
@@ -401,7 +401,7 @@ for file format exact specification at http://docs.moodle.org/en/23".
 
 $string['coursecreateformat'] = 'Course creation file format';
 $string['coursecreateformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
 
 <p>Two columns are mandatory, <b>shortname</b> and <b>fullname</b>. Shortname must not be already used in Moodle for the course
@@ -425,9 +425,9 @@ is given by the Sync Tool configuration.
 ';
 
 $string['coursereinitializeformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
-The first field must identify a course, dpending on the selected course primary identifier in configuration : 
+The first field must identify a course, dpending on the selected course primary identifier in configuration :
 
 <li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
 <li><i>shortname</i>: Using the course shortname</li>
@@ -450,7 +450,7 @@ The first field must identify a course, dpending on the selected course primary 
 
 $string['userformat'] = 'User creation/update/deletion file format.';
 $string['userformat_help'] = '
-User definition file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+User definition file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
 
 <p>Mandatory fields: <b>username, firstname, lastname</b></p>
@@ -487,7 +487,7 @@ Enrol cvs file is a CSV UTF-8 or ISO encoded (depending on tool configuration) f
 
 $string['cohortformat'] = 'Cohort sync file format';
 $string['cohortformat_help'] = '
-Cohort creation/update file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+Cohort creation/update file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
 
 <p>Mandatory fields: <b>cohortid, userid</b></p>
@@ -503,5 +503,5 @@ The first line must hold column titles in any order.
 
 $string['userpicturesformat'] = 'User pictures file format';
 $string['userpicturesformat_help'] = '
-The User Pictures feeding file must be a zip with png, jpg or gif images for users, named using their primary identifier. 
+The User Pictures feeding file must be a zip with png, jpg or gif images for users, named using their primary identifier.
 ';

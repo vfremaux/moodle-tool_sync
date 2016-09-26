@@ -145,7 +145,7 @@ $string['errorgcmdvalue'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a
 $string['errorgroupnotcreated'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : le groupe n\'a pas pu être créé.';
 $string['errorinvalidcolumnname'] = 'Erreur : nom de colonne "{$a}" invalide';
 $string['errorinvalidfieldname'] = 'Erreur : nom de champ "{$a}" invalide';
-$string['errorline'] = 'Erreur : Ligne ';
+$string['errorline'] = 'Erreur : Ligne';
 $string['errornocourse'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : Le cours n\'existe pas';
 $string['errornocourses'] = 'Erreur : Aucun cours traité dans ce CSV';
 $string['errornomanualenrol'] = 'Aucun plugin d\'inscription manuel disponible. Désactivation de l\'inscription pour cet utilsiateur.';
@@ -160,7 +160,7 @@ $string['errorrequiredcolumn'] = 'Erreur : colonne requise : {$a}';
 $string['errorrestoringtemplate'] = 'Erreur ligne {$a->i} : Erreur de restauration pour le cours {$a->coursename}';
 $string['errorrestoringtemplatesql'] = 'Erreur ligne {$a->i} : Erreur SQL pour le gabarit {$a->template}. Le cours {$a->coursename} n\'a pas pu être créé.';
 $string['errorrpcparams'] = 'Erreur de paramètres RPC : {$a}';
-$string['errors'] = 'Erreurs ';
+$string['errors'] = 'Erreurs';
 $string['errorsectioncreate'] = 'Erreur ligne {$a->i} : Erreur pendant la création des sections du cours {$a->coursename}';
 $string['errorsettingremoteaccess'] = 'Erreur de l\'ouverture de droits d\'accès réseau : {$a} ';
 $string['errorteacherenrolincourse'] = 'Erreur ligne {$a->i} : Impossible d\'enroler les enseignants du cours {$a->coursename}';
@@ -190,9 +190,9 @@ $string['errorvalidationtimecheck'] = 'Erreur ligne {$a->i} : Valeur du champ {$
 $string['errorvalidationvalueset'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (doit être dans l\'ensemble {$a->set}).';
 $string['eventscleanup'] = 'Nettoyage des événéments générés (conseillé)';
 $string['execstartsat'] = 'Exécution démarrée à {$a} ';
-$string['executecoursecronmanually'] = 'Exécuter toutes les opérations de cours ';
+$string['executecoursecronmanually'] = 'Exécuter toutes les opérations de cours';
 $string['existcoursesfile'] = 'Fichier de test d\'existance';
-$string['existfileidentifier'] = 'Identifiant d\'existance ';
+$string['existfileidentifier'] = 'Identifiant d\'existance';
 $string['failedfile'] = 'Fichier de reprise';
 $string['filearchive'] = 'Archivage des fichiers de controle';
 $string['filecabinet'] = 'Répertoire des rapports';
@@ -205,7 +205,7 @@ $string['filenameformatuc'] = '<strong>Format du nom de rapport :</strong> UC_YY
 $string['filenotfound'] = 'Le fichier {$a} n\'a pas été trouvé';
 $string['filetoprocess'] = 'Fichier à exécuter';
 $string['final_action'] = 'Post-traitements';
-$string['flatfilefoundforenrols'] = 'Fichier d\'enrôlements trouvé : ';
+$string['flatfilefoundforenrols'] = 'Fichier d\'enrôlements trouvé :';
 $string['forcecourseupdateconfig'] = 'Si activé, les cours existants auront leurs attributs mise à jour. Le contenu et les données de cours restent inchangées.';
 $string['foundfile'] = 'Trouvé fichier : {$a}';
 $string['foundfilestoprocess'] = 'Trouvé {$a} fichiers à traiter';
@@ -217,7 +217,7 @@ $string['groupassigndeleted'] = 'Les assignations de groupe sont supprimées pou
 $string['groupcreated'] = 'Le groupe {$a->group} a été créé dans le cours {$a->mycourse}';
 $string['groupnotaddederror'] = 'Erreur de création de groupe : {$a}';
 $string['groupunknown'] = 'Le groupe {$a->group} n\'existe pas dans {$a->mycourse} et la commande ne permet pas la création.';
-$string['hiddenroleadded'] = 'Rôle masqué ajouté dans le contexte : ';
+$string['hiddenroleadded'] = 'Rôle masqué ajouté dans le contexte :';
 $string['hour'] = 'heure';
 $string['importfile'] = 'Importer un nouveau fichier de test';
 $string['load'] = 'Charger';
@@ -240,11 +240,11 @@ $string['minute'] = 'minute';
 $string['missingidentifier'] = 'L\'identifiant {$a} requis par la configuration est manquant dans le fichier';
 $string['ncategoriesdeleted'] = '{$a} catégories supprimées';
 $string['noeventstoprocess'] = 'Pas d\'événements à la ligne {$a}';
-$string['nofile'] = 'Aucun fichier disponible'; 
+$string['nofile'] = 'Aucun fichier disponible';
 $string['nofileconfigured'] = 'Pas de fichier de données configuré pour cette opération';
 $string['nofiletoprocess'] = 'Pas de fichier à traiter';
 $string['nogradestoprocess'] = 'Pas de notes à la ligne {$a}';
-$string['nogrouptoprocess'] = 'Pas de groupes'; 
+$string['nogrouptoprocess'] = 'Pas de groupes';
 $string['nologstoprocess'] = 'Pas de logs à la ligne {$a}';
 $string['nonotestoprocess'] = 'Pas d\'annotations à la ligne {$a}';
 $string['nonuniqueidentifierexception'] = 'Cette valeur d\'identifiant à la ligne {$a} désigne plusieurs cours. La réinitialisation est annulée pour ces cours.';
@@ -266,7 +266,7 @@ $string['report'] = 'Rapport';
 $string['resetfile'] = 'Fichier de reinitialisation';
 $string['resetfilebuilder'] = 'Générateur de fichier CSV de réinitialisation';
 $string['resetfileidentifier'] = 'Identifiant de cours pour la réinitialisation';
-$string['resettingcourse'] = 'Réinitialisation du cours : ';
+$string['resettingcourse'] = 'Réinitialisation du cours :';
 $string['resettingcourses'] = 'Réinitialisation des cours';
 $string['returntotools'] = 'Retour aux outils';
 $string['roleadded'] = 'Role "{$a->rolename}" ajouté dans le contexte {$a->contextid}';
@@ -316,7 +316,7 @@ $string['uploadusers2'] = 'Mise à jour des utilisateurs';
 $string['uselocal'] = 'Utiliser le fichier local : {$a}';
 $string['useraccountadded'] = 'Utilisateur ajouté : {$a} ';
 $string['useraccountupdated'] = 'Utilisateur modifié : {$a} ';
-$string['usercollision'] = 'Erreur : Collision d\'identifiant à la création pour {$a} ';
+$string['usercollision'] = 'Erreur : Collision d\'identifiant à la création pour {$a}';
 $string['usercreatedremotely'] = 'Utilisateur {$a->username} créé sur {$a->wwwroot} ';
 $string['usercronprocessing'] = 'Synchronisation automatique de utilisateurs';
 $string['userexistsremotely'] = 'L\'utilisateur {$a} existe déjà sur le distant';
@@ -432,9 +432,9 @@ Ce fichier est une simple liste textuelle (un item par ligne) des identifiants p
 
 $string['coursereinitializeformat'] = 'Format de fichier de réinitialisation de cours';
 $string['coursereinitializeformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
-The first field must identify a course, depending on the selected course primary identifier in configuration : 
+The first field must identify a course, depending on the selected course primary identifier in configuration :
 
 <li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
 <li><i>shortname</i>: Using the course shortname</li>
@@ -511,6 +511,6 @@ The first line must hold column titles in any order.
 $string['userpicturesformat'] = 'Format de transfert d\'images d\'avatars';
 $string['userpicturesformat_help'] = '
 Le fichier des avatars utilisateurs est une archive ZIP sans sous-répertoires avec la liste d\'images png, jpg ou gif des avatars utilisateurs, nommés par l\'identifiant primaire
-de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation. 
+de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation.
 ';
 

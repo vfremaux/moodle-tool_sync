@@ -35,7 +35,7 @@ function tool_sync_create_course_deletion_file($selection) {
     $content = '';
 
     $size = count($selection);
-    for ($i = 0 ; $i < $size - 1 ; $i++) {
+    for ($i = 0; $i < $size - 1; $i++) {
         $content .= "$selection[$i]";
         $content .= "\n";
     }
@@ -51,7 +51,8 @@ function tool_sync_create_course_deletion_file($selection) {
     $filerec->filename = $filename;
 
     // Ensure no collisions.
-    if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
+    if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea,
+                                 $filerec->itemid, $filerec->filepath, $filerec->filename)) {
         $oldfile->delete();
     }
 
@@ -78,11 +79,11 @@ function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
             {course_categories} cc
         LEFT JOIN
             {course} c
-        ON 
+        ON
             cc.id = c.category
-        WHERE 
+        WHERE
             cc.parent = ?
-        GROUP BY 
+        GROUP BY
             cc.id
     ";
     $cats = $DB->get_records_sql($sql, array($parentcatid));
@@ -101,7 +102,7 @@ function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
             $path = $mempath;
 
             if ($subcountcourses == 0) {
-                // this is a really empty cat
+                // This is a really empty cat.
                 echo "<tr><td align=\"left\"><b>{$ec->name}</b></td><td align=\"left\">$path</td></tr>";
                 $scannedids[] = $ec->id;
             }
@@ -166,7 +167,7 @@ function tool_sync_read($filereader, $length, &$config) {
 /**
  * Checks if the token is a path to an archive (.mbz)
  * If not, should be s course shortname.
- * @param $str string to check 
+ * @param $str string to check
  * @return true is a shortname, false elsewhere
  */
 function tool_sync_is_course_identifier($str) {
