@@ -15,23 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Flat file enrolment plugin version specification.
+ * Version details.
  *
- * @package    tool_sync
- * @copyright  2013 Valery Fremaux 
- * @author     Valery Fremaux
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @copyright   2013 Valery Fremaux 
+ * @author      Valery Fremaux
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version  = 2016030800;
-$plugin->requires  = 2016051900;        // Requires this Moodle version
-$plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics)
+$plugin->requires  = 2016051900;        // Requires this Moodle version.
+$plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_RC;
-// $plugin->dependencies = array('block_publishflow' => 2012031800); // Needed for templating creation of new courses
 $plugin->release = '3.1.0 (Build 2016030800)';
 
-// Non Moodle fields
-// This fields will help overmanagement code builders without forcing upgrade to play
+// Non moodle attributes
 $plugin->codeincrement = '3.1.0003';
