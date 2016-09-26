@@ -854,7 +854,7 @@ class course_sync_manager extends sync_manager {
             $s = 0; // Skipped courses.
             $n = 0; // Created courses.
             $p = 0; // Broken courses (failed halfway through.
-            
+
             $cat_e = 0; // Errored categories.
             $cat_c = 0; // Created categories.
 
@@ -871,32 +871,7 @@ class course_sync_manager extends sync_manager {
                     if (is_array($bulkcourse['category'])) {
                         // Course Category creation routine as a category path was given.
 
-                        $curparent = 0;
-                        $curstatus = 0;
-        
-                        foreach ($bulkcourse['category'] as $catindex => $catname) {
-                            $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent, $syncconfig);
-                            switch ($curstatus) {
-                                  case 1: // Skipped the category, already exists.
-                                      break;
-                                  case 2: // Created a category.
-                                      $cat_c++;
-                                      break;
-                                  default:
-                                    $cat_e += count($bulkcourse['category']) - $catindex;
-                                    $coursetocategory = -1;
-                                    $e = new \StdClass;
-                                    $e->catname = $catname;
-                                    $e->failed = $cat_e;
-                                    $e->i = $i;
-                                    $this->report(get_string('errorcategorycreate', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    continue;
-                            }
-                        }
-                        ($coursetocategory == -1) or $coursetocategory = $curparent;
+                        $coursetocategory = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i, $cat_c, $cat_e);
                         // Last category created will contain the actual course.
                     } else {
                         // It's just a straight category ID.
@@ -1002,36 +977,11 @@ class course_sync_manager extends sync_manager {
                         if (is_array($bulkcourse['category'])) {
                             // Course Category creation routine as a category path was given.
 
-                            $curparent = 0;
-                            $curstatus = 0;
-
-                            foreach ($bulkcourse['category'] as $catindex => $catname) {
-                                  $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent);
-                                switch ($curstatus) {
-                                      case 1: // Skipped the category, already exists.
-                                          break;
-                                      case 2: // Created a category.
-                                        $cat_c++;
-                                          break;
-                                      default:
-                                        $cat_e += count($bulkcourse['category']) - $catindex;
-                                        $coursetocategory = -1;
-                                        $e = new \StdClass;
-                                        $e->catname = $catname;
-                                        $e->failed = $cat_e;
-                                        $e->i = $i;
-                                        $this->report(get_string('errorcategorycreate', 'tool_sync', $e));
-                                        if (!empty($syncconfig->filefailed)) {
-                                            $this->feed_tryback($sourcetext[$i]);
-                                        }
-                                          continue;
-                                }
-                            }
-                            ($coursetocategory == -1) or $coursetocategory = $curparent;
+                            $coursetocategory = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i, $cat_c, $cat_e);
                             // Last category created will contain the actual course.
                         } else {
                             // It's just a straight category ID.
-                            $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1 ;
+                            $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1;
                         }
 
                         if ($coursetocategory == -1) {
@@ -1100,6 +1050,36 @@ class course_sync_manager extends sync_manager {
         }
 
         return true;
+    }
+
+    function make_category($categories, $syncconfig, $sourcetext, $line, &$cat_c, &$cat_e) {
+        $curparent = 0;
+        $curstatus = 0;
+
+        foreach ($categories as $catindex => $catname) {
+            $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent, $syncconfig);
+            switch ($curstatus) {
+                  case 1: // Skipped the category, already exists.
+                      break;
+                  case 2: // Created a category.
+                      $cat_c++;
+                      break;
+                  default:
+                    $cat_e += count($bulkcourse['category']) - $catindex;
+                    $coursetocategory = -1;
+                    $e = new \StdClass;
+                    $e->catname = $catname;
+                    $e->failed = $cat_e;
+                    $e->i = $line;
+                    $this->report(get_string('errorcategorycreate', 'tool_sync', $e));
+                    if (!empty($syncconfig->filefailed)) {
+                        $this->feed_tryback($sourcetext[$line]);
+                    }
+                    continue;
+            }
+        }
+        ($coursetocategory == -1) or $coursetocategory = $curparent;
+        return array($coursetocategory, $cat_c, $cat_e);
     }
 
     /**

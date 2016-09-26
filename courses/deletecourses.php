@@ -68,28 +68,12 @@ if ($data = $form->get_data()) {
         $canprocess = true;
         $processedfile = $syncconfig->course_filedeletelocation;
     } else {
-        $usercontext = context_user::instance($USER->id);
-        
-        $fs = get_file_storage();
-
-        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
-
-            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
-            $uploadedfile = array_pop($areafiles);
-
-            $manualfilerec = new StdClass();
-            $manualfilerec->contextid = $usercontext->id;
-            $manualfilerec->component = 'user';
-            $manualfilerec->filearea = 'draft';
-            $manualfilerec->itemid = $data->inputfile;
-            $manualfilerec->filepath = $uploadedfile->get_filepath();
-            $manualfilerec->filename = $uploadedfile->get_filename();
+        if (!$manualfilerec = tool_sync_receive_file()) {
+            $errormes = "Failed loading a file";
+        } else {
             $processedfile = $manualfilerec->filename;
-
             $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE, $manualfilerec);
             $canprocess = true;
-        } else {
-            $errormes = "Failed loading a file";
         }
     }
 }

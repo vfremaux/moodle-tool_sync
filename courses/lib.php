@@ -172,3 +172,30 @@ function tool_sync_read($filereader, $length, &$config) {
 function tool_sync_is_course_identifier($str) {
     return (!preg_match('/\.mbz/', $str));
 }
+
+/**
+ *
+ */
+function tool_sync_receive_file() {
+    global $USER;
+
+    $usercontext = context_user::instance($USER->id);
+
+    $fs = get_file_storage();
+
+    if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
+
+        $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
+        $uploadedfile = array_pop($areafiles);
+
+        $manualfilerec = new StdClass();
+        $manualfilerec->contextid = $usercontext->id;
+        $manualfilerec->component = 'user';
+        $manualfilerec->filearea = 'draft';
+        $manualfilerec->itemid = $data->inputfile;
+        $manualfilerec->filepath = $uploadedfile->get_filepath();
+        $manualfilerec->filename = $uploadedfile->get_filename();
+        return $manualfilerec;
+    }
+    return false;
+}
