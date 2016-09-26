@@ -419,7 +419,7 @@ class users_sync_manager extends sync_manager {
                             if (!$syncconfig->simulate) {
                                 user_update_user($user, false);
                                 $message = "$user->firstname $user->lastname as [$user->username] ($idnumber)";
-                                $reportline = get_string('useraccountupdated', 'tool_sync', $message)
+                                $reportline = get_string('useraccountupdated', 'tool_sync', $message);
                                 $this->report($reportline);
                             } else {
                                 $message = "$user->firstname $user->lastname as [$user->username] ($idnumber)";
