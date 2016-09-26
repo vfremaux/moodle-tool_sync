@@ -39,13 +39,13 @@ class course_sync_manager extends sync_manager {
 
     public $execute;
 
-    function __construct($execute = SYNC_COURSE_CREATE_DELETE, $manualfilerec = null) {
+    public function __construct($execute = SYNC_COURSE_CREATE_DELETE, $manualfilerec = null) {
         $this->manualfilerec = $manualfilerec;
         $this->execute = $execute;
         $this->identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
     }
 
-    function form_elements(&$frm) {
+    public function form_elements(&$frm) {
         global $CFG;
 
         $frm->addElement('text', 'tool_sync/course_fileuploadlocation', get_string('uploadcoursecreationfile', 'tool_sync'));
@@ -54,56 +54,68 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('text', 'tool_sync/course_filedeletelocation', get_string('coursedeletefile', 'tool_sync'));
         $frm->setType('tool_sync/course_filedeletelocation', PARAM_TEXT);
 
-        $frm->addElement('select', 'tool_sync/course_filedeleteidentifier', get_string('deletefileidentifier', 'tool_sync'), $this->identifieroptions);
+        $label = get_string('deletefileidentifier', 'tool_sync');
+        $frm->addElement('select', 'tool_sync/course_filedeleteidentifier', $label, $this->identifieroptions);
 
         $frm->addElement('text', 'tool_sync/course_fileexistlocation', get_string('existcoursesfile', 'tool_sync'));
         $frm->setType('tool_sync/course_fileexistlocation', PARAM_TEXT);
 
-        $frm->addElement('select', 'tool_sync/course_existfileidentifier', get_string('existfileidentifier', 'tool_sync'), $this->identifieroptions);
+        $label = get_string('existfileidentifier', 'tool_sync');
+        $frm->addElement('select', 'tool_sync/course_existfileidentifier', $label, $this->identifieroptions);
 
         $frm->addElement('text', 'tool_sync/course_fileresetlocation', get_string('resetfile', 'tool_sync'));
         $frm->setType('tool_sync/course_fileresetlocation', PARAM_TEXT);
 
-        $frm->addElement('select', 'tool_sync/course_fileresetidentifier', get_string('resetfileidentifier', 'tool_sync'), $this->identifieroptions);
-
+        $label = get_string('resetfileidentifier', 'tool_sync');
+        $frm->addElement('select', 'tool_sync/course_fileresetidentifier', $label, $this->identifieroptions);
 
         $rarr = array();
-        $rarr[] =& $frm->createElement('radio', 'tool_sync/forcecourseupdate', '', get_string('yes'), 1);
-        $rarr[] =& $frm->createElement('radio', 'tool_sync/forcecourseupdate', '', get_string('no'), 0);
-        $frm->addGroup($rarr, 'courseupdategroup', get_string('syncforcecourseupdate', 'tool_sync'), array('&nbsp;&nbsp;&nbsp;&nbsp;'), false);
+        $rarr[] = $frm->createElement('radio', 'tool_sync/forcecourseupdate', '', get_string('yes'), 1);
+        $rarr[] = $frm->createElement('radio', 'tool_sync/forcecourseupdate', '', get_string('no'), 0);
+        $label = get_string('syncforcecourseupdate', 'tool_sync');
+        $frm->addGroup($rarr, 'courseupdategroup', $label, array('&nbsp;&nbsp;&nbsp;&nbsp;'), false);
 
         $frm->addElement('static', 'coursesst1', '<hr>');
 
         $barr = array();
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/deletecourses_creator.php\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('makedeletefile', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/resetcourses_creator.php\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('makeresetfile', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CHECK.'\'');
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/checkcourses.php');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('testcourseexist', 'tool_sync'), $attribs);
+        $deletecreatorurl = new moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$deletecreatorurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('makedeletefile', 'tool_sync'), $attribs);
+        $resetcreatorurl = new moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$resetcreatorurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('makeresetfile', 'tool_sync'), $attribs);
+        $checkurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CHECK));
+        $attribs = array('onclick' => 'document.location.href= \''.$checkurl.'\'');
+        $existurl = new moodle_url('/admin/tool/sync/courses/checkcourses.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$existurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('testcourseexist', 'tool_sync'), $attribs);
         $frm->addGroup($barr, 'utilities', get_string('utilities', 'tool_sync'), array('&nbsp;&nbsp;'), false);
 
         $frm->addElement('static', 'coursesst2', '<hr>');
 
         $barr = array();
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_RESET.'\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_CREATE.'\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('manualuploadrun', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?action='.SYNC_COURSE_DELETE.'\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('manualdeleterun', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/clearemptycategories.php\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('manualcleancategories', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
+        $reseturl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_RESET));
+        $attribs = array('onclick' => 'document.location.href= \''.$reseturl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
+        $createurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CREATE));
+        $attribs = array('onclick' => 'document.location.href= \''.$createurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualuploadrun', 'tool_sync'), $attribs);
+        $deleteurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_DELETE));
+        $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualdeleterun', 'tool_sync'), $attribs);
+        $clearcaturl = new moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$clearcaturl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualcleancategories', 'tool_sync'), $attribs);
+        $courseurl = new moodle_url('/admin/tool/sync/courses/execcron.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$courseurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
 
     }
 
-    function cron($syncconfig) {
-        global $CFG, $USER, $DB;
+    public function cron($syncconfig) {
+        global $CFG, $DB;
 
         define('TOPIC_FIELD','/^(topic)([0-9]|[1-4][0-9]|5[0-2])$/');
         define('TEACHER_FIELD','/^(teacher)([1-9]+\d*)(_account|_role)$/');
@@ -233,7 +245,8 @@ class course_sync_manager extends sync_manager {
                         return;
                     }
 
-                    if (@$syncconfig->course_resetfileidentifier == 0 && $DB->count_records('course', array('idnumber' => $record['idnumber']))) {
+                    if (@$syncconfig->course_resetfileidentifier == 0 &&
+                                $DB->count_records('course', array('idnumber' => $record['idnumber']))) {
                         $this->report(get_string('nonuniqueidentifierexception', 'tool_sync', $i));
                         continue;
                     }
@@ -1052,7 +1065,7 @@ class course_sync_manager extends sync_manager {
         return true;
     }
 
-    function make_category($categories, $syncconfig, $sourcetext, $line, &$cat_c, &$cat_e) {
+    protected function make_category($categories, $syncconfig, $sourcetext, $line, &$cat_c, &$cat_e) {
         $curparent = 0;
         $curstatus = 0;
 
@@ -1085,8 +1098,8 @@ class course_sync_manager extends sync_manager {
     /**
      *
      */
-    function get_default_category() {
-        global $CFG, $USER, $DB;
+    public function get_default_category() {
+        global $CFG, $DB;
 
         if (!$mincat = $DB->get_field('course_categories', 'MIN(id)', array())) {
             return 1; // SHOULD be the Misc category?
@@ -1097,14 +1110,14 @@ class course_sync_manager extends sync_manager {
     /**
      *
      */
-    function check_is_in($supposedint) {
+    protected function check_is_in($supposedint) {
         return ((string)intval($supposedint) == $supposedint) ? true : false;
     }
 
     /**
      *
      */
-    function check_is_string($supposedstring) {
+    protected function check_is_string($supposedstring) {
         $supposedstring = trim($supposedstring); // Is it just spaces?
         return (strlen($supposedstring) == 0) ? false : true;
     }
@@ -1112,8 +1125,7 @@ class course_sync_manager extends sync_manager {
     /**
      * Validates each field based on information in the $validate array
      */
-    function validate_as($value, $validatename, $lineno, $fieldname = '') {
-        global $USER;
+    protected function validate_as($value, $validatename, $lineno, $fieldname = '') {
         global $CFG;
         global $validate;
 
@@ -1387,14 +1399,14 @@ class course_sync_manager extends sync_manager {
         return $value;
     }
 
-    function microtime_float() {
+    protected function microtime_float() {
         // In case we don't have php5.
         list($usec, $sec) = explode(" ", microtime());
         return ((float)$usec + (float)$sec);
     }
 
-    function fast_get_category_ex($hname, &$hstatus, $hparent = 0, $syncconfig = null) {
-        global $CFG, $USER, $DB;
+    protected function fast_get_category_ex($hname, &$hstatus, $hparent = 0, $syncconfig = null) {
+        global $CFG, $DB;
 
         // Find category with the given name and parentID, or create it, in both cases returning a category ID.
         /*
@@ -1447,7 +1459,7 @@ class course_sync_manager extends sync_manager {
     /**
      * create a course.
      */
-    function fast_create_course_ex($hcategoryid, $course, $headers, $validate, $syncconfig) { 
+    protected function fast_create_course_ex($hcategoryid, $course, $headers, $validate, $syncconfig) { 
         global $CFG, $DB, $USER;
 
         if (!is_array($course) || !is_array($headers) || !is_array($validate)) {
@@ -1767,7 +1779,7 @@ class course_sync_manager extends sync_manager {
      * @param array $selection array of course IDs from selection form
      * @param object $syncconfig
      */
-    function create_course_reinitialisation_file($selection, $syncconfig) {
+    public function create_course_reinitialisation_file($selection, $syncconfig) {
         global $CFG, $DB;
 
         $fs = get_file_storage();
@@ -1779,7 +1791,8 @@ class course_sync_manager extends sync_manager {
         $identifiername = $identifieroptions[0 + @$syncconfig->course_resetfileidentifier];
 
         $rows = array();
-        $cols = array('shortname', 'roles', 'local_roles', 'completion', 'grades', 'groups', 'groupings', 'blog_associations', 'events', 'logs', 'notes', 'comments', 'modules');
+        $cols = array('shortname', 'roles', 'local_roles', 'completion', 'grades', 'groups', 'groupings',
+                      'blog_associations', 'events', 'logs', 'notes', 'comments', 'modules');
         if (!in_array($identifiername, $cols)) {
             $cols[] = $identifiername;
         }
@@ -1820,14 +1833,15 @@ class course_sync_manager extends sync_manager {
         $filerec->filename = $filename;
 
         // Ensure no collisions.
-        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
+        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                     $filerec->filepath, $filerec->filename)) {
             $oldfile->delete();
         }
 
         $fs->create_file_from_string($filerec, $content);
     }
 
-    function update_enrols($course, $self, $guest) {
+    public function update_enrols($course, $self, $guest) {
         global $DB;
 
         if (!empty($guest)) {

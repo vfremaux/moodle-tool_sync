@@ -57,20 +57,20 @@ class enrol_sync_manager extends sync_manager {
 
     }
 
-    function get_userfields() {
+    public function get_userfields() {
         return array('id' => 'id',
                      'idnumber' => get_string('idnumber'),
                      'username' => get_string('username'),
                      'email' => get_string('email'));
     }
 
-    function get_coursefields() {
+    public function get_coursefields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
                      'shortname' => get_string('shortname'));
     }
 
-    function cron($syncconfig) {
+    public function cron($syncconfig) {
         global $CFG, $USER, $DB;
 
         $csv_encode = '/\&\#44/';

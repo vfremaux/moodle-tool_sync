@@ -102,17 +102,7 @@ class tool_sync_renderer extends plugin_base_renderer {
                          multiple
                          OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >';
         foreach ($distinctcourses as $c) {
-            switch (0 + @$syncconfig->course_filedeleteidentifier) {
-                case 0 :
-                    $cid = $c->idnumber;
-                    break;
-                case 1 :
-                    $cid = $c->shortname;
-                    break;
-                case 2 :
-                    $cid = $c->id;
-                    break;
-            }
+            $cid = tool_sync_get_course_identifier($c, 'course_filedeleteidentifier', $syncconfig);
             $str .= '<option value="'.$cid.'">('.$c->idnumber.') '.$c->shortname.' - '.$c->fullname.'</option>';
         }
         $str .= '</select>';
@@ -220,17 +210,7 @@ class tool_sync_renderer extends plugin_base_renderer {
                          multiple
                          OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >';
         foreach ($distinctcourses as $c) {
-            switch (0 + @$syncconfig->course_resetfileidentifier) {
-                case 0 :
-                    $cid = $c->idnumber;
-                    break;
-                case 1 :
-                    $cid = $c->shortname;
-                    break;
-                case 2 :
-                    $cid = $c->id;
-                    break;
-            }
+            $cid = tool_sync_get_course_identifier($c, 'course_resetfileidentifier', $syncconfig);
             $str .= '<option value="'.$cid.'">('.$c->idnumber.') '.$c->shortname.' - '.$c->fullname.'</option>';
         }
         $str .= '</select>';

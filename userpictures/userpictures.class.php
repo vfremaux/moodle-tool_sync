@@ -37,7 +37,7 @@ define('PIX_FILE_SKIPPED', 2);
 
 class userpictures_sync_manager extends sync_manager {
 
-    function form_elements(&$frm) {
+    public function form_elements(&$frm) {
         global $CFG;
 
         $frm->addElement('text', 'tool_sync/userpictures_fileprefix', get_string('userpicturesfilesprefix', 'tool_sync'));
@@ -46,13 +46,13 @@ class userpictures_sync_manager extends sync_manager {
         $frm->addElement('select', 'tool_sync/userpictures_userfield', get_string('existfileidentifier', 'tool_sync'), $this->get_userfields());
 
         $rarr1 = array();
-        $rarr1[] =& $frm->createElement('radio', 'tool_sync/userpictures_overwrite', '', get_string('yes').' ', 1);
-        $rarr1[] =& $frm->createElement('radio', 'tool_sync/userpictures_overwrite', '', get_string('no'), 0);
+        $rarr1[] = $frm->createElement('radio', 'tool_sync/userpictures_overwrite', '', get_string('yes').' ', 1);
+        $rarr1[] = $frm->createElement('radio', 'tool_sync/userpictures_overwrite', '', get_string('no'), 0);
         $frm->addGroup($rarr1, 'overwritearray', get_string('userpicturesoverwrite', 'tool_sync'), array(' '), false);
 
         $rarr2 = array();
-        $rarr2[] =& $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', '', get_string('yes').' ', 1);
-        $rarr2[] =& $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', '', get_string('no'), 0);
+        $rarr2[] = $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', '', get_string('yes').' ', 1);
+        $rarr2[] = $frm->createElement('radio', 'tool_sync/userpictures_forcedeletion', '', get_string('no'), 0);
         $frm->addGroup($rarr2, 'forcedeletearray', get_string('userpicturesforcedeletion', 'tool_sync'), array(' '), false);
 
         $frm->addElement('static', 'userpicturesst1', '<hr>');
@@ -63,12 +63,12 @@ class userpictures_sync_manager extends sync_manager {
         $frm->addElement('button', 'manualuserpictures', get_string('manualuserpicturesrun', 'tool_sync'), $attribs);
         $registerurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('what' => 'registerallpictures'));
         $attribs = array('onclick' => 'document.location.href= \''.$registerurl.'\'');
-        $barr[] =& $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
     }
 
-    function cron($syncconfig) {
+    public function cron($syncconfig) {
         global $USER, $CFG;
 
         $fs = get_file_storage();
@@ -163,7 +163,7 @@ class userpictures_sync_manager extends sync_manager {
         return true;
     }
 
-    function get_userfields() {
+    public function get_userfields() {
 
         $ufs = array (
             'id' => 'id',
@@ -188,7 +188,7 @@ class userpictures_sync_manager extends sync_manager {
      *
      * @return nothing
      */
-    function process_directory ($dir, $userfield, $overwrite, &$results) {
+    protected function process_directory ($dir, $userfield, $overwrite, &$results) {
         global $OUTPUT, $CFG;
 
         if (!($handle = opendir($dir))) {
@@ -235,7 +235,7 @@ class userpictures_sync_manager extends sync_manager {
      * @return integer either PIX_FILE_UPDATED, PIX_FILE_ERROR or
      *                  PIX_FILE_SKIPPED
      */
-    function process_file ($file, $userfield, $overwrite) {
+    protected function process_file ($file, $userfield, $overwrite) {
         global $DB, $OUTPUT, $CFG;
 
         /*

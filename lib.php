@@ -266,3 +266,19 @@ function sync_notify_new_user_password($user, $value) {
 function trim_array_values(&$e) {
     $e = trim($e);
 }
+
+function tool_sync_get_course_identifier($course, $forfile, $syncconfig) {
+    $cid = false;
+    switch (0 + @$syncconfig->$forfile) {
+        case 0 :
+            $cid = $course->idnumber;
+            break;
+        case 1 :
+            $cid = $course->shortname;
+            break;
+        case 2 :
+            $cid = $course->id;
+            break;
+    }
+    return $cid;
+}

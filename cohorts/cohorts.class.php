@@ -74,14 +74,14 @@ class cohorts_sync_manager extends sync_manager {
     public function get_access_icons($course) {
     }
 
-    function get_userfields() {
+    public function get_userfields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
                      'username' => 'username',
                      'email' => 'email');
     }
 
-    function get_cohortfields() {
+    public function get_cohortfields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
                      'name' => 'name');
@@ -91,17 +91,16 @@ class cohorts_sync_manager extends sync_manager {
     *
     */
     public function cron($syncconfig) {
-        global $CFG, $USER, $DB;
+        global $CFG, $DB;
 
         $systemcontext = \context_system::instance();
 
         $config = get_config('tool_sync');
 
         // Internal process controls
-        $syncdeletions = 0 + @$config->cohorts_syncdelete;
         $autocreatecohorts = 0 + @$config->cohorts_autocreate;
 
-        if (!$adminuser = get_admin()) {
+        if (!get_admin()) {
             return;
         }
 
@@ -148,8 +147,6 @@ class cohorts_sync_manager extends sync_manager {
         $patterns = array();
         $metas = array();
 
-        $textlib = new \core_text();
-
         $this->report(get_string('cohortsstarting', 'tool_sync'));
 
         // Jump any empty or comment line.
@@ -189,7 +186,6 @@ class cohorts_sync_manager extends sync_manager {
                 return;
             }
         }
-        $linenum = 2; // Since header is line 1.
 
         // Header is validated.
         $this->init_tryback(implode(';', $headers));
@@ -226,6 +222,7 @@ class cohorts_sync_manager extends sync_manager {
                 $e->uid = $uid;
                 $e->identifier = $record['userid'];
                 $this->report(get_string('cohortusernotfound', 'tool_sync', $e));
+                $userserrors++;
                 continue;
             }
 
@@ -268,7 +265,8 @@ class cohorts_sync_manager extends sync_manager {
                     $cohortmembership->cohortid = ''.@$cohort->id;
                     $cohortmembership->timeadded = $t;
                     $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
-    
+                    $userscohortassign++;
+
                     $e = new \StdClass;
                     $e->username = $user->username;
                     $e->idnumber = $user->idnumber;
@@ -284,6 +282,7 @@ class cohorts_sync_manager extends sync_manager {
             } else if ($record['cmd'] == 'del') {
                 if ($cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
                     $DB->delete_records('cohort_members', array('id' => $cohortmembership->id));
+                    $userscohortunassign++;
 
                     $e = new \StdClass;
                     $e->username = $user->username;
