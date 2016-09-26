@@ -40,8 +40,6 @@ $cleancatnamestr = get_string('cleancategories', 'tool_sync');
 
 set_time_limit(300);
 
-list($usec, $sec) = explode(' ', microtime());
-$time_start = ((float)$usec + (float)$sec);
 $url = new moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
 $PAGE->set_url($url);
 $PAGE->navigation->add($cleancatnamestr);
@@ -52,7 +50,7 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading_with_help(get_string('cleancategories', 'tool_sync'), 'cleancategories', 'tool_sync');
 
-// Page controller
+// Page controller.
 
 if (!isset($_POST['ids'])) {
 
