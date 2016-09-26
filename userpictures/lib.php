@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package   tool_sync
  * @category  tool
@@ -41,6 +39,8 @@ defined('MOODLE_INTERNAL') || die();
  * @return string The full path to the temp directory.
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Create a unique temporary directory with a given prefix name,
  * inside a given directory, with given permissions. Return the
@@ -52,7 +52,6 @@ defined('MOODLE_INTERNAL') || die();
  * @return string The full path to the temp directory.
  */
 function sync_my_mktempdir($dir, $prefix = '') {
-    global $CFG;
 
     if (substr($dir, -1) != '/') {
         $dir .= '/';

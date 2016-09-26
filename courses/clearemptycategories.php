@@ -33,7 +33,7 @@ $PAGE->set_context($systemcontext);
 require_login();
 require_capability('tool/sync:configure', $systemcontext);
 
-$coursemanager = new \tool_sync\course_sync_manager('', null); // Do not trigger any command
+$coursemanager = new \tool_sync\course_sync_manager('', null); // Do not trigger any command.
 $renderer = $PAGE->get_renderer('tool_sync');
 
 $cleancatnamestr = get_string('cleancategories', 'tool_sync');
@@ -82,7 +82,7 @@ if (!isset($_POST['ids'])) {
     }
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

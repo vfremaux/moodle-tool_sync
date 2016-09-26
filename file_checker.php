@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * @package tool_sync
  * @author Funck Thibaut
  */
+
+defined('MOODLE_INTERNAL') || die;
 
 class file_checker {
 
@@ -141,10 +141,10 @@ class file_checker {
             }
 
             $text = $this->my_file_get_contents($filename);
-            //trim utf-8 bom
+            // Trim utf-8 bom.
             $textlib = new core_text();
             $text = $textlib->trim_utf8_bom($text);
-            //Fix mac/dos newlines
+            // Fix mac/dos newlines.
             $text = preg_replace('!\r\n?!',"\n",$text);
             $text = preg_replace('!;!',", ",$text);
             $fp = fopen($filename, 'w');

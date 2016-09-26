@@ -14,9 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_sync;
-
-defined('MOODLE_INTERNAL') || die();
 /**
  * @package   tool_sync
  * @category  tool
@@ -25,14 +22,18 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace tool_sync;
+
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/lib.php');
 require_once($CFG->libdir.'/gdlib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
 
-define ('PIX_FILE_UPDATED', 0);
-define ('PIX_FILE_ERROR', 1);
-define ('PIX_FILE_SKIPPED', 2);
+define('PIX_FILE_UPDATED', 0);
+define('PIX_FILE_ERROR', 1);
+define('PIX_FILE_SKIPPED', 2);
 
 class userpictures_sync_manager extends sync_manager {
 
@@ -57,28 +58,29 @@ class userpictures_sync_manager extends sync_manager {
         $frm->addElement('static', 'userpicturesst1', '<hr>');
 
         $barr = array();
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/userpictures/execcron.php\'');
+        $cronurl = new moodle_url('/admin/tool/sync/userpictures/execcron.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualuserpictures', get_string('manualuserpicturesrun', 'tool_sync'), $attribs);
-        $attribs = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/courses/execcron.php?what=registerallpictures\'');
+        $registerurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('what' => 'registerallpictures'));
+        $attribs = array('onclick' => 'document.location.href= \''.$registerurl.'\'');
         $barr[] =& $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
-
     }
 
     function cron($syncconfig) {
         global $USER, $CFG;
 
         $fs = get_file_storage();
-        
+
         $filerec = new \StdClass();
         $contextid = \context_system::instance()->id;
         $component = 'tool_sync';
         $filearea = 'syncfiles';
         $itemid = 0;
         $areafiles = $fs->get_area_files($contextid, $component, $filearea, $itemid);
-        
-        // Searching in area what matches userpicture archives
+
+        // Searching in area what matches userpicture archives.
         if (!empty($areafiles)) {
             foreach ($areafiles as $f) {
                 if (preg_match('/^'.$syncconfig->userpictures_fileprefix.'.*\.zip/', $f->get_filename())) {
@@ -105,19 +107,20 @@ class userpictures_sync_manager extends sync_manager {
         foreach ($filestoprocess as $f) {
 
             $this->report(get_string('processingfile','tool_sync', $f->get_filename()));
-            // user pictures processing
+            // User pictures processing.
 
-            // Large files are likely to take their time and memory. Let PHP know
-            // that we'll take longer, and that the process should be recycled soon
-            // to free up memory.
+            /*
+             * Large files are likely to take their time and memory. Let PHP know
+             * that we'll take longer, and that the process should be recycled soon
+             * to free up memory.
+             */
             @set_time_limit(0);
             @raise_memory_limit("512M");
             if (function_exists('apache_child_terminate')) {
                 @apache_child_terminate();
             }
 
-            // Create a unique temporary directory, to process the zip file
-            // contents.
+            // Create a unique temporary directory, to process the zip file contents.
             $zipdir = sync_my_mktempdir($CFG->tempdir.'/', 'usrpic');
 
             $fp = get_file_packer('application/zip');
@@ -136,7 +139,7 @@ class userpictures_sync_manager extends sync_manager {
                 $this->report(get_string('errors', 'tool_sync') . ": " . $results['errors']);
             }
 
-            // files cleanup
+            // Files cleanup.
 
             $filerec = new \StdClass();
             $filerec->contextid = $f->get_contextid();
@@ -208,8 +211,10 @@ class userpictures_sync_manager extends sync_manager {
                             break;
                     }
                 }
-                // Ignore anything else that is not a directory or a file (e.g.,
-                // symbolic links, sockets, pipes, etc.)
+                /*
+                 * Ignore anything else that is not a directory or a file (e.g.,
+                 * symbolic links, sockets, pipes, etc.)
+                 */
             }
         }
         closedir($handle);
@@ -232,24 +237,29 @@ class userpictures_sync_manager extends sync_manager {
      */
     function process_file ($file, $userfield, $overwrite) {
         global $DB, $OUTPUT, $CFG;
-    
-        // Add additional checks on the filenames, as they are user
-        // controlled and we don't want to open any security holes.
+
+        /*
+         * Add additional checks on the filenames, as they are user
+         * controlled and we don't want to open any security holes.
+         */
         $path_parts = pathinfo(cleardoubleslashes($file));
         $basename  = $path_parts['basename'];
         $extension = $path_parts['extension'];
 
-        // The picture file name (without extension) must match the
-        // userfield attribute.
+        /*
+         * The picture file name (without extension) must match the
+         * userfield attribute.
+         */
         $uservalue = substr($basename, 0, strlen($basename) - strlen($extension) - 1);
 
         // userfield names are safe, so don't quote them.
 
         if ($userfield == 'hostedusername') {
             list($username, $mnethostid) = explode('@', $uservalue);
-            $user = $DB->get_record('user', array ('username' => $username, 'mnethostid' => $mnethostid, 'deleted' => 0));
+            $user = $DB->get_record('user', array('username' => $username, 'mnethostid' => $mnethostid, 'deleted' => 0));
         } else {
-            $user = $DB->get_record('user', array ($userfield => $uservalue, 'mnethostid' => $CFG->mnet_localhost_id, 'deleted' => 0));
+            $params = array($userfield => $uservalue, 'mnethostid' => $CFG->mnet_localhost_id, 'deleted' => 0);
+            $user = $DB->get_record('user', $params);
         }
 
         if (!$user) {

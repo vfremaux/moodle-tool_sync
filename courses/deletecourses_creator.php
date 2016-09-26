@@ -15,8 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @author Funck Thibaut
- * @package tool-sync
+ * @author      Funck Thibaut
+ * @package     tool_sync
+ * @category    tool
  */
 
 require('../../../../config.php');
@@ -42,7 +43,8 @@ if ($selection) {
 }
 
 $url = new moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
-$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $CFG->wwwroot.'/admin/tool/sync/index.php');
+$indexurl = new moodle_url('/admin/tool/sync/index.php');
+$PAGE->navigation->add(get_string('synchronization', 'tool_sync'), $indexurl);
 $PAGE->navigation->add(get_string('builddeletefile', 'tool_sync'));
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");

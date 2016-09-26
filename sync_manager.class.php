@@ -29,10 +29,10 @@ class sync_manager {
 
     public $log;
 
-    // preserves processed file header to rebuild tryback file
+    // Preserves processed file header to rebuild tryback file.
     private $trybackhead;
 
-    // keeps tryback lines
+    // Keeps tryback lines.
     private $trybackarr;
 
     /**
@@ -63,7 +63,7 @@ class sync_manager {
 
         // Ensure no collisions.
         if ($oldfile = $fs->get_file($reportrec->contextid, $reportrec->component, $reportrec->filearea, 
-                                        $reportrec->itemid, $reportrec->filepath, $reportrec->filename)) {
+                                    $reportrec->itemid, $reportrec->filepath, $reportrec->filename)) {
             $oldfile->delete();
         }
 
@@ -107,19 +107,19 @@ class sync_manager {
         $filerec = $originalfilerec;
         $filerec->filename = $trybackfilename;
 
-        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
+        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                     $filerec->filepath, $filerec->filename)) {
             $oldfile->delete();
         }
 
-        echo "Creating tryback";
-        // print_object($filerec);
+        echo " Creating tryback ";
         $fs->create_file_from_string($filerec, $buffer);
     }
 
     protected function get_input_file($configlocation, $defaultlocation) {
         if (empty($configlocation)) {
-            $filename = $defaultlocation;  // Default location
-            $filepath = '/';  // Default name
+            $filename = $defaultlocation;  // Default location.
+            $filepath = '/';  // Default name.
         } else {
             $parts = pathinfo($configlocation);
             $filename = $parts['basename'];
@@ -141,8 +141,6 @@ class sync_manager {
 
     /**
      * Given a file rec, get an open strem on it and process error cases.
-     *
-     *
      */
     protected function open_input_file($filerec) {
 
@@ -152,7 +150,8 @@ class sync_manager {
             $filerec->filepath = '/';
         }
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                   $filerec->filepath, $filerec->filename);
         if (!$inputfile) {
             $this->report(get_string('filenotfound', 'tool_sync', "{$filerec->filepath}{$filerec->filename}"));
             return false;
@@ -182,17 +181,19 @@ class sync_manager {
             $oldfile->delete();
         }
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                   $filerec->filepath, $filerec->filename);
         $fs->create_file_from_storedfile($archiverec, $inputfile);
     }
 
     /**
-     * 
+     *
      */
     protected function cleanup_input_file($filerec) {
         $fs = get_file_storage();
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                   $filerec->filepath, $filerec->filename);
         $inputfile->delete();
     }
 }

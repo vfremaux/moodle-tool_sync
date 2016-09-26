@@ -94,7 +94,7 @@ if ($data = $form->get_data()) {
 
             $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
 
-            // Take last as former is the / directory
+            // Take last as former is the / directory.
             $uploadedfile = array_pop($areafiles);
 
             $manualfilerec = new StdClass();
@@ -164,7 +164,7 @@ if ($canprocess) {
     echo '</pre>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

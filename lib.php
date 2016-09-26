@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * @package   tool_sync
  * @category  tool
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
@@ -38,7 +38,7 @@ define('SYNC_COURSE_CREATE_DELETE', 0x006);
  * prints a report to a log stream and output ir also to screen if required
  *
  */
-function tool_sync_report(&$report, $message, $onscreen = true){
+function tool_sync_report(&$report, $message, $onscreen = true) {
     if (empty($report)) {
         $report = '';
     }
@@ -58,13 +58,13 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
 
     $config = get_config('tool_sync');
 
-    // we may have a risk the BOM is present on first line
+    // We may have a risk the BOM is present on first line.
     if ($resetfirst) {
         $first = true;
     }
 
     if (!isset($textlib)) {
-        $textlib = new core_text(); // singleton
+        $textlib = new core_text();
     }
 
     if ($first && $config->encoding == 'UTF-8') {
@@ -90,19 +90,19 @@ function tool_sync_get_all_courses($orderby = 'shortname') {
 
     $sql = "
         SELECT
-            CASE WHEN ass.roleid IS NOT NULL THEN CONCAT( c.id, '_', ass.roleid ) ELSE CONCAT( c.id, '_', '0' ) END AS recid, 
+            CASE WHEN ass.roleid IS NOT NULL THEN CONCAT( c.id, '_', ass.roleid ) ELSE CONCAT( c.id, '_', '0' ) END AS recid,
             c.id,
-            c.shortname, 
-            c.fullname, 
+            c.shortname,
+            c.fullname,
             c.idnumber,
-            count( DISTINCT ass.userid ) AS people, 
+            count( DISTINCT ass.userid ) AS people,
             ass.rolename
         FROM
             {course} c
         LEFT JOIN
             (SELECT
                 co.instanceid,
-                ra.userid, 
+                ra.userid,
                 r.name as rolename,
                 r.id as roleid
              FROM
@@ -128,17 +128,15 @@ function tool_sync_get_all_courses($orderby = 'shortname') {
  * Standard cron function
  */
 function tool_sync_cron() {
-    // No more cron action. Everything is handled using scheduled tasks
+    // No more cron action. Everything is handled using scheduled tasks.
 }
 
 /**
 * parses a YYYY-MM-DD hh:ii:ss
-*
-*
 */
 function tool_sync_parsetime($time, $default = 0) {
 
-    if (preg_match('/(\d\d\d\d)-(\d\d)-(\d\d)\s+(\d\d):(\d\d):(\d\d)/', $time, $matches)){
+    if (preg_match('/(\d\d\d\d)-(\d\d)-(\d\d)\s+(\d\d):(\d\d):(\d\d)/', $time, $matches)) {
         $Y = $matches[1];
         $M = $matches[2];
         $D = $matches[3];
@@ -163,7 +161,7 @@ function tool_sync_parsetime($time, $default = 0) {
 function tool_sync_capture_input_files($interactive = false) {
     global $CFG;
 
-    // Ensures input directory exists
+    // Ensures input directory exists.
     $syncinputdir = $CFG->dataroot.'/sync';
     if (!is_dir($syncinputdir)) {
         mkdir($syncinputdir, 0777);
@@ -192,7 +190,8 @@ function tool_sync_capture_input_files($interactive = false) {
             if ($interactive) {
                 mtrace('Too old read lock file. this miht affect remote end, but continue capture.');
             } else {
-                email_to_user(get_admin(), get_admin(), $SITE->shortname." : Too old read lock file.", 'Possible local sync process issue.');
+                email_to_user(get_admin(), get_admin(), $SITE->shortname." : Too old read lock file.",
+                'Possible local sync process issue.');
             }
         }
     }
@@ -205,7 +204,8 @@ function tool_sync_capture_input_files($interactive = false) {
         if ($interactive) {
             mtrace('Could not create readlock file. Possible severe issue in storage. Resuming sync input capture.');
         } else {
-            email_to_user(get_admin(), get_admin(), $SITE->shortname." : Could not create readlock file.", 'Possible local sync process issue.');
+            email_to_user(get_admin(), get_admin(), $SITE->shortname." : Could not create readlock file.",
+            'Possible local sync process issue.');
         }
         return;
     }
@@ -243,7 +243,8 @@ function tool_sync_capture_input_files($interactive = false) {
         $filerec->filename = $entry;
 
         // Delete previous version and avoid file collision.
-        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
+        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                $filerec->filepath, $filerec->filename)) {
             $oldfile->delete();
         }
 

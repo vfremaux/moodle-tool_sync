@@ -96,13 +96,13 @@ if ($canprocess) {
 
     $usermgtmanual = get_string('checkingcourse', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
-    
+
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
     echo "<center>$cronrunmsg</center>";
     echo '</fieldset>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

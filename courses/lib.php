@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package   tool_sync
  * @category  tool
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * An helper function to create the course deletion file from a selection
@@ -50,7 +50,7 @@ function tool_sync_create_course_deletion_file($selection) {
     $filerec->filepath = '/';
     $filerec->filename = $filename;
 
-    // Ensure no collisions
+    // Ensure no collisions.
     if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
         $oldfile->delete();
     }
@@ -65,9 +65,9 @@ function tool_sync_create_course_deletion_file($selection) {
  * @param arrayref $path the relative textual path to the current category
  */
 function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
-    global $CFG, $DB;
+    global $DB;
 
-    // get my subs
+    // Get my subs.
     $sql = "
         SELECT DISTINCT
             cc.id,
@@ -93,7 +93,7 @@ function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
     }
 
     if (!empty($cats)) {
-        foreach($cats as $ec) {
+        foreach ($cats as $ec) {
 
             $mempath = $path;
             $path .= ' / '.$ec->name;
@@ -135,11 +135,11 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
  * completes unqualified key names
  * @param object $cfg a configuration object.
  */
-function tool_sync_config_add_sync_prefix($cfg){
+function tool_sync_config_add_sync_prefix($cfg) {
 
     $formobj = new StdClass();
 
-    foreach($cfg as $key => $value){
+    foreach ($cfg as $key => $value) {
         $fullkey = 'tool_sync/'.$key;
         $formobj->$fullkey = $value;
     }
@@ -154,7 +154,7 @@ function tool_sync_config_add_sync_prefix($cfg){
  * @param objectref $config the surrounding configuration
  * @return a string or false if no more data
  */
-function tool_sync_read($filereader, $length, &$config){
+function tool_sync_read($filereader, $length, &$config) {
     $input = fgets($filereader, 1024);
 
     if ($config->encoding != 'UTF-8') {

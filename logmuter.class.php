@@ -37,24 +37,26 @@ defined('MOODLE_INTERNAL') || die;
  *   in reverse of the order in which they were activated (they must be unstacked in order)
  */
 
-class logmuter
-{
-    // static variables
+class logmuter {
+    // Static variables.
     private static $oldsettings = null;
-    private static $stacksize   = 0;
+    private static $stacksize = 0;
 
-    // instance variables
-    private $stackidx           = -1;
+    // Instance variables.
+    private $stackidx = -1;
 
 
     /**
      * the class constructor
      */
-    function __construct()
-    {
+    function __construct() {
         global $CFG;
-        // if this is the first object to be instantiated then store away the previous configuration settings to allow us to restore them on unmute
-        if (self::$oldsettings===null){
+
+        /*
+         * if this is the first object to be instantiated then store away the previous
+         * configuration settings to allow us to restore them on unmute
+         */
+        if (self::$oldsettings === null) {
                 self::$oldsettings =
                 (array_key_exists('tool_log', $CFG->forced_plugin_settings))
                 ? $CFG->forced_plugin_settings['tool_log']
@@ -66,9 +68,8 @@ class logmuter
      * the class constructor
      * ensures that the log is
      */
-    function __destruct()
-    {
-        if ($this->stackidx !== -1){
+    function __destruct() {
+        if ($this->stackidx !== -1) {
             throw new Exception('Coding error: logmuter must be deactivated before destruction');
         }
     }
@@ -78,24 +79,23 @@ class logmuter
      * Disable logging in moodle - the logging must be reenabled before the object is destroyed
      * If the muter is already active then this routine returns safely
      */
-    public function activate()
-    {
+    public function activate() {
         global $CFG;
-        
-        // if we're already active then there's nothing to do so just return
+
+        // If we're already active then there's nothing to do so just return.
         if ($this->stackidx !== -1){
             return;
         }
 
-        // keep track of where we are in the instance stack
+        // Keep track of where we are in the instance stack.
         $this->stackidx = ++self::$stacksize;
-        
-        // if we're not the first stack entry then the logs are already mute so nothing to do ...
+
+        // If we're not the first stack entry then the logs are already mute so nothing to do ...
         if ($this->stackidx !== 1){
             return;
         }
 
-        // override the configuration settings to disable all log stores and force re-construction of log manager singleton
+        // Override the configuration settings to disable all log stores and force re-construction of log manager singleton.
         $CFG->forced_plugin_settings['tool_log'] = array('enabled_stores'=>'');
         get_log_manager( true );
     }
@@ -105,30 +105,29 @@ class logmuter
      * Re-enable logging in moodle
      * If the muter is already deactivated then this routine returns safley
      */
-    public function deactivate()
-    {
+    public function deactivate() {
         global $CFG;
-        
-        // if we're not currently active then there's nothing to do so just return
+
+        // If we're not currently active then there's nothing to do so just return.
         if ($this->stackidx === -1){
             return;
         }
 
-        // make sure that muters are deactivated in the reverse order of activation
+        // Make sure that muters are deactivated in the reverse order of activation.
         if ($this->stackidx !== self::$stacksize){
             throw new Exception('Coding error: logmuter being deactivated out of order');
         }
 
-        // deal with unstacking logic
+        // Deal with unstacking logic.
         $this->stackidx = -1;
         self::$stacksize--;
-        
-        // if the stack isn't empty then it isn't time to unmute the logs yet
+
+        // If the stack isn't empty then it isn't time to unmute the logs yet.
         if (self::$stacksize !== 0){
             return;
         }
 
-        // restore old logging configuration settings and force re-construction of log manager singleton
+        // Restore old logging configuration settings and force re-construction of log manager singleton.
         $CFG->forced_plugin_settings['tool_log'] = self::$oldsettings;
         get_log_manager( true );
     }

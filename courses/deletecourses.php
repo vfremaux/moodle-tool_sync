@@ -53,7 +53,7 @@ $PAGE->set_heading($site->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading_with_help(get_string('coursedeletion', 'tool_sync'), 'coursedeletion', 'tool_sync');
 
-// Page controller
+// Page controller.
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
@@ -107,13 +107,13 @@ if ($canprocess) {
 
     $usermgtmanual = get_string('deletingcourses', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
-    
+
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
     echo "<center>$cronrunmsg</center>";
     echo '</fieldset>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

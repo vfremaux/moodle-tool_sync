@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   tool_sync
- * @category  tool
- * @author Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -52,7 +52,7 @@ $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname: $strdeletecourses");
 $PAGE->set_heading($SITE->fullname);
 
-// Page controller
+// Page controller.
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
@@ -68,7 +68,7 @@ if ($data = $form->get_data()) {
         $processedfile = $syncconfig->course_filecreatelocation;
     } else {
         $usercontext = context_user::instance($USER->id);
-        
+
         $fs = get_file_storage();
 
         if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
@@ -106,13 +106,13 @@ if ($canprocess) {
 
     $usermgtmanual = get_string('creatingcourses', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
-    
+
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
     echo "<center>$cronrunmsg</center>";
     echo '</fieldset>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

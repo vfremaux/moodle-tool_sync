@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   tool_sync
- * @category  tool
- * @author Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -121,7 +121,7 @@ if ($canprocess) {
     echo '</fieldset>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

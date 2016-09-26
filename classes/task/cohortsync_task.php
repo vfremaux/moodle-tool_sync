@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_sync\task;
-
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package   tool_sync
  * @category  tool
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace tool_sync\task;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');

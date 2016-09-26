@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   tool_sync
- * @category  tool
- * @author Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -78,7 +78,7 @@ if ($data = $form->get_data()) {
 
             $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
 
-            // Take last as former is the / directory
+            // Take last as former is the / directory.
             $uploadedfile = array_pop($areafiles);
 
             $manualfilerec = new StdClass();
@@ -119,7 +119,7 @@ if ($canprocess) {
 }
 
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();
