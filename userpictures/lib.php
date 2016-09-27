@@ -20,12 +20,12 @@
  * @author Funck Thibaut
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @see /admin/tool/uploaduser/picture.php 
+ * @see /admin/tool/uploaduser/picture.php
  *
- * A local library revamped from 
+ * A local library revamped from
  *
- * The essential reasons of the revamping are : 
- * - getting a real separate library for functions (original functions embedded in page script) 
+ * The essential reasons of the revamping are :
+ * - getting a real separate library for functions (original functions embedded in page script)
  * - changing notifications to message logging output
  *
  * Create a unique temporary directory with a given prefix name,
@@ -87,7 +87,8 @@ function sync_my_save_profile_image($id, $originalfile) {
  *
  * @param integer $id the internal id of the user to assign the
  *                picture file to.
- * @param string $directfile if empty, fetches existing or stored file into user's context, if provided, is the full path of the picture file.
+ * @param string $directfile if empty, fetches existing or stored file into user's context,
+ * if provided, is the full path of the picture file.
  *
  * @return void
  */
@@ -104,7 +105,8 @@ function sync_register_image_checksum($id, $directfile) {
 
     if (empty($directfile)) {
         $fs = get_file_storage();
-        $filerec = $DB->get_records('file', array('contextid'=> $context->id, 'component' => 'user', 'filearea' => 'icon', 'filename' => 'f1.png'));
+        $params = array('contextid' => $context->id, 'component' => 'user', 'filearea' => 'icon', 'filename' => 'f1.png');
+        $filerec = $DB->get_records('file', );
         if ($filerec) {
             $icon = $fs->get_file_by_id($filerec->id);
             $checksum = md5($icon->get_content());
