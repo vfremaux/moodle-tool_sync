@@ -106,7 +106,7 @@ function sync_register_image_checksum($id, $directfile) {
     if (empty($directfile)) {
         $fs = get_file_storage();
         $params = array('contextid' => $context->id, 'component' => 'user', 'filearea' => 'icon', 'filename' => 'f1.png');
-        $filerec = $DB->get_records('file', );
+        $filerec = $DB->get_records('file', $params);
         if ($filerec) {
             $icon = $fs->get_file_by_id($filerec->id);
             $checksum = md5($icon->get_content());
