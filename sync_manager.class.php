@@ -14,16 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_sync;
-
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * @package   tool_sync
  * @category  tool
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace tool_sync;
+
+defined('MOODLE_INTERNAL') || die;
 
 class sync_manager {
 
@@ -62,7 +61,7 @@ class sync_manager {
         $reportrec->filepath = '/reports/';
 
         // Ensure no collisions.
-        if ($oldfile = $fs->get_file($reportrec->contextid, $reportrec->component, $reportrec->filearea, 
+        if ($oldfile = $fs->get_file($reportrec->contextid, $reportrec->component, $reportrec->filearea,
                                     $reportrec->itemid, $reportrec->filepath, $reportrec->filename)) {
             $oldfile->delete();
         }
@@ -98,8 +97,8 @@ class sync_manager {
 
         $fs = get_file_storage();
 
-        $path_parts = pathinfo($originalfilerec->filename);
-        $trybackfilename = $path_parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$path_parts['extension'];
+        $parts = pathinfo($originalfilerec->filename);
+        $trybackfilename = $parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$parts['extension'];
 
         $buffer = implode("\n", $this->trybackhead)."\n";
         $buffer .= implode("\n", $this->trybackarr);
@@ -176,7 +175,7 @@ class sync_manager {
         $archiverec->filepath = '/archives/';
 
         // Ensure no collisions.
-        if ($oldfile = $fs->get_file($archiverec->contextid, $archiverec->component, $archiverec->filearea, 
+        if ($oldfile = $fs->get_file($archiverec->contextid, $archiverec->component, $archiverec->filearea,
                                         $archiverec->itemid, $archiverec->filepath, $archiverec->filename)) {
             $oldfile->delete();
         }

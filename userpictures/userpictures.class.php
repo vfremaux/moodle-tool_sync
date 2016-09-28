@@ -43,7 +43,8 @@ class userpictures_sync_manager extends sync_manager {
         $frm->addElement('text', 'tool_sync/userpictures_fileprefix', get_string('userpicturesfilesprefix', 'tool_sync'));
         $frm->setType('tool_sync/userpictures_fileprefix', PARAM_TEXT);
 
-        $frm->addElement('select', 'tool_sync/userpictures_userfield', get_string('existfileidentifier', 'tool_sync'), $this->get_userfields());
+        $label = get_string('existfileidentifier', 'tool_sync');
+        $frm->addElement('select', 'tool_sync/userpictures_userfield', $label, $this->get_userfields());
 
         $rarr1 = array();
         $rarr1[] = $frm->createElement('radio', 'tool_sync/userpictures_overwrite', '', get_string('yes').' ', 1);
@@ -102,11 +103,11 @@ class userpictures_sync_manager extends sync_manager {
         if (!array_key_exists($userfield, $userfields)) {
             $this->report(get_string('uploadpicture_baduserfield', 'admin'));
             return;
-        } 
+        }
 
         foreach ($filestoprocess as $f) {
 
-            $this->report(get_string('processingfile','tool_sync', $f->get_filename()));
+            $this->report(get_string('processingfile', 'tool_sync', $f->get_filename()));
             // User pictures processing.
 
             /*
@@ -129,7 +130,7 @@ class userpictures_sync_manager extends sync_manager {
                 $this->report(get_string('erroruploadpicturescannotunzip', 'tool_sync', $f));
                 @remove_dir($zipdir);
             } else {
-                $results = array ('errors' => 0,'updated' => 0);
+                $results = array ('errors' => 0, 'updated' => 0);
 
                 $this->process_directory($zipdir, $userfield, $overwritepicture, $results);
 
@@ -200,7 +201,7 @@ class userpictures_sync_manager extends sync_manager {
             if ($item != '.' && $item != '..') {
                 if (is_dir($dir.'/'.$item)) {
                     $this->process_directory($dir.'/'.$item, $userfield, $overwrite, $results);
-                } elseif (is_file($dir.'/'.$item))  {
+                } else if (is_file($dir.'/'.$item))  {
                     $result = $this->process_file($dir.'/'.$item, $userfield, $overwrite);
                     switch ($result) {
                         case PIX_FILE_ERROR:
@@ -242,9 +243,9 @@ class userpictures_sync_manager extends sync_manager {
          * Add additional checks on the filenames, as they are user
          * controlled and we don't want to open any security holes.
          */
-        $path_parts = pathinfo(cleardoubleslashes($file));
-        $basename  = $path_parts['basename'];
-        $extension = $path_parts['extension'];
+        $parts = pathinfo(cleardoubleslashes($file));
+        $basename  = $parts['basename'];
+        $extension = $parts['extension'];
 
         /*
          * The picture file name (without extension) must match the
@@ -252,7 +253,7 @@ class userpictures_sync_manager extends sync_manager {
          */
         $uservalue = substr($basename, 0, strlen($basename) - strlen($extension) - 1);
 
-        // userfield names are safe, so don't quote them.
+        // Userfield names are safe, so don't quote them.
 
         if ($userfield == 'hostedusername') {
             list($username, $mnethostid) = explode('@', $uservalue);

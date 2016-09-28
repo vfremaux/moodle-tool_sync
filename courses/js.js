@@ -1,4 +1,6 @@
-
+/*
+ *
+ */
 function selectcourses(courses, courseselection) {
 
     var selection;
@@ -11,16 +13,16 @@ function selectcourses(courses, courseselection) {
         while (courses.selectedIndex > -1) {
             if (courses.options[courses.selectedIndex].value == "Id_type_bien") {
                 courses.options[courses.selectedIndex] = null;
-                courses.form.Id_categorie_bien.options[0].select= true;
+                courses.form.Id_categorie_bien.options[0].select = true;
             } else {
-                //on cherche la place de notre champ
-                for (place = 0 ; place < courseselection.length ; place++) {
+                // On cherche la place de notre champ.
+                for (place = 0; place < courseselection.length; place++) {
                     if (courseselection.options[place].text > courses.options[courses.selectedIndex].text) {
                         break;
                     }
                 }
-                for (i = courseselection.length ; i > place ; i--) {
-                    courseselection.options[i] = new Option(courseselection.options[(i-1)].text,courseselection.options[(i-1)].value);
+                for (i = courseselection.length; i > place; i--) {
+                    courseselection.options[i] = new Option(courseselection.options[(i - 1)].text, courseselection.options[(i - 1)].value);
                 }
 
                 courseselection.options[place] = new Option(courses.options[courses.selectedIndex].text,courses.options[courses.selectedIndex].value);
@@ -37,12 +39,15 @@ function selectcourses(courses, courseselection) {
     }
 }
 
+/*
+ *
+ */
 function select_all(frm) {
-    for (i = 0 ; i < frm.courselist.length ; i++) {
+    for (i = 0; i < frm.courselist.length; i++) {
         frm.courselist.options[i].selected = false;
     }
     frm.courselist.name = "liste_champs[]";
-    for (i = 0 ; i < frm.selection.length ; i++) {
+    for (i = 0; i < frm.selection.length; i++) {
         frm.selection.options[i].selected = true;
     }
     frm.selection.name = "selection[]";
@@ -50,7 +55,7 @@ function select_all(frm) {
 
 function priorite_champ(selection, mode) {
 
-    if (selection.length < 2 ) {
+    if (selection.length < 2) {
         return;
     }
 
@@ -58,7 +63,7 @@ function priorite_champ(selection, mode) {
 
     if (mode == 'up' && old_place > 0) {
         new_place = old_place - 1;
-    } else if ((mode == 'down') && (old_place < selection.length-1)) {
+    } else if ((mode == 'down') && (old_place < selection.length - 1)) {
         new_place = old_place+1;
     }
 

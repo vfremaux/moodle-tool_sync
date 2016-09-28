@@ -33,7 +33,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/tool.php');
 
 class ToolForm extends moodleform {
 
-    function definition() {
+    public function definition() {
         global $CFG;
 
         $coursemanager = new \tool_sync\course_sync_manager();
@@ -50,7 +50,7 @@ class ToolForm extends moodleform {
         $mform->addElement('header', 'h1', get_string('filemanager', 'tool_sync'));
 
         $fileareaurl = new moodle_url('/admin/tool/sync/filearea.php');
-        $mform->addElement('static', 'files', '<a href="'.$fileareaurl.'">'.get_string('filemanager2', 'tool_sync').'</a>'); 
+        $mform->addElement('static', 'files', '<a href="'.$fileareaurl.'">'.get_string('filemanager2', 'tool_sync').'</a>');
 
         $mform->addElement('header', 'h2', get_string('coursesync', 'tool_sync'));
         $mform->addHelpButton('h2', 'coursecreateformat', 'tool_sync');

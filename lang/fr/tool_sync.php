@@ -34,8 +34,8 @@ $string['buildresetfile'] = 'Générer un fichier de réinitialisation';
 $string['button'] = 'Enregistrer la configuration des outils';
 $string['categoryremoved'] = 'Catégorie {$a} supprimée';
 $string['checkingcourse'] = 'Vérification d\'existence des cours';
-$string['choosecoursetodelete'] = 'Selection des cours à supprimer : ';
-$string['choosecoursetoreset'] = 'Selection des cours à réinitialiser : ';
+$string['choosecoursetodelete'] = 'Selection des cours à supprimer&nbsp;:';
+$string['choosecoursetoreset'] = 'Selection des cours à réinitialiser&nbsp;:';
 $string['cleancategories'] = 'Nettoyage des catégories de cours vides';
 $string['cohortcohortidentifier'] = 'Ientifiant de cohorte';
 $string['cohortfilelocation'] = 'Emplacement du fichier de cohortes';
@@ -117,13 +117,13 @@ $string['enroldefaultcmd_desc'] = 'Définit la commande par défaut sur le rôle
 $string['enroldefaultinfo'] = 'Configuration par defaut pour la colonne cmd';
 $string['enrolemailcourseadmins'] = 'Notifier les admissions aux administrateurs du cours';
 $string['enrolemailcourseadmins_desc'] = 'Si activé, envoie un résumé des admissions aux enseignants du cours';
-$string['enrolfile'] = 'Fichier d\'enrôlement';
-$string['enrolfilelocation'] = 'Fichier d\'enrôlement';
-$string['enrolmanualsync'] = 'Exécution manuelle de la synchronisation d\'enrôlement';
-$string['enrolmgtmanual'] = 'Gestion manuelle de l\'enrôlement';
-$string['enrolsconfig'] = 'Configuration des opérations sur les enrollements';
+$string['enrolfile'] = 'Fichier d\'inscriptions';
+$string['enrolfilelocation'] = 'Fichier d\'inscriptions';
+$string['enrolmanualsync'] = 'Exécution manuelle de la synchronisation d\'inscriptions';
+$string['enrolmgtmanual'] = 'Gestion manuelle des inscriptions';
+$string['enrolsconfig'] = 'Configuration des opérations sur les inscriptions';
 $string['enrolscronconfig'] = 'Activer la synchronisation par cron des inscriptions';
-$string['enrolsync'] = 'Synchronisation des enrôlements';
+$string['enrolsync'] = 'Synchronisation des inscriptions';
 $string['enroluseridentifier'] = 'Identifiant pour désigner les utilisateurs';
 $string['enterfilename'] = 'Entrez le nom du fichier rapport à visualiser :';
 $string['errorbackupfile'] = 'Une erreur s\'est produite en rapport à l\'archive de cours (Code erreur: {$a->error}).';
@@ -393,7 +393,7 @@ Vous allez supprimer toutes les catégories vides de Moodle. Cette commande est 
 mode récursif et détruira toutes les "banches vides".
 ';
 
-$string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\'utilisateurs et de groupe à l\'aide de fichiers txt et csv appelés par le cron.<br/><br/>
+$string['boxdescription'] = 'Outil de gestion des synchronisations de cours, d\'utilisateurs et de groupe à l\'aide de fichiers txt et csv appelés par le cron.<br/><br/>
     Il suffit de préciser les chemins des quatre fichiers (à partir de la racine de "moodledata" :<br/>
     <ol>
         <li>Le fichier .txt pour la suppression de cours.
@@ -409,7 +409,7 @@ $string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\
 
 $string['coursecreateformat'] = 'Format de fichier de création de cours';
 $string['coursecreateformat_help'] = '
-Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration locale de l\'outil de synchronisation. 
+Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration locale de l\'outil de synchronisation.
 La première ligne doit comporter les titres de champs dans un ordre quelconque.
 
 <p>Champs obligatoires : <b>shortname, fullname</b>.
@@ -450,14 +450,15 @@ The first field must identify a course, depending on the selected course primary
 <li><i>groupings</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
 <li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
 
-<p>Additional fields can be added for more specific control for modules: 
+<p>Additional fields can be added for more specific control for modules:
 <b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions, assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
 
 ';
 
 $string['userformat'] = 'Format du fichier de synchronisation des utilisateurs';
 $string['userformat_help'] = '
-Le fichier de synchronisation des utilisateurs doit être un fichier text encodé en ISO ou UTF-8 selon la configuration générale de l\'outil de synchronisation. 
+Le fichier de synchronisation des utilisateurs doit être un fichier text encodé en ISO ou UTF-8
+selon la configuration générale de l\'outil de synchronisation.
 La première ligne doit comporter les noms de champs au format moodle dans un ordre quelconque.
 Le premier champ doit identifier un utilisateur par son \'username\'.
 

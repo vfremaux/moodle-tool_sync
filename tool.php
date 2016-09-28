@@ -32,9 +32,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php
 
 class tool_plugin_sync {
 
-    function form_elements(&$frm) {
+    public function form_elements(&$frm) {
         $frm->addElement('header', 'globalconf1', get_string('configuration', 'tool_sync'));
-        
+
         $encodings = array('UTF-8' => 'UTF-8', 'ISO-8859-1' => 'ISO-8859-1');
         $frm->addElement('select', 'tool_sync/encoding', get_string('encoding', 'tool_sync'), $encodings);
         $separators = array(',' => ', (coma)', ';' => '; (semicolon)');

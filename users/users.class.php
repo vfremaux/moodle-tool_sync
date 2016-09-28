@@ -201,7 +201,7 @@ class users_sync_manager extends sync_manager {
             $header[] = trim($h);
             $patternized = implode('|', $patterns) . "\\d+";
             $metapattern = implode('|', $metas);
-            if (!(isset($required[$h]) || 
+            if (!(isset($required[$h]) ||
                     isset($optionaldefaults[$h]) ||
                             isset($optional[$h]) ||
                                     preg_match("/$patternized/", $h) ||
@@ -238,7 +238,7 @@ class users_sync_manager extends sync_manager {
          * Will use this course array a lot
          * so fetch it early and keep it in memory
          */
-        $courses = get_courses('all', 'c.sortorder','c.id,c.shortname,c.idnumber,c.fullname,c.sortorder,c.visible');
+        $courses = get_courses('all', 'c.sortorder', 'c.id,c.shortname,c.idnumber,c.fullname,c.sortorder,c.visible');
 
         // Take some from admin profile, other fixed by hardcoded defaults.
         while (!feof($filereader)) {
@@ -283,18 +283,17 @@ class users_sync_manager extends sync_manager {
 
                     // Check for required values.
                     if (isset($required[$name]) and !$value) {
-                        $errormessage = get_string('missingfield', 'error', $name)." ".get_string('erroronline', 'error', $linenum).". ".get_string('missingfield', 'error', $name);
-                        $this->report($errormessage);
+                        $message = get_string('missingfield', 'error', $name).' ';
+                        $message .= get_string('erroronline', 'error', $linenum).". ".get_string('missingfield', 'error', $name);
+                        $this->report($message);
                         return;
                     } else if ($name == 'password') {
 
                         if (empty($value)) {
                             $user->password = 'to be generated';
                             $tobegenerated = true;
-                        }
-
-                        // Password needs to be encrypted.
-                        else if ($value != '*NOPASS*') {
+                        } else if ($value != '*NOPASS*') {
+                            // Password needs to be encrypted.
                             $user->password = hash_internal_user_password($value);
                             if ($notifypasswordstousers) {
                                 if (!empty($user->email) && (!preg_match('/NO MAIL|NOMAIL/', $user->email))) {
@@ -475,7 +474,7 @@ class users_sync_manager extends sync_manager {
                                 $pref->name = 'create_password';
                                 $pref->value = 1;
                                 $DB->insert_record('user_preferences', $pref);
-    
+
                                 $pref = new \StdClass();
                                 $pref->userid = $newuser->id;
                                 $pref->name = 'auth_forcepasswordchange';
@@ -645,12 +644,12 @@ class users_sync_manager extends sync_manager {
                                         if (count(get_user_roles($coursecontext, $user->id))) {
                                             if (!$syncconfig->simulate) {
                                                 if (groups_add_member($gid, $user->id)) {
-                                                    $this->report(get_string('addedtogroup', '',$c->group));
+                                                    $this->report(get_string('addedtogroup', '', $c->group));
                                                 } else {
-                                                    $this->report(get_string('addedtogroupnot', '',$c->group));
+                                                    $this->report(get_string('addedtogroupnot', '', $c->group));
                                                 }
                                             } else {
-                                                $this->report('SIMULATION : '.get_string('addedtogroup', '',$c->group));
+                                                $this->report('SIMULATION : '.get_string('addedtogroup', '', $c->group));
                                             }
                                         } else {
                                             $this->report(get_string('addedtogroupnotenrolled', '', $c->group));
@@ -672,26 +671,22 @@ class users_sync_manager extends sync_manager {
                                 }
                                 include_once($CFG->dirroot.'/blocks/vmoodle/rpclib.php');
                                 include_once($CFG->dirroot.'/mnet/xmlrpc/client.php');
-    
+
                                 // Imagine we never did it before.
-                                global $MNET;
-                                $MNET = new \mnet_environment();
-                                $MNET->init();
-    
+                                $mnet = new \mnet_environment();
+                                $mnet->init();
+
                                 $this->report(get_string('propagating', 'vmoodle', fullname($user)));
                                 $caller = new \StdClass();
                                 $caller->username = 'admin';
                                 $caller->remoteuserhostroot = $CFG->wwwroot;
                                 $caller->remotehostroot = $CFG->wwwroot;
-    
+
                                 // Check if exists.
                                 $exists = false;
                                 if ($return = mnetadmin_rpc_user_exists($caller, $user->username, $c->wwwroot, true)) {
                                     $response = json_decode($return);
                                     if (empty($response)) {
-                                        if (debugging()) {
-                                            print_object($return);
-                                        }
                                         continue;
                                     }
                                     if ($response->status == RPC_FAILURE_DATA) {
@@ -712,12 +707,10 @@ class users_sync_manager extends sync_manager {
                                 }
                                 $created = false;
                                 if (!$exists) {
-                                    if ($return = mnetadmin_rpc_create_user($caller, $user->username, $user, '', $c->wwwroot, false)) {
+                                    if ($return = mnetadmin_rpc_create_user($caller, $user->username, $user, '',
+                                                                            $c->wwwroot, false)) {
                                         $response = json_decode($return);
                                         if (empty($response)) {
-                                            if (debugging()) {
-                                                print_object($return);
-                                            }
                                             $this->report(get_string('remoteserviceerror', 'tool_sync'));
                                             continue;
                                         }
@@ -738,14 +731,11 @@ class users_sync_manager extends sync_manager {
                                     $response = mnetadmin_rpc_remote_enrol($caller, $user->username, $c->role,
                                             $c->wwwroot, 'shortname', $c->idnumber, $c->start, $c->end, false);
                                     if (empty($response)) {
-                                        if (debugging()) {
-                                            print_object($response);
-                                        }
                                         $this->report(get_string('remoteserviceerror', 'tool_sync'));
                                         continue;
                                     }
                                     if ($response->status != RPC_SUCCESS) {
-                                        $message =  implode("\n", $response->errors);
+                                        $message = implode("\n", $response->errors);
                                         $this->report(get_string('communicationerror', 'tool_sync', $message));
                                     } else {
                                         // In case this block is installed, mark access authorisations in the user's profile.
@@ -753,7 +743,8 @@ class users_sync_manager extends sync_manager {
                                             include_once($CFG->dirroot.'/blocks/user_mnet_hosts/xlib.php');
                                             if ($result = user_mnet_hosts_add_access($user, $c->wwwroot)) {
                                                 if (preg_match('/error/', $result)) {
-                                                    $this->report(get_string('errorsettingremoteaccess', 'tool_sync', $result));
+                                                    $message = get_string('errorsettingremoteaccess', 'tool_sync', $result);
+                                                    $this->report($message);
                                                 } else {
                                                     $this->report($result);
                                                 }

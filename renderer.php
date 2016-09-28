@@ -33,8 +33,8 @@ class tool_sync_renderer extends plugin_base_renderer {
         $str .= '<br/>';
         $url = new moodle_url('/admin/tool/sync/index.php', array('sesskey' => sesskey()));
         $text = get_string('returntotools', 'tool_sync');
-        $single_button = new single_button($url, $text, 'get');
-        $str .= $OUTPUT->render($single_button);
+        $button = new single_button($url, $text, 'get');
+        $str .= $OUTPUT->render($button);
         $str .= '<br/>';
         $str .= '</center>';
 
@@ -52,26 +52,26 @@ class tool_sync_renderer extends plugin_base_renderer {
         $str .= '</th>';
         $str .= '<th class="header c1" align="left">';
         $str .= get_string('fullname');
-        $str .=  '</th>';
+        $str .= '</th>';
         $str .= '<th class="header c2" align="left" colspan="5">';
         $str .= get_string('roles');
         $str .= '</th>';
         $str .= '</tr>';
 
-        $COURSE_SORTS = array(
+        $coursesorts = array(
             0 => 'idnumber',
             1 => 'shortname',
             2 => 'id'
         );
 
-        $sortorder = $COURSE_SORTS[0 + @$syncconfig->course_filedeleteidentifier];
+        $sortorder = $coursesorts[0 + @$syncconfig->course_filedeleteidentifier];
 
         $courses = tool_sync_get_all_courses($sortorder);
-        $class = 'r0' ;
+        $class = 'r0';
         $distinctcourses = array();
         foreach ($courses as $c) {
-            $class = ($class == 'r0') ? 'r1' : 'r0' ;
-            if (@$prevc->shortname != $c->shortname){
+            $class = ($class == 'r0') ? 'r1' : 'r0';
+            if (@$prevc->shortname != $c->shortname) {
                 $str .= '</tr>';
                 $str .= '<tr valign="top" class="'.$class.'">';
                 $str .= '<td align="left" class="c0">'.$c->shortname .'</td><td align="left" class="c1"> '.$c->fullname .'</td>';
@@ -147,7 +147,7 @@ class tool_sync_renderer extends plugin_base_renderer {
     /**
      *
      */
-    function print_reset_course_creator($syncconfig) {
+    public function print_reset_course_creator($syncconfig) {
 
         $str = '';
 
@@ -175,10 +175,10 @@ class tool_sync_renderer extends plugin_base_renderer {
         $sortorder = $coursesorts[0 + @$syncconfig->course_resetfileidentifier];
 
         $courses = tool_sync_get_all_courses($sortorder);
-        $class = 'r0' ;
+        $class = 'r0';
         $distinctcourses = array();
         foreach ($courses as $c){
-            $class = ($class == 'r0') ? 'r1' : 'r0' ;
+            $class = ($class == 'r0') ? 'r1' : 'r0';
             if (@$prevc->shortname != $c->shortname) {
                 $str .= '</tr>';
                 $str .= '<tr valign="top" class="'.$class.'">';
@@ -238,7 +238,10 @@ class tool_sync_renderer extends plugin_base_renderer {
         $str .= '</table>';
         $str .= '</td>';
         $str .= '<td align="center">';
-        $str .= '<select name="selection" multiple  style="height:200px" OnDblClick="javascript:selectcourses(this.form.selection,this.form.courselist)"></select>';
+        $str .= '<select name="selection"
+                         multiple
+                         style="height:200px"
+                         OnDblClick="javascript:selectcourses(this.form.selection,this.form.courselist)"></select>';
         $str .= '</td>';
         $str .= '</tr>';
         $str .= '</table>';

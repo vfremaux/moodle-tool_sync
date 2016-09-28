@@ -36,7 +36,6 @@ defined('MOODLE_INTERNAL') || die;
  * - If several logmuter objects are activated in a cascade then they are deactrivated again
  *   in reverse of the order in which they were activated (they must be unstacked in order)
  */
-
 class logmuter {
     // Static variables.
     private static $oldsettings = null;
@@ -49,7 +48,7 @@ class logmuter {
     /**
      * the class constructor
      */
-    function __construct() {
+    public function __construct() {
         global $CFG;
 
         /*
@@ -57,10 +56,9 @@ class logmuter {
          * configuration settings to allow us to restore them on unmute
          */
         if (self::$oldsettings === null) {
-                self::$oldsettings =
-                (array_key_exists('tool_log', $CFG->forced_plugin_settings))
-                ? $CFG->forced_plugin_settings['tool_log']
-                : array();
+                self::$oldsettings = (array_key_exists('tool_log', $CFG->forced_plugin_settings)) ?
+                $CFG->forced_plugin_settings['tool_log'] :
+                array();
         }
     }
 
@@ -68,7 +66,7 @@ class logmuter {
      * the class constructor
      * ensures that the log is
      */
-    function __destruct() {
+    public function __destruct() {
         if ($this->stackidx !== -1) {
             throw new Exception('Coding error: logmuter must be deactivated before destruction');
         }
@@ -91,7 +89,7 @@ class logmuter {
         $this->stackidx = ++self::$stacksize;
 
         // If we're not the first stack entry then the logs are already mute so nothing to do ...
-        if ($this->stackidx !== 1){
+        if ($this->stackidx !== 1) {
             return;
         }
 
@@ -109,12 +107,12 @@ class logmuter {
         global $CFG;
 
         // If we're not currently active then there's nothing to do so just return.
-        if ($this->stackidx === -1){
+        if ($this->stackidx === -1) {
             return;
         }
 
         // Make sure that muters are deactivated in the reverse order of activation.
-        if ($this->stackidx !== self::$stacksize){
+        if ($this->stackidx !== self::$stacksize) {
             throw new Exception('Coding error: logmuter being deactivated out of order');
         }
 
@@ -123,7 +121,7 @@ class logmuter {
         self::$stacksize--;
 
         // If the stack isn't empty then it isn't time to unmute the logs yet.
-        if (self::$stacksize !== 0){
+        if (self::$stacksize !== 0) {
             return;
         }
 

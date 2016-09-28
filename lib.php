@@ -132,18 +132,18 @@ function tool_sync_cron() {
 }
 
 /**
-* parses a YYYY-MM-DD hh:ii:ss
-*/
+ * parses a YYYY-MM-DD hh:ii:ss
+ */
 function tool_sync_parsetime($time, $default = 0) {
 
     if (preg_match('/(\d\d\d\d)-(\d\d)-(\d\d)\s+(\d\d):(\d\d):(\d\d)/', $time, $matches)) {
-        $Y = $matches[1];
-        $M = $matches[2];
-        $D = $matches[3];
+        $y = $matches[1];
+        $m = $matches[2];
+        $d = $matches[3];
         $h = $matches[4];
         $i = $matches[5];
         $s = $matches[6];
-        return mktime($h , $i, $s, $M, $D, $Y);
+        return mktime($h , $i, $s, $m, $d, $y);
     } else {
         return $default;
     }
@@ -154,7 +154,7 @@ function tool_sync_parsetime($time, $default = 0) {
  * and store them into tool_sync filearea
  * Synchronisation checks for a lock.txt file NOT being present. A lock.txt
  * file is written as weak semaphore process. lock.txt signal will avoid
- * twice concurrent execution of file retrieval. 
+ * twice concurrent execution of file retrieval.
  * the retrieval is sensible to a alock.txt external lock written by the remote side
  * when feeding remotely the files.
  */
@@ -176,7 +176,8 @@ function tool_sync_capture_input_files($interactive = false) {
             if ($interactive) {
                 mtrace('Too old write lock file. Resuming sync input capture.');
             } else {
-                email_to_user(get_admin(), get_admin(), $SITE->shortname." : Too old write lock file.", 'Possible remote writer process issue.');
+                $subject = $SITE->shortname." : Too old write lock file.";
+                email_to_user(get_admin(), get_admin(), $subject, 'Possible remote writer process issue.');
             }
         }
         return;
@@ -196,9 +197,9 @@ function tool_sync_capture_input_files($interactive = false) {
         }
     }
 
-    if ($FILE = fopen($readlockfile, 'w')) {
-        fputs($FILE, time());
-        fclose($FILE);
+    if ($f = fopen($readlockfile, 'w')) {
+        fputs($f, time());
+        fclose($f);
     } else {
         // Something wrong in sync input dir. Notify admin.
         if ($interactive) {
@@ -210,11 +211,11 @@ function tool_sync_capture_input_files($interactive = false) {
         return;
     }
 
-    $DIR = opendir($syncinputdir);
+    $d = opendir($syncinputdir);
 
     $fs = get_file_storage();
 
-    while ($entry = readdir($DIR)) {
+    while ($entry = readdir($d)) {
         if (preg_match('/^\./', $entry)) {
             continue;
         }
@@ -252,12 +253,12 @@ function tool_sync_capture_input_files($interactive = false) {
         @unlink($syncinputdir.'/'.$entry);
     }
 
-    closedir($DIR);
+    closedir($d);
 
     @unlink($readlockfile);
 }
 
-/** 
+/**
  * TODO write notification code
  */
 function sync_notify_new_user_password($user, $value) {
