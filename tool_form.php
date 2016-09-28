@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package   tool_sync
  * @category  tool
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/lib/formslib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
@@ -33,8 +33,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/tool.php');
 
 class ToolForm extends moodleform {
 
-    function definition() {
-        global $CFG;
+    public function definition() {
 
         $coursemanager = new \tool_sync\course_sync_manager();
         $usermanager = new \tool_sync\users_sync_manager();
@@ -43,14 +42,12 @@ class ToolForm extends moodleform {
         $cohortmanager = new \tool_sync\cohorts_sync_manager();
         $mainmanager = new \tool_sync\tool_plugin_sync();
 
-        $fileoptions = array('context' => context_system::instance());
-
         $mform = $this->_form;
 
         $mform->addElement('header', 'h1', get_string('filemanager', 'tool_sync'));
 
         $fileareaurl = new moodle_url('/admin/tool/sync/filearea.php');
-        $mform->addElement('static', 'files', '<a href="'.$fileareaurl.'">'.get_string('filemanager2', 'tool_sync').'</a>'); 
+        $mform->addElement('static', 'files', '<a href="'.$fileareaurl.'">'.get_string('filemanager2', 'tool_sync').'</a>');
 
         $mform->addElement('header', 'h2', get_string('coursesync', 'tool_sync'));
         $mform->addHelpButton('h2', 'coursecreateformat', 'tool_sync');
@@ -72,7 +69,6 @@ class ToolForm extends moodleform {
         $mform->addHelpButton('h6', 'cohortformat', 'tool_sync');
         $cohortmanager->form_elements($mform);
 
-        // $mform->addElement('header', get_string('optionheader', 'tool_sync'));
         $mainmanager->form_elements($mform);
 
         $this->add_action_buttons();

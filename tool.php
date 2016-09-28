@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_sync;
-
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * @package   tool_sync
  * @category  tool
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace tool_sync;
+
+defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
@@ -32,9 +32,9 @@ require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php
 
 class tool_plugin_sync {
 
-    function form_elements(&$frm) {
+    public function form_elements(&$frm) {
         $frm->addElement('header', 'globalconf1', get_string('configuration', 'tool_sync'));
-        
+
         $encodings = array('UTF-8' => 'UTF-8', 'ISO-8859-1' => 'ISO-8859-1');
         $frm->addElement('select', 'tool_sync/encoding', get_string('encoding', 'tool_sync'), $encodings);
         $separators = array(',' => ', (coma)', ';' => '; (semicolon)');

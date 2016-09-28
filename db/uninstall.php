@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
- * @package   tool_sync
- * @category  tool
- * @author Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function xmldb_tool_sync_uninstall(){
-    global $DB, $CFG;
+defined('MOODLE_INTERNAL') || die();
+
+function xmldb_tool_sync_uninstall() {
+    global $DB;
 
     if ($field = $DB->get_record('user_info_field', array('shortname' => 'userpicturehash'))) {
         $DB->delete_records('user_info_data', array('fieldid' => $field->id));

@@ -14,9 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_sync;
-
-defined('MOODLE_INTERNAL') || die();
 /**
  * @package   tool_sync
  * @category  tool
@@ -25,9 +22,9 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/** The following flags are set in the configuration
- * @author Funck Thibaut
- */
+namespace tool_sync;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -46,8 +43,7 @@ class users_sync_manager extends sync_manager {
     /**
      * Configure elements for the tool configuration form
      */
-    function form_elements(&$frm) {
-        global $CFG;
+    public function form_elements(&$frm) {
 
         $frm->addElement('text', 'tool_sync/users_filelocation', get_string('usersfile', 'tool_sync'));
         $frm->setType('tool_sync/users_filelocation', PARAM_TEXT);
@@ -61,12 +57,13 @@ class users_sync_manager extends sync_manager {
         $frm->setDefault('tool_sync/primaryidentity', 'idnumber');
         $frm->setType('tool_sync/primaryidentity', PARAM_TEXT);
 
-        $params = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/users/execcron.php\'');
+        $cronurl = new moodle_url('/admin/tool/sync/users/execcron.php');
+        $params = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualusers', get_string('manualuserrun', 'tool_sync'), $params);
 
     }
 
-    function get_userfields() {
+    public function get_userfields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
                      'username' => 'username',
@@ -74,20 +71,16 @@ class users_sync_manager extends sync_manager {
     }
 
     // Override the get_access_icons() function.
-    /*
-    function get_access_icons($course) {
-    }
-    */
 
     /**
      * Executes this manager main task
      */
-    function cron($syncconfig) {
-        global $CFG, $USER, $DB;
+    public function cron($syncconfig) {
+        global $CFG, $DB, $OUTPUT;
 
         $systemcontext = \context_system::instance();
 
-        // Internal process controls
+        // Internal process controls.
         $createpassword = false;
         $updateaccounts = true;
         $allowrenames   = false;
@@ -104,22 +97,22 @@ class users_sync_manager extends sync_manager {
             $filerec = $this->manualfilerec;
         }
 
-        // We have no file to process. Probably because never setup
+        // We have no file to process. Probably because never setup.
         if (!($filereader = $this->open_input_file($filerec))) {
             return;
         }
 
-        $csv_encode = '/\&\#44/';
+        $csvencode = '/\&\#44/';
         if (isset($syncconfig->csvseparator)) {
-            $csv_delimiter = '\\' . $syncconfig->csvseparator;
-            $csv_delimiter2 = $syncconfig->csvseparator;
+            $csvdelimiter = '\\' . $syncconfig->csvseparator;
+            $csvdelimiter2 = $syncconfig->csvseparator;
 
             if (isset($CFG->CSV_ENCODE)) {
-                $csv_encode = '/\&\#' . $CFG->CSV_ENCODE . '/';
+                $csvencode = '/\&\#' . $CFG->CSV_ENCODE . '/';
             }
         } else {
-            $csv_delimiter = "\;";
-            $csv_delimiter2 = ";";
+            $csvdelimiter = "\;";
+            $csvdelimiter2 = ";";
         }
 
         /*
@@ -140,11 +133,10 @@ class users_sync_manager extends sync_manager {
 
         // Make arrays of valid fields for error checking.
         $required = array('username' => 1,
-                //'password' => !$createpassword,  //*NT* as we use LDAP and Moodle does not maintain passwords...OUT!
                 'firstname' => 1,
                 'lastname' => 1);
 
-        $optionalDefaults = array(
+        $optionaldefaults = array(
                 'mnethostid' => 1,
                 'institution' => '',
                 'department' => '',
@@ -156,7 +148,7 @@ class users_sync_manager extends sync_manager {
                 'timezone' => $timezone);
 
         $optional = array('idnumber' => 1,
-                'email' => 1,               //*NT* email is optional on upload to clear open ones  and reset at the beginning of the year!
+                'email' => 1, // Email is optional on upload to clear open ones  and reset at the beginning of the year!
                 'auth' => 1,
                 'icq' => 1,
                 'phone1' => 1,
@@ -183,7 +175,7 @@ class users_sync_manager extends sync_manager {
                 'password' => $createpassword,
                 'oldusername' => $allowrenames);
 
-            $patterns = array('course', // Patternized items are iterative items with indexing integer appended.
+        $patterns = array('course', // Patternized items are iterative items with indexing integer appended.
                 'group',
                 'type',
                 'role',
@@ -191,12 +183,8 @@ class users_sync_manager extends sync_manager {
                 'start',
                 'end',
                 'wwwroot');
-            $metas = array(
+        $metas = array(
                 'profile_field_.*');
-
-        // --- get header (field names) ---
-
-        $textlib = new \core_text();
 
         // Jump any empty or comment line.
         $text = fgets($filereader, 1024);
@@ -206,31 +194,12 @@ class users_sync_manager extends sync_manager {
             $i++;
         }
 
-        $headers = explode($csv_delimiter2, $text);
+        $headers = explode($csvdelimiter2, $text);
 
-        // Check for valid field names.
-        foreach ($headers as $h) {
-            $header[] = trim($h);
-            $patternized = implode('|', $patterns) . "\\d+";
-            $metapattern = implode('|', $metas);
-            if (!(isset($required[$h]) or isset($optionalDefaults[$h]) or isset($optional[$h]) or preg_match("/$patternized/", $h) or preg_match("/$metapattern/", $h))) {
-                $this->report(get_string('invalidfieldname', 'error', $h));
-                return;
-            }
-
-            if (isset($required[$h])) {
-                $required[$h] = 0;
-            }
+        if (!$this->check_headers($headers, $required, $patterns, $metas, $optionaldefauls)) {
+            return;
         }
 
-        // Check for required fields.
-        foreach ($required as $key => $value) {
-            if ($value) {
-                // Required field missing.
-                $this->report(get_string('fieldrequired', 'error', $key));
-                return;
-            }
-        }
         $linenum = 2; // Since header is line 1.
 
         // Header is validated.
@@ -242,19 +211,13 @@ class users_sync_manager extends sync_manager {
         $renames      = 0;
         $renameerrors = 0;
 
-        /*
-         * Will use this course array a lot
-         * so fetch it early and keep it in memory
-         */
-        $courses = get_courses('all', 'c.sortorder','c.id,c.shortname,c.idnumber,c.fullname,c.sortorder,c.visible');
-
         // Take some from admin profile, other fixed by hardcoded defaults.
         while (!feof($filereader)) {
 
             // Make a new base record.
             $user = new \StdClass;
-            foreach ($optionalDefaults as $key => $value) {
-                if ($value == 'adminvalue'){
+            foreach ($optionaldefaults as $key => $value) {
+                if ($value == 'adminvalue') {
                     $user->$key = $adminuser->$key;
                 } else {
                     $user->$key = $value;
@@ -270,17 +233,17 @@ class users_sync_manager extends sync_manager {
                 $i++;
                 continue;
             }
-            $valueset = explode($csv_delimiter2, $text);
+            $valueset = explode($csvdelimiter2, $text);
             $record = array();
 
             $tobegenerated = false;
 
             foreach ($valueset as $key => $value) {
                 // Decode encoded commas.
-                $record[$header[$key]] = preg_replace($csv_encode, $csv_delimiter2, trim($value));
+                $record[$header[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
             }
-            if ($record[$header[0]]) {
 
+            if ($record[$header[0]]) {
                 // Add a new user to the database.
                 // Add fields to object $user.
                 foreach ($record as $name => $value) {
@@ -291,18 +254,17 @@ class users_sync_manager extends sync_manager {
 
                     // Check for required values.
                     if (isset($required[$name]) and !$value) {
-                        $errormessage = get_string('missingfield', 'error', $name)." ".get_string('erroronline', 'error', $linenum).". ".get_string('missingfield', 'error', $name);
-                        $this->report($errormessage);
+                        $message = get_string('missingfield', 'error', $name).' ';
+                        $message .= get_string('erroronline', 'error', $linenum).". ".get_string('missingfield', 'error', $name);
+                        $this->report($message);
                         return;
-                    } elseif ($name == 'password') {
+                    } else if ($name == 'password') {
 
                         if (empty($value)) {
                             $user->password = 'to be generated';
                             $tobegenerated = true;
-                        }
-
-                        // Password needs to be encrypted.
-                        elseif ($value != '*NOPASS*') {
+                        } else if ($value != '*NOPASS*') {
+                            // Password needs to be encrypted.
                             $user->password = hash_internal_user_password($value);
                             if ($notifypasswordstousers) {
                                 if (!empty($user->email) && (!preg_match('/NO MAIL|NOMAIL/', $user->email))) {
@@ -314,15 +276,19 @@ class users_sync_manager extends sync_manager {
                             // Mark user having no password.
                             $user->password = '*NOPASS*';
                         }
-                    } elseif ($name == 'username') {
+                    } else if ($name == 'username') {
                         $user->username = \core_text::strtolower($value);
                     } else {
                         // Normal entry.
                         $user->{$name} = $value;
                     }
                 }
-                if (isset($user->country)) $user->country = strtoupper($user->country);
-                if (isset($user->lang)) $user->lang = str_replace('_utf8', '', strtolower($user->lang));
+                if (isset($user->country)) {
+                    $user->country = strtoupper($user->country);
+                }
+                if (isset($user->lang)) {
+                    $user->lang = str_replace('_utf8', '', strtolower($user->lang));
+                }
                 $user->confirmed = 1;
                 $user->timemodified = time();
                 $linenum++;
@@ -344,10 +310,10 @@ class users_sync_manager extends sync_manager {
                 while (isset($user->$courseix)) {
                     $coursetoadd = new \StdClass;
                     $coursetoadd->idnumber = $user->$courseix;
-                    $coursetoadd->group = isset($user->$groupix) ? $user->$groupix : NULL;
-                    $coursetoadd->type = isset($user->$typeix) ? $user->$typeix : NULL;  // Deprecated. Not more used.
-                    $coursetoadd->role = isset($user->$roleix) ? $user->$roleix : NULL;
-                    $coursetoadd->enrol = isset($user->$enrolix) ? $user->$enrolix : NULL;
+                    $coursetoadd->group = isset($user->$groupix) ? $user->$groupix : null;
+                    $coursetoadd->type = isset($user->$typeix) ? $user->$typeix : null;  // Deprecated. Not more used.
+                    $coursetoadd->role = isset($user->$roleix) ? $user->$roleix : null;
+                    $coursetoadd->enrol = isset($user->$enrolix) ? $user->$enrolix : null;
                     $coursetoadd->start = isset($user->$startix) ? $user->$startix : 0;
                     $coursetoadd->end = isset($user->$endix) ? $user->$endix : 0;
                     $coursetoadd->wwwroot = isset($user->$wwwrootix) ? $user->$wwwrootix : 0;
@@ -368,7 +334,8 @@ class users_sync_manager extends sync_manager {
                  */
                 if ($allowrenames && !empty($user->oldusername) ) {
                     $user->oldusername = moodle_strtolower($user->oldusername);
-                    if ($olduser = $DB->get_record('user', array('username' => $user->oldusername, 'mnethostid' => $user->mnethostid))) {
+                    $params = array('username' => $user->oldusername, 'mnethostid' => $user->mnethostid);
+                    if ($olduser = $DB->get_record('user', $params)) {
                         if ($DB->set_field('user', 'username', $user->username, array('username' => $user->oldusername))) {
                             $this->report(get_string('userrenamed', 'admin')." : $user->oldusername $user->username");
                             $renames++;
@@ -401,7 +368,7 @@ class users_sync_manager extends sync_manager {
 
                 if (($syncconfig->primaryidentity == 'idnumber') && !empty($idnumber)) {
                     $olduser = $DB->get_record('user', array('idnumber' => $idnumber, 'mnethostid' => $user->mnethostid));
-                } elseif (($syncconfig->primaryidentity == 'email') && !empty($user->email)) {
+                } else if (($syncconfig->primaryidentity == 'email') && !empty($user->email)) {
                     $olduser = $DB->get_record('user', array('email' => $user->email, 'mnethostid' => $user->mnethostid));
                 } else {
                     $olduser = $DB->get_record('user', array('username' => $username, 'mnethostid' => $user->mnethostid));
@@ -422,17 +389,21 @@ class users_sync_manager extends sync_manager {
                             // This triggers event as required.
                             if (!$syncconfig->simulate) {
                                 user_update_user($user, false);
-                                $this->report(get_string('useraccountupdated', 'tool_sync', "$user->firstname $user->lastname as [$user->username] ($idnumber)"));
+                                $message = "$user->firstname $user->lastname as [$user->username] ($idnumber)";
+                                $reportline = get_string('useraccountupdated', 'tool_sync', $message);
+                                $this->report($reportline);
                             } else {
-                                $this->report('SIMULATION : '.get_string('useraccountupdated', 'tool_sync', "$user->firstname $user->lastname as [$user->username] ($idnumber)"));
+                                $message = "$user->firstname $user->lastname as [$user->username] ($idnumber)";
+                                $this->report('SIMULATION : '.get_string('useraccountupdated', 'tool_sync', $message));
                             }
 
                             $usersupdated++;
-                        } catch(Exception $e) {
+                        } catch (Exception $e) {
                             if (!empty($syncconfig->filefailed)) {
                                 $this->feed_tryback($text);
                             }
-                            $this->report(get_string('usernotupdatederror', 'tool_sync', "[$username] $lastname $firstname ($idnumber)"));
+                            $message = "[$username] $lastname $firstname ($idnumber)";
+                            $this->report(get_string('usernotupdatederror', 'tool_sync', $message));
                             $userserrors++;
                             continue;
                         }
@@ -447,17 +418,20 @@ class users_sync_manager extends sync_manager {
                          * In this case, output userid from previous registration
                          * This can be used to obtain a list of userids for existing users
                          */
-                        $this->report("$olduser->id ".get_string('usernotaddedregistered', 'error', "[$username] $lastname $firstname ($user->idnumber)"));
+                        $message = "[$username] $lastname $firstname ($user->idnumber)";
+                        $this->report("$olduser->id ".get_string('usernotaddedregistered', 'error', $message));
                         $userserrors++;
                     }
                 } else {
                     // New user.
                     // Pre check we have no username collision.
-                    if ($olduser = $DB->get_record('user', array('mnethostid' => $user->mnethostid, 'username' => $user->username))){
-                        $this->report(get_string('usercollision', 'tool_sync', "$olduser->id , $user->username , $user->idnumber, $user->firstname, $user->lastname "));
+                    $params = array('mnethostid' => $user->mnethostid, 'username' => $user->username);
+                    if ($olduser = $DB->get_record('user', $params)) {
+                        $message = "$olduser->id , $user->username , $user->idnumber, $user->firstname, $user->lastname ";
+                        $this->report(get_string('usercollision', 'tool_sync', $message));
                         continue;
                     }
-                    
+
                     try {
                         // This will also trigger the event.
                         if (!$syncconfig->simulate) {
@@ -471,27 +445,29 @@ class users_sync_manager extends sync_manager {
                                 $pref->name = 'create_password';
                                 $pref->value = 1;
                                 $DB->insert_record('user_preferences', $pref);
-    
+
                                 $pref = new \StdClass();
                                 $pref->userid = $newuser->id;
                                 $pref->name = 'auth_forcepasswordchange';
                                 $pref->value = $forcepasswordchange;
                                 $DB->insert_record('user_preferences', $pref);
                             }
-    
+
                             // Save custom profile fields data from csv file.
                             profile_save_data($user);
                         } else {
-                            $this->report('SIMULATION : '.get_string('useraccountadded', 'tool_sync', "$user->id , $user->username "));
+                            $message = "$user->id , $user->username ";
+                            $this->report('SIMULATION : '.get_string('useraccountadded', 'tool_sync', $message));
                             $usersnew++;
                         }
 
-                    } catch(Exception $e) {
+                    } catch (Exception $e) {
                         // Record not added -- possibly some other error.
                         if (!empty($syncconfig->filefailed)) {
                             $this->feed_tryback($text);
                         }
-                        $this->report(get_string('usernotaddederror', 'tool_sync', "[$username] $lastname $firstname ($idnumber)"));
+                        $message = "[$username] $lastname $firstname ($idnumber)";
+                        $this->report(get_string('usernotaddederror', 'tool_sync', $message));
                         $userserrors++;
                         continue;
                     }
@@ -521,7 +497,8 @@ class users_sync_manager extends sync_manager {
                     }
 
                     // Bind user to cohort.
-                    if (!$cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
+                    $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
+                    if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
                         $cohortmembership = new \StdClass();
                         $cohortmembership->userid = $user->id;
                         $cohortmembership->cohortid = ''.@$cohort->id;
@@ -539,7 +516,7 @@ class users_sync_manager extends sync_manager {
                     foreach ($addcourses as $c) {
 
                         if (empty($c->idnumber)) {
-                            // empty course sets should be ignored.
+                            // Empty course sets should be ignored.
                             continue;
                         }
 
@@ -553,7 +530,8 @@ class users_sync_manager extends sync_manager {
 
                             if (!empty($c->enrol)) {
                                 $enrol = enrol_get_plugin('manual');
-                                if (!$enrols = $DB->get_records('enrol', array('enrol' => $c->enrol, 'courseid' => $crec->id, 'status' => ENROL_INSTANCE_ENABLED), 'sortorder ASC')) {
+                                $params = array('enrol' => $c->enrol, 'courseid' => $crec->id, 'status' => ENROL_INSTANCE_ENABLED);
+                                if (!$enrols = $DB->get_records('enrol', $params, 'sortorder ASC')) {
                                     $this->report(get_string('errornomanualenrol', 'tool_sync'));
                                     $c->enrol = '';
                                 } else {
@@ -568,8 +546,8 @@ class users_sync_manager extends sync_manager {
                                 if (!empty($c->enrol)) {
 
                                     $e = new \StdClass();
-                                    $e->myuser = $user->username; // user identifier
-                                    $e->mycourse = $crec->idnumber; // course identifier
+                                    $e->myuser = $user->username; // User identifier.
+                                    $e->mycourse = $crec->idnumber; // Course identifier.
 
                                     try {
                                         if (!$syncconfig->simulate) {
@@ -584,7 +562,8 @@ class users_sync_manager extends sync_manager {
                                     }
                                 } else {
                                     if (!user_can_assign($coursecontext, $c->role)) {
-                                        //notify('--> Can not assign role in course'); //TODO: localize
+                                        assert(true);
+                                        // Notify Can not assign role in course'); // TODO: localize.
                                     }
                                     if (!$syncconfig->simulate) {
                                         $ret = role_assign($role->id, $user->id, $coursecontext->id);
@@ -615,10 +594,10 @@ class users_sync_manager extends sync_manager {
                                 $this->report(get_string('enrolledincoursenot', 'tool_sync', $c->idnumber));
                             }
 
-                            // we only can manage groups for successful enrollments
+                            // We only can manage groups for successful enrollments.
 
-                            if (@$ret) {   // OK
-                                // check group existance and try to create
+                            if (@$ret) {
+                                // Check group existance and try to create.
                                 if (!empty($c->group)) {
                                     if (!$gid = groups_get_group_by_name($crec->id, $c->group)) {
                                         $groupsettings = new \StdClass();
@@ -637,12 +616,12 @@ class users_sync_manager extends sync_manager {
                                         if (count(get_user_roles($coursecontext, $user->id))) {
                                             if (!$syncconfig->simulate) {
                                                 if (groups_add_member($gid, $user->id)) {
-                                                    $this->report(get_string('addedtogroup', '',$c->group));
+                                                    $this->report(get_string('addedtogroup', '', $c->group));
                                                 } else {
-                                                    $this->report(get_string('addedtogroupnot', '',$c->group));
+                                                    $this->report(get_string('addedtogroupnot', '', $c->group));
                                                 }
                                             } else {
-                                                $this->report('SIMULATION : '.get_string('addedtogroup', '',$c->group));
+                                                $this->report('SIMULATION : '.get_string('addedtogroup', '', $c->group));
                                             }
                                         } else {
                                             $this->report(get_string('addedtogroupnotenrolled', '', $c->group));
@@ -664,35 +643,31 @@ class users_sync_manager extends sync_manager {
                                 }
                                 include_once($CFG->dirroot.'/blocks/vmoodle/rpclib.php');
                                 include_once($CFG->dirroot.'/mnet/xmlrpc/client.php');
-    
+
                                 // Imagine we never did it before.
-                                global $MNET;
-                                $MNET = new \mnet_environment();
-                                $MNET->init();
-    
+                                $mnet = new \mnet_environment();
+                                $mnet->init();
+
                                 $this->report(get_string('propagating', 'vmoodle', fullname($user)));
                                 $caller = new \StdClass();
                                 $caller->username = 'admin';
                                 $caller->remoteuserhostroot = $CFG->wwwroot;
                                 $caller->remotehostroot = $CFG->wwwroot;
-    
+
                                 // Check if exists.
                                 $exists = false;
                                 if ($return = mnetadmin_rpc_user_exists($caller, $user->username, $c->wwwroot, true)) {
                                     $response = json_decode($return);
                                     if (empty($response)) {
-                                        if (debugging()) {
-                                            print_object($return);
-                                        }
                                         continue;
                                     }
                                     if ($response->status == RPC_FAILURE_DATA) {
                                         $this->report(get_string('errorrpcparams', 'tool_sync', implode("\n", $response->errors)));
                                         continue;
-                                    } elseif ($response->status == RPC_FAILURE) {
+                                    } else if ($response->status == RPC_FAILURE) {
                                         $this->report(get_string('rpcmajorerror', 'tool_sync'));
                                         continue;
-                                    } elseif ($response->status == RPC_SUCCESS) {
+                                    } else if ($response->status == RPC_SUCCESS) {
                                         if (!$response->user) {
                                             $this->report(get_string('userunknownremotely', 'tool_sync', fullname($user)));
                                             $exists = false;
@@ -704,17 +679,14 @@ class users_sync_manager extends sync_manager {
                                 }
                                 $created = false;
                                 if (!$exists) {
-                                    if ($return = mnetadmin_rpc_create_user($caller, $user->username, $user, '', $c->wwwroot, false)) {
+                                    if ($return = mnetadmin_rpc_create_user($caller, $user->username, $user, '',
+                                                                            $c->wwwroot, false)) {
                                         $response = json_decode($return);
                                         if (empty($response)) {
-                                            if (debugging()) {
-                                                print_object($return);
-                                            }
                                             $this->report(get_string('remoteserviceerror', 'tool_sync'));
                                             continue;
                                         }
                                         if ($response->status != RPC_SUCCESS) {
-                                            // print_object($response);
                                             $this->report(get_string('communicationerror', 'tool_sync'));
                                         } else {
                                             $u = new \StdClass();
@@ -725,27 +697,26 @@ class users_sync_manager extends sync_manager {
                                         }
                                     }
                                 }
-    
+
                                 // Process remote course enrolment.
                                 if (!empty($c->role)) {
-                                    $response = mnetadmin_rpc_remote_enrol($caller, $user->username, $c->role, $c->wwwroot, 'shortname', $c->idnumber, $c->start, $c->end, false);
+                                    $response = mnetadmin_rpc_remote_enrol($caller, $user->username, $c->role,
+                                            $c->wwwroot, 'shortname', $c->idnumber, $c->start, $c->end, false);
                                     if (empty($response)) {
-                                        if (debugging()) {
-                                            print_object($response);
-                                        }
                                         $this->report(get_string('remoteserviceerror', 'tool_sync'));
                                         continue;
                                     }
                                     if ($response->status != RPC_SUCCESS) {
-                                        // print_object($response);
-                                        $this->report(get_string('communicationerror', 'tool_sync', implode("\n", $response->errors)));
+                                        $message = implode("\n", $response->errors);
+                                        $this->report(get_string('communicationerror', 'tool_sync', $message));
                                     } else {
                                         // In case this block is installed, mark access authorisations in the user's profile.
                                         if (file_exists($CFG->dirroot.'/blocks/user_mnet_hosts/xlib.php')) {
                                             include_once($CFG->dirroot.'/blocks/user_mnet_hosts/xlib.php');
                                             if ($result = user_mnet_hosts_add_access($user, $c->wwwroot)) {
                                                 if (preg_match('/error/', $result)) {
-                                                    $this->report(get_string('errorsettingremoteaccess', 'tool_sync', $result));
+                                                    $message = get_string('errorsettingremoteaccess', 'tool_sync', $result);
+                                                    $this->report($message);
                                                 } else {
                                                     $this->report($result);
                                                 }
@@ -763,7 +734,7 @@ class users_sync_manager extends sync_manager {
                         }
                     }
                 }
-                unset ($user);
+                unset($user);
             }
         }
         fclose($filereader);
@@ -778,41 +749,6 @@ class users_sync_manager extends sync_manager {
             $this->cleanup_input_file($filerec);
         }
 
-        /*
-        if (!empty($syncconfig->eventcleanup)) {
-            $admin = get_admin();
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%user_updated'
-            ";
-            $DB->execute($sql, array($admin->id));
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%user_created'
-            ";
-            $DB->execute($sql, array($admin->id));
-
-            $sql = "
-                DELETE FROM
-                {logstore_standard_log}
-                WHERE
-                origin = 'cli' AND
-                userid = ? AND
-                eventname LIKE '%user_deleted'
-            ";
-            $DB->execute($sql, array($admin->id));
-        }
-        */
         return true;
     }
 }

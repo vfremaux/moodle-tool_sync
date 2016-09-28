@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * @package   tool_sync
  * @category  tool
@@ -23,7 +21,9 @@ defined('MOODLE_INTERNAL') || die;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once $CFG->dirroot.'/lib/formslib.php';
+defined('MOODLE_INTERNAL') || die;
+
+require_once($CFG->dirroot.'/lib/formslib.php');
 
 class InputFileLoadForm extends moodleform {
 
@@ -37,7 +37,8 @@ class InputFileLoadForm extends moodleform {
         $form->setType('action', PARAM_TEXT);
 
         if (!empty($this->_customdata['localfile'])) {
-            $form->addElement('submit', 'uselocal', get_string('uselocal', 'tool_sync', $this->_customdata['localfile']));
+            $label = get_string('uselocal', 'tool_sync', $this->_customdata['localfile']);
+            $form->addElement('submit', 'uselocal', $label);
         }
         $form->setType('uselocal', PARAM_BOOL);
 
