@@ -196,7 +196,7 @@ class users_sync_manager extends sync_manager {
 
         $headers = explode($csvdelimiter2, $text);
 
-        if (!$this->check_headers($headers, $required, $patterns, $metas, $optionaldefauls)) {
+        if (!$this->check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults)) {
             return;
         }
 

@@ -196,7 +196,7 @@ class sync_manager {
         $inputfile->delete();
     }
 
-    protected function check_headers($headers, $required, $patterns, $metas, $optionaldefauls) {
+    protected function check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults) {
 
         // Check for valid field names.
         foreach ($headers as $h) {
