@@ -831,9 +831,11 @@ class course_sync_manager extends sync_manager {
                                     $e->key = $key;
                                     $this->report(get_string('errornoteacheraccountkey', 'tool_sync', $e));
                                     continue;
-                                 }
-                                // Hardcoded default values (that are as close to moodle's UI as possible).
-                                // and we can't assume PHP5 so no pointers!
+                                }
+                                /*
+                                 * Hardcoded default values (that are as close to moodle's UI as possible)
+                                 * and we can't assume PHP5 so no pointers!
+                                 */
                                 if (!isset($value['_role'])) {
                                     $courseteachers[$key]['_role'] = '';
                                 }
@@ -1273,9 +1275,10 @@ class course_sync_manager extends sync_manager {
                 }
                 break;
 
-            case 5: // Category.
+            case 5:
+                // Category.
                 if ($this->check_is_in($value)) {
-                  // It's a Category ID Number.
+                    // It's a Category ID Number.
                     if (!$DB->record_exists('course_categories', array('id' => $value))) {
                         $e = new \StdClass;
                         $e->i = $lineno;
@@ -1285,10 +1288,10 @@ class course_sync_manager extends sync_manager {
                         return;
                     }
                 } else if ($this->check_is_string($value)) {
-                       // It's a Category Path string.
-                       $value = trim(str_replace('\\','/',$value)," \t\n\r\0\x0B/");
-                       // Clean path, ensuring all slashes are forward ones.
-                       if (strlen($value) <= 0) {
+                    // It's a Category Path string.
+                    $value = trim(str_replace('\\', '/', $value), " \t\n\r\0\x0B/");
+                    // Clean path, ensuring all slashes are forward ones.
+                    if (strlen($value) <= 0) {
                         $e = new \StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
@@ -1625,7 +1628,7 @@ class course_sync_manager extends sync_manager {
                     if (empty($syncconfig->simulate)) {
                         try {
                             $DB->update_record('course', $newcourse);
-                        } catch(Exception $e) {
+                        } catch (Exception $e) {
                             mtrace('failed updating');
                         }
                     }
@@ -1640,7 +1643,7 @@ class course_sync_manager extends sync_manager {
             if (empty($syncconfig->simulate)) {
                 $newcourse = create_course($courserec);
 
-                $format = (!isset($course['format'])) ? 'topics' : $course['format'] ; // May be useless.
+                $format = (!isset($course['format'])) ? 'topics' : $course['format']; // May be useless.
                 if (isset($course['topics'])) {
                     // Any topic headings specified ?
                     $maxfilledtopics = 1;
@@ -1666,8 +1669,7 @@ class course_sync_manager extends sync_manager {
                             $csection->summary = $sectionsummary;
                             $csection->sequence = '';
                             $csection->visible = 1;
-                            if (!$DB->insert_record('course_sections', $csection)) {
-                            }
+                            $DB->insert_record('course_sections', $csection));
                         } else {
                             $sectiondata->summary = $sectionname;
                             $sectiondata->name = $sectionsummary;
@@ -1720,7 +1722,6 @@ class course_sync_manager extends sync_manager {
                         try {
                             $DB->insert_record('course_sections', $csection);
                         } catch (Exception $e) {
-                            // Do nothing.
                         }
                     }
                 }
@@ -1795,7 +1796,7 @@ class course_sync_manager extends sync_manager {
         // Show execute time.
         list($usec, $sec) = explode(' ', microtime());
         $timeend = ((float)$usec + (float)$sec);
-        $this->report(get_string('totaltime', 'tool_sync').' '.round(($timeend - $timestart),2).' s');
+        $this->report(get_string('totaltime', 'tool_sync').' '.round(($timeend - $timestart), 2).' s');
     }
 
     /**

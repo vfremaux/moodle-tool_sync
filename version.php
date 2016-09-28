@@ -32,5 +32,5 @@ $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnost
 $plugin->maturity = MATURITY_RC;
 $plugin->release = '2.7.0 (Build 2016030802)';
 
-// Non Moodle attributes.
+// Non moodle attributes.
 $plugin->codeincrement = '2.7.0003';

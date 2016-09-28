@@ -32,7 +32,7 @@ function selectcourses(courses, courseselection) {
         }
         if (courses.length > 0) {
             if (selection >= courses.length) {
-                selection = courses.length-1;
+                selection = courses.length - 1;
             }
             courses.options[selection].selected = true;
         }
@@ -64,7 +64,7 @@ function priorite_champ(selection, mode) {
     if (mode == 'up' && old_place > 0) {
         new_place = old_place - 1;
     } else if ((mode == 'down') && (old_place < selection.length - 1)) {
-        new_place = old_place+1;
+        new_place = old_place + 1;
     }
 
     tmp = new Option(selection.options[new_place].text, selection.options[new_place].value);
