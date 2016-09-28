@@ -39,7 +39,6 @@ class cohorts_sync_manager extends sync_manager {
     }
 
     public function form_elements(&$frm) {
-        global $CFG;
 
         $frm->addElement('text', 'tool_sync/cohorts_filelocation', get_string('cohortfilelocation', 'tool_sync'));
         $frm->setType('tool_sync/cohorts_filelocation', PARAM_TEXT);
@@ -68,10 +67,6 @@ class cohorts_sync_manager extends sync_manager {
         $params = array('onclick' => 'document.location.href= \''.$execurl.'\'');
         $frm->addElement('button', 'manualcohorts', get_string('manualcohortrun', 'tool_sync'), $params);
 
-    }
-
-    // Override the get_access_icons() function.
-    public function get_access_icons($course) {
     }
 
     public function get_userfields() {
@@ -191,7 +186,7 @@ class cohorts_sync_manager extends sync_manager {
         $this->init_tryback(implode(';', $headers));
 
         $userscohortassign = 0;
-        $usercohortunassign = 0;
+        $userscohortunassign = 0;
         $userserrors  = 0;
 
         while (!feof ($filereader)) {
