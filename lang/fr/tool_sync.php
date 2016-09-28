@@ -1,4 +1,26 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 $string['automation'] = 'Alimentations et automatisation';
 $string['addedtogroup'] = 'L\'utilisateur {$a->myuser} a été ajouté au groupe {$a->group}';
@@ -12,8 +34,8 @@ $string['buildresetfile'] = 'Générer un fichier de réinitialisation';
 $string['button'] = 'Enregistrer la configuration des outils';
 $string['categoryremoved'] = 'Catégorie {$a} supprimée';
 $string['checkingcourse'] = 'Vérification d\'existence des cours';
-$string['choosecoursetodelete'] = 'Selection des cours à supprimer : ';
-$string['choosecoursetoreset'] = 'Selection des cours à réinitialiser : ';
+$string['choosecoursetodelete'] = 'Selection des cours à supprimer&nbsp;:';
+$string['choosecoursetoreset'] = 'Selection des cours à réinitialiser&nbsp;:';
 $string['cleancategories'] = 'Nettoyage des catégories de cours vides';
 $string['cohortcohortidentifier'] = 'Ientifiant de cohorte';
 $string['cohortfilelocation'] = 'Emplacement du fichier de cohortes';
@@ -95,13 +117,13 @@ $string['enroldefaultcmd_desc'] = 'Définit la commande par défaut sur le rôle
 $string['enroldefaultinfo'] = 'Configuration par defaut pour la colonne cmd';
 $string['enrolemailcourseadmins'] = 'Notifier les admissions aux administrateurs du cours';
 $string['enrolemailcourseadmins_desc'] = 'Si activé, envoie un résumé des admissions aux enseignants du cours';
-$string['enrolfile'] = 'Fichier d\'enrôlement';
-$string['enrolfilelocation'] = 'Fichier d\'enrôlement';
-$string['enrolmanualsync'] = 'Exécution manuelle de la synchronisation d\'enrôlement';
-$string['enrolmgtmanual'] = 'Gestion manuelle de l\'enrôlement';
-$string['enrolsconfig'] = 'Configuration des opérations sur les enrollements';
+$string['enrolfile'] = 'Fichier d\'inscriptions';
+$string['enrolfilelocation'] = 'Fichier d\'inscriptions';
+$string['enrolmanualsync'] = 'Exécution manuelle de la synchronisation d\'inscriptions';
+$string['enrolmgtmanual'] = 'Gestion manuelle des inscriptions';
+$string['enrolsconfig'] = 'Configuration des opérations sur les inscriptions';
 $string['enrolscronconfig'] = 'Activer la synchronisation par cron des inscriptions';
-$string['enrolsync'] = 'Synchronisation des enrôlements';
+$string['enrolsync'] = 'Synchronisation des inscriptions';
 $string['enroluseridentifier'] = 'Identifiant pour désigner les utilisateurs';
 $string['enterfilename'] = 'Entrez le nom du fichier rapport à visualiser :';
 $string['errorbackupfile'] = 'Une erreur s\'est produite en rapport à l\'archive de cours (Code erreur: {$a->error}).';
@@ -123,7 +145,7 @@ $string['errorgcmdvalue'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a
 $string['errorgroupnotcreated'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : le groupe n\'a pas pu être créé.';
 $string['errorinvalidcolumnname'] = 'Erreur : nom de colonne "{$a}" invalide';
 $string['errorinvalidfieldname'] = 'Erreur : nom de champ "{$a}" invalide';
-$string['errorline'] = 'Erreur : Ligne ';
+$string['errorline'] = 'Erreur : Ligne';
 $string['errornocourse'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : Le cours n\'existe pas';
 $string['errornocourses'] = 'Erreur : Aucun cours traité dans ce CSV';
 $string['errornomanualenrol'] = 'Aucun plugin d\'inscription manuel disponible. Désactivation de l\'inscription pour cet utilsiateur.';
@@ -138,7 +160,7 @@ $string['errorrequiredcolumn'] = 'Erreur : colonne requise : {$a}';
 $string['errorrestoringtemplate'] = 'Erreur ligne {$a->i} : Erreur de restauration pour le cours {$a->coursename}';
 $string['errorrestoringtemplatesql'] = 'Erreur ligne {$a->i} : Erreur SQL pour le gabarit {$a->template}. Le cours {$a->coursename} n\'a pas pu être créé.';
 $string['errorrpcparams'] = 'Erreur de paramètres RPC : {$a}';
-$string['errors'] = 'Erreurs ';
+$string['errors'] = 'Erreurs';
 $string['errorsectioncreate'] = 'Erreur ligne {$a->i} : Erreur pendant la création des sections du cours {$a->coursename}';
 $string['errorsettingremoteaccess'] = 'Erreur de l\'ouverture de droits d\'accès réseau : {$a} ';
 $string['errorteacherenrolincourse'] = 'Erreur ligne {$a->i} : Impossible d\'enroler les enseignants du cours {$a->coursename}';
@@ -168,9 +190,9 @@ $string['errorvalidationtimecheck'] = 'Erreur ligne {$a->i} : Valeur du champ {$
 $string['errorvalidationvalueset'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (doit être dans l\'ensemble {$a->set}).';
 $string['eventscleanup'] = 'Nettoyage des événéments générés (conseillé)';
 $string['execstartsat'] = 'Exécution démarrée à {$a} ';
-$string['executecoursecronmanually'] = 'Exécuter toutes les opérations de cours ';
+$string['executecoursecronmanually'] = 'Exécuter toutes les opérations de cours';
 $string['existcoursesfile'] = 'Fichier de test d\'existance';
-$string['existfileidentifier'] = 'Identifiant d\'existance ';
+$string['existfileidentifier'] = 'Identifiant d\'existance';
 $string['failedfile'] = 'Fichier de reprise';
 $string['filearchive'] = 'Archivage des fichiers de controle';
 $string['filecabinet'] = 'Répertoire des rapports';
@@ -183,7 +205,7 @@ $string['filenameformatuc'] = '<strong>Format du nom de rapport :</strong> UC_YY
 $string['filenotfound'] = 'Le fichier {$a} n\'a pas été trouvé';
 $string['filetoprocess'] = 'Fichier à exécuter';
 $string['final_action'] = 'Post-traitements';
-$string['flatfilefoundforenrols'] = 'Fichier d\'enrôlements trouvé : ';
+$string['flatfilefoundforenrols'] = 'Fichier d\'enrôlements trouvé :';
 $string['forcecourseupdateconfig'] = 'Si activé, les cours existants auront leurs attributs mise à jour. Le contenu et les données de cours restent inchangées.';
 $string['foundfile'] = 'Trouvé fichier : {$a}';
 $string['foundfilestoprocess'] = 'Trouvé {$a} fichiers à traiter';
@@ -195,7 +217,7 @@ $string['groupassigndeleted'] = 'Les assignations de groupe sont supprimées pou
 $string['groupcreated'] = 'Le groupe {$a->group} a été créé dans le cours {$a->mycourse}';
 $string['groupnotaddederror'] = 'Erreur de création de groupe : {$a}';
 $string['groupunknown'] = 'Le groupe {$a->group} n\'existe pas dans {$a->mycourse} et la commande ne permet pas la création.';
-$string['hiddenroleadded'] = 'Rôle masqué ajouté dans le contexte : ';
+$string['hiddenroleadded'] = 'Rôle masqué ajouté dans le contexte :';
 $string['hour'] = 'heure';
 $string['importfile'] = 'Importer un nouveau fichier de test';
 $string['load'] = 'Charger';
@@ -218,17 +240,18 @@ $string['minute'] = 'minute';
 $string['missingidentifier'] = 'L\'identifiant {$a} requis par la configuration est manquant dans le fichier';
 $string['ncategoriesdeleted'] = '{$a} catégories supprimées';
 $string['noeventstoprocess'] = 'Pas d\'événements à la ligne {$a}';
-$string['nofile'] = 'Aucun fichier disponible'; 
+$string['nofile'] = 'Aucun fichier disponible';
 $string['nofileconfigured'] = 'Pas de fichier de données configuré pour cette opération';
 $string['nofiletoprocess'] = 'Pas de fichier à traiter';
 $string['nogradestoprocess'] = 'Pas de notes à la ligne {$a}';
-$string['nogrouptoprocess'] = 'Pas de groupes'; 
+$string['nogrouptoprocess'] = 'Pas de groupes';
 $string['nologstoprocess'] = 'Pas de logs à la ligne {$a}';
 $string['nonotestoprocess'] = 'Pas d\'annotations à la ligne {$a}';
 $string['nonuniqueidentifierexception'] = 'Cette valeur d\'identifiant à la ligne {$a} désigne plusieurs cours. La réinitialisation est annulée pour ces cours.';
 $string['nothingtodelete'] = 'Aucun élément à supprimer';
 $string['optionheader'] = 'Options de synchronisation';
 $string['parsingfile'] = 'Examen du fichier...';
+$string['passwordnotification'] = 'Vos accès sur {$a}';
 $string['pluginname'] = 'Synchronisation des cours et utilisateurs par fichiers CSV';
 $string['predeletewarning'] = '<b><font color="red">ATTENTION :</font></b> La suppression des cours suivant va être effectuée :';
 $string['process'] = 'Effectuer l\'opération';
@@ -244,7 +267,7 @@ $string['report'] = 'Rapport';
 $string['resetfile'] = 'Fichier de reinitialisation';
 $string['resetfilebuilder'] = 'Générateur de fichier CSV de réinitialisation';
 $string['resetfileidentifier'] = 'Identifiant de cours pour la réinitialisation';
-$string['resettingcourse'] = 'Réinitialisation du cours : ';
+$string['resettingcourse'] = 'Réinitialisation du cours :';
 $string['resettingcourses'] = 'Réinitialisation des cours';
 $string['returntotools'] = 'Retour aux outils';
 $string['roleadded'] = 'Role "{$a->rolename}" ajouté dans le contexte {$a->contextid}';
@@ -294,7 +317,7 @@ $string['uploadusers2'] = 'Mise à jour des utilisateurs';
 $string['uselocal'] = 'Utiliser le fichier local : {$a}';
 $string['useraccountadded'] = 'Utilisateur ajouté : {$a} ';
 $string['useraccountupdated'] = 'Utilisateur modifié : {$a} ';
-$string['usercollision'] = 'Erreur : Collision d\'identifiant à la création pour {$a} ';
+$string['usercollision'] = 'Erreur : Collision d\'identifiant à la création pour {$a}';
 $string['usercreatedremotely'] = 'Utilisateur {$a->username} créé sur {$a->wwwroot} ';
 $string['usercronprocessing'] = 'Synchronisation automatique de utilisateurs';
 $string['userexistsremotely'] = 'L\'utilisateur {$a} existe déjà sur le distant';
@@ -371,7 +394,7 @@ Vous allez supprimer toutes les catégories vides de Moodle. Cette commande est 
 mode récursif et détruira toutes les "banches vides".
 ';
 
-$string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\'utilisateurs et de groupe à l\'aide de fichiers txt et csv appelés par le cron.<br/><br/>
+$string['boxdescription'] = 'Outil de gestion des synchronisations de cours, d\'utilisateurs et de groupe à l\'aide de fichiers txt et csv appelés par le cron.<br/><br/>
     Il suffit de préciser les chemins des quatre fichiers (à partir de la racine de "moodledata" :<br/>
     <ol>
         <li>Le fichier .txt pour la suppression de cours.
@@ -387,7 +410,7 @@ $string['boxdescription'] =  'Outil de gestion des synchronisations de cours, d\
 
 $string['coursecreateformat'] = 'Format de fichier de création de cours';
 $string['coursecreateformat_help'] = '
-Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration locale de l\'outil de synchronisation. 
+Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration locale de l\'outil de synchronisation.
 La première ligne doit comporter les titres de champs dans un ordre quelconque.
 
 <p>Champs obligatoires : <b>shortname, fullname</b>.
@@ -410,9 +433,9 @@ Ce fichier est une simple liste textuelle (un item par ligne) des identifiants p
 
 $string['coursereinitializeformat'] = 'Format de fichier de réinitialisation de cours';
 $string['coursereinitializeformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings. 
+Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
-The first field must identify a course, depending on the selected course primary identifier in configuration : 
+The first field must identify a course, depending on the selected course primary identifier in configuration :
 
 <li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
 <li><i>shortname</i>: Using the course shortname</li>
@@ -428,14 +451,15 @@ The first field must identify a course, depending on the selected course primary
 <li><i>groupings</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
 <li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
 
-<p>Additional fields can be added for more specific control for modules: 
+<p>Additional fields can be added for more specific control for modules:
 <b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions, assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
 
 ';
 
 $string['userformat'] = 'Format du fichier de synchronisation des utilisateurs';
 $string['userformat_help'] = '
-Le fichier de synchronisation des utilisateurs doit être un fichier text encodé en ISO ou UTF-8 selon la configuration générale de l\'outil de synchronisation. 
+Le fichier de synchronisation des utilisateurs doit être un fichier text encodé en ISO ou UTF-8
+selon la configuration générale de l\'outil de synchronisation.
 La première ligne doit comporter les noms de champs au format moodle dans un ordre quelconque.
 Le premier champ doit identifier un utilisateur par son \'username\'.
 
@@ -489,6 +513,9 @@ The first line must hold column titles in any order.
 $string['userpicturesformat'] = 'Format de transfert d\'images d\'avatars';
 $string['userpicturesformat_help'] = '
 Le fichier des avatars utilisateurs est une archive ZIP sans sous-répertoires avec la liste d\'images png, jpg ou gif des avatars utilisateurs, nommés par l\'identifiant primaire
-de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation. 
+de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation.
 ';
 
+$string['passwordnotification_tpl'] = '
+Un mot de passe vous a été attribué : {$a}
+';

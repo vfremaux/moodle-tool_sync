@@ -52,15 +52,4 @@ class sync_files_form extends moodleform {
         $this->set_data($data);
     }
 
-    /**
-     * Validate incoming data.
-     *
-     * @param array $data
-     * @param array $files
-     * @return array
-     */
-    public function validation($data, $files) {
-        $errors = array();
-        return $errors;
-    }
 }

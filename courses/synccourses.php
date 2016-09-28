@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   tool_sync
- * @category  tool
- * @author Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -44,7 +44,7 @@ $strchoose = get_string('choose');
 set_time_limit(1200);
 
 list($usec, $sec) = explode(' ', microtime());
-$time_start = ((float)$usec + (float)$sec);
+$timestart = ((float)$usec + (float)$sec);
 $url = new moodle_url('/admin/tool/sync/courses/deletecourses.php');
 $PAGE->navigation->add($strenrolname);
 $PAGE->navigation->add($strdeletecourses);
@@ -52,7 +52,7 @@ $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname: $strdeletecourses");
 $PAGE->set_heading($SITE->fullname);
 
-// Page controller
+// Page controller.
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
@@ -67,28 +67,12 @@ if ($data = $form->get_data()) {
         $canprocess = true;
         $processedfile = $syncconfig->course_filecreatelocation;
     } else {
-        $usercontext = context_user::instance($USER->id);
-        
-        $fs = get_file_storage();
-
-        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
-
-            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
-            $uploadedfile = array_pop($areafiles);
-
-            $manualfilerec = new StdClass();
-            $manualfilerec->contextid = $usercontext->id;
-            $manualfilerec->component = 'user';
-            $manualfilerec->filearea = 'draft';
-            $manualfilerec->itemid = $data->inputfile;
-            $manualfilerec->filepath = $uploadedfile->get_filepath();
-            $manualfilerec->filename = $uploadedfile->get_filename();
+        if (!$manualfilerec = tool_sync_receive_file()) {
+            $errormes = "Failed loading a file";
+        } else {
             $processedfile = $manualfilerec->filename;
-
             $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CREATE_DELETE, $manualfilerec);
             $canprocess = true;
-        } else {
-            $errormes = "Failed loading a file";
         }
     }
 }
@@ -103,16 +87,18 @@ if ($canprocess) {
     echo '<pre>';
     $coursesmanager->cron($syncconfig);
     echo '</pre>';
+    $timeend = ((float)$usec + (float)$sec);
+    $elapsed = $timeend - $timestart;
 
     $usermgtmanual = get_string('creatingcourses', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
-    
+
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
     echo "<center>$cronrunmsg</center>";
     echo '</fieldset>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

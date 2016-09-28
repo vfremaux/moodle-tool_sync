@@ -1,9 +1,30 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @package   tool_sync
+ * @category  tool
+ * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 define('CLI_SCRIPT', true);
 global $CLI_VMOODLE_PRECHECK;
 
-$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
+$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions
@@ -36,7 +57,7 @@ if ($options['help']) {
         -v, --verbose       Print processing output
         -H, --host          Set the host (physical or virtual) to operate on.
 
-         \n"; //TODO: localize - to be translated later when everything is finished
+         \n"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -61,5 +82,5 @@ $CFG->libdir = $CFG->dirroot.'/lib';
 $CFG->tempdir = $CFG->dataroot.'/tmp';
 
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/lib.php');
-// Here can real processing start
+// Here can real processing start.
 update_all_user_picture_hashes($options['verbose']);

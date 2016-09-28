@@ -14,25 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_sync;
-
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * @package   tool_sync
  * @category  tool
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace tool_sync;
+
+defined('MOODLE_INTERNAL') || die;
 
 class sync_manager {
 
     public $log;
 
-    // preserves processed file header to rebuild tryback file
+    // Preserves processed file header to rebuild tryback file.
     private $trybackhead;
 
-    // keeps tryback lines
+    // Keeps tryback lines.
     private $trybackarr;
 
     /**
@@ -62,8 +61,8 @@ class sync_manager {
         $reportrec->filepath = '/reports/';
 
         // Ensure no collisions.
-        if ($oldfile = $fs->get_file($reportrec->contextid, $reportrec->component, $reportrec->filearea, 
-                                        $reportrec->itemid, $reportrec->filepath, $reportrec->filename)) {
+        if ($oldfile = $fs->get_file($reportrec->contextid, $reportrec->component, $reportrec->filearea,
+                                    $reportrec->itemid, $reportrec->filepath, $reportrec->filename)) {
             $oldfile->delete();
         }
 
@@ -98,8 +97,8 @@ class sync_manager {
 
         $fs = get_file_storage();
 
-        $path_parts = pathinfo($originalfilerec->filename);
-        $trybackfilename = $path_parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$path_parts['extension'];
+        $parts = pathinfo($originalfilerec->filename);
+        $trybackfilename = $parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$parts['extension'];
 
         $buffer = implode("\n", $this->trybackhead)."\n";
         $buffer .= implode("\n", $this->trybackarr);
@@ -107,19 +106,19 @@ class sync_manager {
         $filerec = $originalfilerec;
         $filerec->filename = $trybackfilename;
 
-        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
+        if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                     $filerec->filepath, $filerec->filename)) {
             $oldfile->delete();
         }
 
-        echo "Creating tryback";
-        // print_object($filerec);
+        echo " Creating tryback ";
         $fs->create_file_from_string($filerec, $buffer);
     }
 
     protected function get_input_file($configlocation, $defaultlocation) {
         if (empty($configlocation)) {
-            $filename = $defaultlocation;  // Default location
-            $filepath = '/';  // Default name
+            $filename = $defaultlocation;  // Default location.
+            $filepath = '/';  // Default name.
         } else {
             $parts = pathinfo($configlocation);
             $filename = $parts['basename'];
@@ -141,8 +140,6 @@ class sync_manager {
 
     /**
      * Given a file rec, get an open strem on it and process error cases.
-     *
-     *
      */
     protected function open_input_file($filerec) {
 
@@ -152,7 +149,8 @@ class sync_manager {
             $filerec->filepath = '/';
         }
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                   $filerec->filepath, $filerec->filename);
         if (!$inputfile) {
             $this->report(get_string('filenotfound', 'tool_sync', "{$filerec->filepath}{$filerec->filename}"));
             return false;
@@ -177,22 +175,57 @@ class sync_manager {
         $archiverec->filepath = '/archives/';
 
         // Ensure no collisions.
-        if ($oldfile = $fs->get_file($archiverec->contextid, $archiverec->component, $archiverec->filearea, 
+        if ($oldfile = $fs->get_file($archiverec->contextid, $archiverec->component, $archiverec->filearea,
                                         $archiverec->itemid, $archiverec->filepath, $archiverec->filename)) {
             $oldfile->delete();
         }
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                   $filerec->filepath, $filerec->filename);
         $fs->create_file_from_storedfile($archiverec, $inputfile);
     }
 
     /**
-     * 
+     *
      */
     protected function cleanup_input_file($filerec) {
         $fs = get_file_storage();
 
-        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename);
+        $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                   $filerec->filepath, $filerec->filename);
         $inputfile->delete();
+    }
+
+    protected function check_headers($headers, $required, $patterns, $metas, $optionaldefauls) {
+
+        // Check for valid field names.
+        foreach ($headers as $h) {
+            $header[] = trim($h);
+            $patternized = implode('|', $patterns) . "\\d+";
+            $metapattern = implode('|', $metas);
+            if (!(isset($required[$h]) ||
+                    isset($optionaldefaults[$h]) ||
+                            isset($optional[$h]) ||
+                                    preg_match("/$patternized/", $h) ||
+                                            preg_match("/$metapattern/", $h))) {
+                $this->report(get_string('invalidfieldname', 'error', $h));
+                return false;
+            }
+
+            if (isset($required[$h])) {
+                $required[$h] = 0;
+            }
+        }
+
+        // Check for required fields.
+        foreach ($required as $key => $value) {
+            if ($value) {
+                // Required field missing.
+                $this->report(get_string('fieldrequired', 'error', $key));
+                return false;
+            }
+        }
+
+        return true;
     }
 }

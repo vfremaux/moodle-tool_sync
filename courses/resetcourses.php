@@ -92,7 +92,7 @@ if ($canprocess) {
 
     $cmdname = get_string('resettingcourse', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
-    
+
     echo "<br/><fieldset><legend><strong>$cmdname</strong></legend>";
     echo "<center>$cronrunmsg</center>";
     echo '</fieldset>';
@@ -114,7 +114,7 @@ if ($canprocess) {
     $table->align = array('left', 'left', 'left');
     $table->width = '80%';
     $table->data  = $data;
-    
+
     echo '<fieldset>';
     echo html_writer::table($table);
     echo '</fieldset>';
