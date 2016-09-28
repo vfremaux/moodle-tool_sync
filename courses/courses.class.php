@@ -1669,7 +1669,7 @@ class course_sync_manager extends sync_manager {
                             $csection->summary = $sectionsummary;
                             $csection->sequence = '';
                             $csection->visible = 1;
-                            $DB->insert_record('course_sections', $csection));
+                            $DB->insert_record('course_sections', $csection);
                         } else {
                             $sectiondata->summary = $sectionname;
                             $sectiondata->name = $sectionsummary;
