@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   tool_sync
- * @category  tool
- * @author Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -53,6 +53,7 @@ $PAGE->navigation->add(get_string('buildresetfile', 'tool_sync'));
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
+
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('resetfilebuilder', 'tool_sync'));

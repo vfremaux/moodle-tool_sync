@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package   tool_sync
  * @category  tool
@@ -24,10 +22,10 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 function xmldb_tool_sync_upgrade($oldversion) {
     global $CFG, $DB;
-
-    $dbman = $DB->get_manager();
 
     if ($oldversion < 2015112600) {
         require_once($CFG->dirroot.'/admin/tool/sync/db/install.php');

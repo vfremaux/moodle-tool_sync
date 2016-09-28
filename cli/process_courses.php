@@ -24,10 +24,10 @@
 define('CLI_SCRIPT', true);
 global $CLI_VMOODLE_PRECHECK;
 
-$CLI_VMOODLE_PRECHECK = true; // force first config to be minimal
+$CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
 require('../../../../config.php');
-require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions
+require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
 
 // Now get cli options.
 list($options, $unrecognized) = cli_get_params(
@@ -66,7 +66,7 @@ if ($options['help']) {
         -a, --action        The course operation (check, reset, delete, create).
         -H, --host          Set the host (physical or virtual) to operate on.
 
-         \n"; //TODO: localize - to be translated later when everything is finished
+         \n"; // TODO: localize - to be translated later when everything is finished.
 
     echo $help;
     die;
@@ -83,7 +83,7 @@ if (!empty($options['host'])) {
 require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php'); // Global moodle config file.
 echo('Config check : playing for '.$CFG->wwwroot."\n");
 
-// Here can real processing start
+// Here can real processing start.
 
 if (empty($options['file'])) {
     die("No file given. Aborting....\n");

@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package   tool_sync
  * @category  tool
@@ -23,11 +21,12 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * An helper function to create the course deletion file from a selection
  */
 function tool_sync_create_course_deletion_file($selection) {
-    global $CFG;
 
     $filename = 'deletecourses.txt';
 
@@ -35,7 +34,7 @@ function tool_sync_create_course_deletion_file($selection) {
     $content = '';
 
     $size = count($selection);
-    for ($i = 0 ; $i < $size - 1 ; $i++) {
+    for ($i = 0; $i < $size - 1; $i++) {
         $content .= "$selection[$i]";
         $content .= "\n";
     }
@@ -50,8 +49,9 @@ function tool_sync_create_course_deletion_file($selection) {
     $filerec->filepath = '/';
     $filerec->filename = $filename;
 
-    // Ensure no collisions
-    if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid, $filerec->filepath, $filerec->filename)) {
+    // Ensure no collisions.
+    if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea,
+                                 $filerec->itemid, $filerec->filepath, $filerec->filename)) {
         $oldfile->delete();
     }
 
@@ -65,9 +65,9 @@ function tool_sync_create_course_deletion_file($selection) {
  * @param arrayref $path the relative textual path to the current category
  */
 function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
-    global $CFG, $DB;
+    global $DB;
 
-    // get my subs
+    // Get my subs.
     $sql = "
         SELECT DISTINCT
             cc.id,
@@ -78,11 +78,11 @@ function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
             {course_categories} cc
         LEFT JOIN
             {course} c
-        ON 
+        ON
             cc.id = c.category
-        WHERE 
+        WHERE
             cc.parent = ?
-        GROUP BY 
+        GROUP BY
             cc.id
     ";
     $cats = $DB->get_records_sql($sql, array($parentcatid));
@@ -93,7 +93,7 @@ function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
     }
 
     if (!empty($cats)) {
-        foreach($cats as $ec) {
+        foreach ($cats as $ec) {
 
             $mempath = $path;
             $path .= ' / '.$ec->name;
@@ -101,7 +101,7 @@ function tool_sync_scan_empty_categories($parentcatid, &$scannedids, &$path) {
             $path = $mempath;
 
             if ($subcountcourses == 0) {
-                // this is a really empty cat
+                // This is a really empty cat.
                 echo "<tr><td align=\"left\"><b>{$ec->name}</b></td><td align=\"left\">$path</td></tr>";
                 $scannedids[] = $ec->id;
             }
@@ -135,11 +135,11 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
  * completes unqualified key names
  * @param object $cfg a configuration object.
  */
-function tool_sync_config_add_sync_prefix($cfg){
+function tool_sync_config_add_sync_prefix($cfg) {
 
     $formobj = new StdClass();
 
-    foreach($cfg as $key => $value){
+    foreach ($cfg as $key => $value) {
         $fullkey = 'tool_sync/'.$key;
         $formobj->$fullkey = $value;
     }
@@ -154,8 +154,8 @@ function tool_sync_config_add_sync_prefix($cfg){
  * @param objectref $config the surrounding configuration
  * @return a string or false if no more data
  */
-function tool_sync_read($filereader, $length, &$config){
-    $input = fgets($filereader, 1024);
+function tool_sync_read($filereader, $length, &$config) {
+    $input = fgets($filereader, $length);
 
     if ($config->encoding != 'UTF-8') {
         return utf8_encode($input);
@@ -166,9 +166,36 @@ function tool_sync_read($filereader, $length, &$config){
 /**
  * Checks if the token is a path to an archive (.mbz)
  * If not, should be s course shortname.
- * @param $str string to check 
+ * @param $str string to check
  * @return true is a shortname, false elsewhere
  */
 function tool_sync_is_course_identifier($str) {
     return (!preg_match('/\.mbz/', $str));
+}
+
+/**
+ *
+ */
+function tool_sync_receive_file() {
+    global $USER;
+
+    $usercontext = context_user::instance($USER->id);
+
+    $fs = get_file_storage();
+
+    if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
+
+        $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
+        $uploadedfile = array_pop($areafiles);
+
+        $manualfilerec = new StdClass();
+        $manualfilerec->contextid = $usercontext->id;
+        $manualfilerec->component = 'user';
+        $manualfilerec->filearea = 'draft';
+        $manualfilerec->itemid = $data->inputfile;
+        $manualfilerec->filepath = $uploadedfile->get_filepath();
+        $manualfilerec->filename = $uploadedfile->get_filename();
+        return $manualfilerec;
+    }
+    return false;
 }

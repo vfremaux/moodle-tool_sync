@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   tool_sync
- * @category  tool
- * @author    Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>, <valery@edunao.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>, <valery@edunao.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -58,7 +58,9 @@ echo $OUTPUT->header();
 
 if (!optional_param('confirm', false, PARAM_BOOL)) {
     echo $OUTPUT->heading(get_string('userpicturesmanualsync', 'tool_sync'));
-    echo $OUTPUT->confirm(get_string('confirm'), new moodle_url('/admin/tool/sync/userpictures/execcron.php', array('confirm' => 1)), new moodle_url('/admin/tool/sync/index.php'));
+    $confirmurl = new moodle_url('/admin/tool/sync/userpictures/execcron.php', array('confirm' => 1));
+    $cancelurl = new moodle_url('/admin/tool/sync/index.php');
+    echo $OUTPUT->confirm(get_string('confirm'), $confirmurl, $cancelurl);
     echo $OUTPUT->footer();
     die;
 }
@@ -76,7 +78,7 @@ $filearea = 'syncfiles';
 $itemid = 0;
 $areafiles = $fs->get_area_files($systemcontext->id, $component, $filearea, $itemid);
 
-// Searching in area what matches userpicture archives
+// Searching in area what matches userpicture archives.
 if (!empty($areafiles)) {
     echo '<ul>';
     foreach ($areafiles as $f) {
@@ -89,9 +91,9 @@ if (!empty($areafiles)) {
 
 echo $OUTPUT->heading(get_string('processresult', 'tool_sync'), 3);
 
-echo "<pre>";
+echo '<pre>';
 $picturemanager->cron($syncconfig);
-echo "</pre>";
+echo '</pre>';
 
 echo $renderer->print_return_button();
 
