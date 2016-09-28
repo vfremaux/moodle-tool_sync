@@ -14,34 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
- * @package   tool_sync
- * @category  tool
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class tool_sync_renderer {
-    
-    function print_return_button() {
-        global $CFG, $OUTPUT;
+defined('MOODLE_INTERNAL') || die;
+
+class tool_sync_renderer extends plugin_base_renderer {
+
+    public function print_return_button() {
+        global $OUTPUT;
 
         $str = '<center>';
         $str .= '<hr/>';
         $str .= '<br/>';
         $url = new moodle_url('/admin/tool/sync/index.php', array('sesskey' => sesskey()));
         $text = get_string('returntotools', 'tool_sync');
-        $single_button = new single_button($url, $text, 'get');
-        $str .= $OUTPUT->render($single_button);
+        $button = new single_button($url, $text, 'get');
+        $str .= $OUTPUT->render($button);
         $str .= '<br/>';
         $str .= '</center>';
 
         return $str;
     }
-    
-    function print_delete_course_creator($syncconfig) {
+
+    public function print_delete_course_creator($syncconfig) {
 
         $str = '<form name="form_deletion" method="post" action="#" onSubmit="return select_all(this)">';
         $str .= '<center>';
@@ -52,26 +52,26 @@ class tool_sync_renderer {
         $str .= '</th>';
         $str .= '<th class="header c1" align="left">';
         $str .= get_string('fullname');
-        $str .=  '</th>';
+        $str .= '</th>';
         $str .= '<th class="header c2" align="left" colspan="5">';
         $str .= get_string('roles');
         $str .= '</th>';
         $str .= '</tr>';
 
-        $COURSE_SORTS = array(
+        $coursesorts = array(
             0 => 'idnumber',
             1 => 'shortname',
             2 => 'id'
         );
 
-        $sortorder = $COURSE_SORTS[0 + @$syncconfig->course_filedeleteidentifier];
+        $sortorder = $coursesorts[0 + @$syncconfig->course_filedeleteidentifier];
 
         $courses = tool_sync_get_all_courses($sortorder);
-        $class = 'r0' ;
+        $class = 'r0';
         $distinctcourses = array();
-        foreach ($courses as $c){
-            $class = ($class == 'r0') ? 'r1' : 'r0' ;
-            if (@$prevc->shortname != $c->shortname){
+        foreach ($courses as $c) {
+            $class = ($class == 'r0') ? 'r1' : 'r0';
+            if (@$prevc->shortname != $c->shortname) {
                 $str .= '</tr>';
                 $str .= '<tr valign="top" class="'.$class.'">';
                 $str .= '<td align="left" class="c0">'.$c->shortname .'</td><td align="left" class="c1"> '.$c->fullname .'</td>';
@@ -97,34 +97,19 @@ class tool_sync_renderer {
         $str .= '</tr>';
         $str .= '<tr valign="top">';
         $str .= '<td align="center">';
-        $str .= '<select style="height:200px" name="courselist" multiple OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >';
+        $str .= '<select style="height:200px"
+                         name="courselist"
+                         multiple
+                         OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >';
         foreach ($distinctcourses as $c) {
-            switch (0 + @$syncconfig->course_filedeleteidentifier) {
-                case 0 : $cid = $c->idnumber; break;
-                case 1 : $cid = $c->shortname; break;
-                case 2 : $cid = $c->id; break;
-            }
+            $cid = tool_sync_get_course_identifier($c, 'course_filedeleteidentifier', $syncconfig);
             $str .= '<option value="'.$cid.'">('.$c->idnumber.') '.$c->shortname.' - '.$c->fullname.'</option>';
         }
         $str .= '</select>';
         $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= '<table>';
-        $str .= '<tr valign="top">';
-        $str .= '<td>';
-        $str .= '<input class="button" type="button" name="select" value=" >> " OnClick="javascript:selectcourses(this.form.courselist,this.form.selection)">';
-        $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '<tr>';
-        $str .= '<td>';
-        $str .= '<input class="button" type="button" name="deselect" value=" << " OnClick="javascript:selectcourses(this.form.selection,this.form.courselist)">';
-        $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '</table>';
-        $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= '<select name="selection" multiple  style="height:200px" OnDblClick="javascript:selectcourses(this.form.selection,this.form.courselist)"></select>';
-        $str .= '</td>';
+
+        $str .= $this->course_selector_form();
+
         $str .= '</tr>';
         $str .= '</table>';
         $str .= '<p><input type="submit" value="'.get_string('generate', 'tool_sync').'"/></p>';
@@ -136,10 +121,8 @@ class tool_sync_renderer {
 
     /**
      *
-     *
-     *
      */
-    function print_reset_course_creator($syncconfig) {
+    public function print_reset_course_creator($syncconfig) {
 
         $str = '';
 
@@ -158,19 +141,19 @@ class tool_sync_renderer {
         $str .= '</th>';
         $str .= '</tr>';
 
-        $COURSE_SORTS = array(
+        $coursesorts = array(
             0 => 'idnumber',
             1 => 'shortname',
             2 => 'id'
         );
 
-        $sortorder = $COURSE_SORTS[0 + @$syncconfig->course_resetfileidentifier];
+        $sortorder = $coursesorts[0 + @$syncconfig->course_resetfileidentifier];
 
         $courses = tool_sync_get_all_courses($sortorder);
-        $class = 'r0' ;
+        $class = 'r0';
         $distinctcourses = array();
-        foreach ($courses as $c){
-            $class = ($class == 'r0') ? 'r1' : 'r0' ;
+        foreach ($courses as $c) {
+            $class = ($class == 'r0') ? 'r1' : 'r0';
             if (@$prevc->shortname != $c->shortname) {
                 $str .= '</tr>';
                 $str .= '<tr valign="top" class="'.$class.'">';
@@ -197,39 +180,60 @@ class tool_sync_renderer {
         $str .= '</tr>';
         $str .= '<tr valign="top">';
         $str .= '<td align="center">';
-        $str .= '<select style="height:200px" name="courselist" multiple OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >';
+        $str .= '<select style="height:200px"
+                         name="courselist"
+                         multiple
+                         OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >';
         foreach ($distinctcourses as $c) {
-            switch (0 + @$syncconfig->course_resetfileidentifier) {
-                case 0 : $cid = $c->idnumber; break;
-                case 1 : $cid = $c->shortname; break;
-                case 2 : $cid = $c->id; break;
-            }
+            $cid = tool_sync_get_course_identifier($c, 'course_resetfileidentifier', $syncconfig);
             $str .= '<option value="'.$cid.'">('.$c->idnumber.') '.$c->shortname.' - '.$c->fullname.'</option>';
         }
         $str .= '</select>';
         $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= '<table>';
-        $str .= '<tr valign="top">';
-        $str .= '<td>';
-        $str .= '<input class="button" type="button" name="select" value=" >> " OnClick="javascript:selectcourses(this.form.courselist,this.form.selection)">';
-        $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '<tr>';
-        $str .= '<td>';
-        $str .= '<input class="button" type="button" name="deselect" value=" << " OnClick="javascript:selectcourses(this.form.selection,this.form.courselist)">';
-        $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '</table>';
-        $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= '<select name="selection" multiple  style="height:200px" OnDblClick="javascript:selectcourses(this.form.selection,this.form.courselist)"></select>';
-        $str .= '</td>';
+
+        $str .= $this->course_selector_form();
+
         $str .= '</tr>';
         $str .= '</table>';
         $str .= '<p><input type="submit" value="'.get_string('generate', 'tool_sync').'"/></p>';
         $str .= '</center>';
         $str .= '</form>';
+
+        return $str;
+    }
+
+    public function course_selector_form() {
+
+        $str = '';
+
+        $str .= '<td align="center">';
+        $str .= '<table>';
+        $str .= '<tr valign="top">';
+        $str .= '<td>';
+        $str .= '<input class="button"
+                        type="button"
+                        name="select"
+                        value=" >> "
+                        OnClick="javascript:selectcourses(this.form.courselist,this.form.selection)">';
+        $str .= '</td>';
+        $str .= '</tr>';
+        $str .= '<tr>';
+        $str .= '<td>';
+        $str .= '<input class="button"
+                        type="button"
+                        name="deselect"
+                        value=" << "
+                        OnClick="javascript:selectcourses(this.form.selection,this.form.courselist)">';
+        $str .= '</td>';
+        $str .= '</tr>';
+        $str .= '</table>';
+        $str .= '</td>';
+        $str .= '<td align="center">';
+        $str .= '<select name="selection"
+                         multiple
+                         style="height:200px"
+                         OnDblClick="javascript:selectcourses(this.form.selection,this.form.courselist)"></select>';
+        $str .= '</td>';
 
         return $str;
     }

@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   tool_sync
- * @category  tool
- * @author Funck Thibaut
- * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Funck Thibaut
+ * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
@@ -66,35 +66,18 @@ if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $usersmanager = new \tool_sync\users_sync_manager();
+        $cohortsmanager = new \tool_sync\cohorts_sync_manager();
         $processedfile = $syncconfig->cohorts_filelocation;
         $canprocess = true;
     } else {
         // Use the just uploaded file.
 
-        $fs = get_file_storage();
-        $usercontext = context_user::instance($USER->id);
-
-        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
-
-            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
-
-            // Take last as former is the / directory.
-            $uploadedfile = array_pop($areafiles);
-
-            $manualfilerec = new StdClass();
-            $manualfilerec->contextid = $usercontext->id;
-            $manualfilerec->component = 'user';
-            $manualfilerec->filearea = 'draft';
-            $manualfilerec->itemid = $data->inputfile;
-            $manualfilerec->filepath = $uploadedfile->get_filepath();
-            $manualfilerec->filename = $uploadedfile->get_filename();
-            $processedfile = $manualfilerec->filename;
-
-            $usersmanager = new \tool_sync\cohorts_sync_manager($manualfilerec);
-            $canprocess = true;
-        } else {
+        if (!$manualfilerec = tool_sync_receive_file()) {
             $errormes = "Failed loading a file";
+        } else {
+            $processedfile = $manualfilerec->filename;
+            $cohortsmanager = new \tool_sync\cohorts_sync_manager($manualfilerec);
+            $canprocess = true;
         }
     }
 }
@@ -121,7 +104,7 @@ if ($canprocess) {
     echo '</fieldset>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();

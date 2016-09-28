@@ -14,10 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_sync;
-
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package   tool_sync
  * @category  tool
@@ -26,9 +22,9 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// The following flags are set in the configuration
-// $CFG->users_filelocation:       where is the file we are looking for?
-// author - Funck Thibaut
+namespace tool_sync;
+
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -38,21 +34,22 @@ class cohorts_sync_manager extends sync_manager {
 
     protected $manualfilerec;
 
-    public function __construct($manualfilerec = null){
+    public function __construct($manualfilerec = null) {
         $this->manualfilerec = $manualfilerec;
     }
 
     public function form_elements(&$frm) {
-        global $CFG;
 
         $frm->addElement('text', 'tool_sync/cohorts_filelocation', get_string('cohortfilelocation', 'tool_sync'));
         $frm->setType('tool_sync/cohorts_filelocation', PARAM_TEXT);
 
-        $frm->addElement('select', 'tool_sync/cohorts_useridentifier', get_string('cohortuseridentifier', 'tool_sync'), $this->get_userfields());
+        $label = get_string('cohortuseridentifier', 'tool_sync');
+        $frm->addElement('select', 'tool_sync/cohorts_useridentifier', $label, $this->get_userfields());
         $frm->setDefault('tool_sync/cohorts_useridentifier', 'idnumber');
         $frm->setType('tool_sync/cohorts_useridentifier', PARAM_TEXT);
 
-        $frm->addElement('select', 'tool_sync/cohorts_cohortidentifier', get_string('cohortcohortidentifier', 'tool_sync'), $this->get_cohortfields());
+        $label = get_string('cohortcohortidentifier', 'tool_sync');
+        $frm->addElement('select', 'tool_sync/cohorts_cohortidentifier', $label, $this->get_cohortfields());
         $frm->setDefault('tool_sync/cohorts_cohortidentifier', 'idnumber');
         $frm->setType('tool_sync/cohorts_cohortidentifier', PARAM_TEXT);
 
@@ -66,44 +63,39 @@ class cohorts_sync_manager extends sync_manager {
 
         $frm->addElement('static', 'usersst1', '<hr>');
 
-        $params = array('onclick' => 'document.location.href= \''.$CFG->wwwroot.'/admin/tool/sync/cohorts/execcron.php\'');
+        $execurl = new moodle_url('/admin/tool/sync/cohorts/execcron.php');
+        $params = array('onclick' => 'document.location.href= \''.$execurl.'\'');
         $frm->addElement('button', 'manualcohorts', get_string('manualcohortrun', 'tool_sync'), $params);
 
     }
 
-    /// Override the get_access_icons() function
-    public function get_access_icons($course) {
-    }
-
-    function get_userfields() {
+    public function get_userfields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
                      'username' => 'username',
                      'email' => 'email');
     }
 
-    function get_cohortfields() {
+    public function get_cohortfields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
                      'name' => 'name');
     }
 
     /**
-    *
-    */
+     *
+     */
     public function cron($syncconfig) {
-        global $CFG, $USER, $DB;
+        global $CFG, $DB;
 
         $systemcontext = \context_system::instance();
 
         $config = get_config('tool_sync');
 
-        // Internal process controls
-        $syncdeletions = 0 + @$config->cohorts_syncdelete;
+        // Internal process controls.
         $autocreatecohorts = 0 + @$config->cohorts_autocreate;
 
-        if (!$adminuser = get_admin()) {
-            // print_error('errornoadmin', 'tool_sync');
+        if (!get_admin()) {
             return;
         }
 
@@ -113,49 +105,46 @@ class cohorts_sync_manager extends sync_manager {
             $filerec = $this->manualfilerec;
         }
 
-        // We have no file to process. Probably because never setup
+        // We have no file to process. Probably because never setup.
         if (!($filereader = $this->open_input_file($filerec))) {
             return;
         }
 
-        $csv_encode = '/\&\#44/';
+        $csvencode = '/\&\#44/';
         if (isset($syncconfig->csvseparator)) {
-            $csv_delimiter = '\\' . $syncconfig->csvseparator;
-            $csv_delimiter2 = $syncconfig->csvseparator;
+            $csvdelimiter = '\\' . $syncconfig->csvseparator;
+            $csvdelimiter2 = $syncconfig->csvseparator;
 
             if (isset($CFG->CSV_ENCODE)) {
-                $csv_encode = '/\&\#' . $CFG->CSV_ENCODE . '/';
+                $csvencode = '/\&\#' . $CFG->CSV_ENCODE . '/';
             }
         } else {
-            $csv_delimiter = "\;";
-            $csv_delimiter2 = ";";
+            $csvdelimiter = "\;";
+            $csvdelimiter2 = ";";
         }
 
-        //*NT* File that is used is currently hardcoded here!
-        // Large files are likely to take their time and memory. Let PHP know
-        // that we'll take longer, and that the process should be recycled soon
-        // to free up memory.
+        /*
+         * File that is used is currently hardcoded here!
+         * Large files are likely to take their time and memory. Let PHP know
+         * that we'll take longer, and that the process should be recycled soon
+         * to free up memory.
+         */
         @set_time_limit(0);
         @raise_memory_limit("256M");
         if (function_exists('apache_child_terminate')) {
             @apache_child_terminate();
         }
 
-        // make arrays of valid fields for error checking
-        $required = array('userid' => 1,
-                'cohortid' => 1);
-        $optionalDefaults = array();
+        // Make arrays of valid fields for error checking.
+        $required = array('userid' => 1, 'cohortid' => 1);
+        $optionaldefaults = array();
         $optional = array('cmd', 'cdescription', 'cidnumber');
         $patterns = array();
         $metas = array();
 
-        // --- get header (field names) ---
-
-        $textlib = new \core_text();
-
         $this->report(get_string('cohortsstarting', 'tool_sync'));
 
-        // jump any empty or comment line
+        // Jump any empty or comment line.
         $text = fgets($filereader, 1024);
         $i = 0;
         while (tool_sync_is_empty_line_or_format($text, $i == 0)) {
@@ -163,52 +152,33 @@ class cohorts_sync_manager extends sync_manager {
             $i++;
         }
 
-        $headers = explode($csv_delimiter2, $text);
+        $headers = explode($csvdelimiter2, $text);
 
-        // Check for valid field names.
-        foreach ($headers as $h) {
-            $header[] = trim($h); 
-            $patternized = implode('|', $patterns) . "\\d+";
-            $metapattern = implode('|', $metas);
-            if (!(isset($required[$h]) or isset($optionalDefaults[$h]) or isset($optional[$h]) or preg_match("/$patternized/", $h) or preg_match("/$metapattern/", $h))) {
-                $this->report(get_string('invalidfieldname', 'error', $h));
-                return;
-            }
-
-            if (isset($required[$h])) {
-                $required[$h] = 0;
-            }
+        if (!$this->check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults)) {
+            return;
         }
-        // Check for required fields.
-        foreach ($required as $key => $value) {
-            if ($value) { //required field missing
-                $this->report(get_string('fieldrequired', 'error', $key));
-                return;
-            }
-        }
-        $linenum = 2; // since header is line 1
 
         // Header is validated.
         $this->init_tryback(implode(';', $headers));
 
         $userscohortassign = 0;
-        $usercohortunassign = 0;
+        $userscohortunassign = 0;
         $userserrors  = 0;
 
         while (!feof ($filereader)) {
 
-            //Note: semicolon within a field should be encoded as &#59 (for semicolon separated csv files)
+            // Note: semicolon within a field should be encoded as &#59 (for semicolon separated csv files).
             $text = tool_sync_read($filereader, 1024, $syncconfig);
             if (tool_sync_is_empty_line_or_format($text, false)) {
                 $i++;
                 continue;
             }
-            $valueset = explode($csv_delimiter2, $text);
+            $valueset = explode($csvdelimiter2, $text);
 
             $record = array();
             foreach ($valueset as $key => $value) {
-                //decode encoded commas
-                $record[$header[$key]] = preg_replace($csv_encode, $csv_delimiter2, trim($value));
+                // Decode encoded commas.
+                $record[$header[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
             }
 
             // Find assignable items.
@@ -218,11 +188,12 @@ class cohorts_sync_manager extends sync_manager {
             }
             $uid = $userfields[$syncconfig->cohorts_useridentifier];
             if (!$user = $DB->get_record('user', array( $uid => $record['userid'] ))) {
-                // @TODO trak in log, push in runback file
+                // TODO track in log, push in runback file.
                 $e = new \StdClass();
                 $e->uid = $uid;
                 $e->identifier = $record['userid'];
                 $this->report(get_string('cohortusernotfound', 'tool_sync', $e));
+                $userserrors++;
                 continue;
             }
 
@@ -234,7 +205,7 @@ class cohorts_sync_manager extends sync_manager {
             if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))) {
                 if (!$autocreatecohorts) {
                     if (($syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohort'])) {
-                        // @TODO trak in log, push in runback file
+                        // TODO track in log, push in runback file.
                         $e = new \StdClass;
                         $e->cid = $cid;
                         $e->identifier = $record['cohortid'];
@@ -257,15 +228,17 @@ class cohorts_sync_manager extends sync_manager {
                 }
             }
 
-            // bind user to cohort
+            // Bind user to cohort.
             if (!array_key_exists('cmd', $record) || $record['cmd'] == 'add') {
-                if (!$cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
+                $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
+                if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
                     $cohortmembership = new \StdClass();
                     $cohortmembership->userid = $user->id;
                     $cohortmembership->cohortid = ''.@$cohort->id;
                     $cohortmembership->timeadded = $t;
                     $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
-    
+                    $userscohortassign++;
+
                     $e = new \StdClass;
                     $e->username = $user->username;
                     $e->idnumber = $user->idnumber;
@@ -278,10 +251,12 @@ class cohorts_sync_manager extends sync_manager {
                     $e->cname = $cohort->name;
                     $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
                 }
-            } elseif ($record['cmd'] == 'del') {
-                if ($cohortmembership = $DB->get_record('cohort_members', array('userid' => $user->id, 'cohortid' => $cohort->id))) {
-                    $DB->delete_records('cohort_members', array('id' => $cohortmembership->id)); 
-    
+            } else if ($record['cmd'] == 'del') {
+                $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
+                if ($cohortmembership = $DB->get_record('cohort_members', $params)) {
+                    $DB->delete_records('cohort_members', array('id' => $cohortmembership->id));
+                    $userscohortunassign++;
+
                     $e = new \StdClass;
                     $e->username = $user->username;
                     $e->idnumber = $user->idnumber;

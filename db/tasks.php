@@ -17,9 +17,9 @@
 /**
  * The Main Manager tasks.
  *
- * @package    tool_messageinbound
- * @copyright  2014 Andrew Nicols
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();

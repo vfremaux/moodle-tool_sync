@@ -43,7 +43,7 @@ $strchoose = get_string('choose');
 set_time_limit(300);
 
 list($usec, $sec) = explode(' ', microtime());
-$time_start = ((float)$usec + (float)$sec);
+$timestart = ((float)$usec + (float)$sec);
 $url = new moodle_url('/admin/tool/sync/courses/deletecourses.php');
 $PAGE->navigation->add($strenrolname);
 $PAGE->navigation->add($strdeletecourses);
@@ -53,7 +53,7 @@ $PAGE->set_heading($site->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading_with_help(get_string('coursedeletion', 'tool_sync'), 'coursedeletion', 'tool_sync');
 
-// Page controller
+// Page controller.
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
@@ -68,28 +68,12 @@ if ($data = $form->get_data()) {
         $canprocess = true;
         $processedfile = $syncconfig->course_filedeletelocation;
     } else {
-        $usercontext = context_user::instance($USER->id);
-        
-        $fs = get_file_storage();
-
-        if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
-
-            $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
-            $uploadedfile = array_pop($areafiles);
-
-            $manualfilerec = new StdClass();
-            $manualfilerec->contextid = $usercontext->id;
-            $manualfilerec->component = 'user';
-            $manualfilerec->filearea = 'draft';
-            $manualfilerec->itemid = $data->inputfile;
-            $manualfilerec->filepath = $uploadedfile->get_filepath();
-            $manualfilerec->filename = $uploadedfile->get_filename();
+        if (!$manualfilerec = tool_sync_receive_file()) {
+            $errormes = "Failed loading a file";
+        } else {
             $processedfile = $manualfilerec->filename;
-
             $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE, $manualfilerec);
             $canprocess = true;
-        } else {
-            $errormes = "Failed loading a file";
         }
     }
 }
@@ -104,16 +88,19 @@ if ($canprocess) {
     echo '<pre>';
     $coursesmanager->cron($syncconfig);
     echo '</pre>';
+    list($usec, $sec) = explode(' ', microtime());
+    $timeend = ((float)$usec + (float)$sec);
+    $elapsed = $timeend - $timestart;
 
     $usermgtmanual = get_string('deletingcourses', 'tool_sync');
     $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
-    
+
     echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
     echo "<center>$cronrunmsg</center>";
     echo '</fieldset>';
 }
 
-// always return to main tool view.
+// Always return to main tool view.
 echo $renderer->print_return_button();
 
 echo $OUTPUT->footer();
