@@ -145,8 +145,8 @@ class file_checker {
             $textlib = new core_text();
             $text = $textlib->trim_utf8_bom($text);
             // Fix mac/dos newlines.
-            $text = preg_replace('!\r\n?!',"\n", $text);
-            $text = preg_replace('!;!',", ", $text);
+            $text = preg_replace('!\r\n?!', "\n", $text);
+            $text = preg_replace('!;!', ", ", $text);
             $fp = fopen($filename, 'w');
             fwrite($fp, $text);
             fclose($fp);
@@ -193,7 +193,7 @@ class file_checker {
         fclose($file);
 
         $fp = fopen($filename, 'w');
-        fwrite($fp,$text);
+        fwrite($fp, $text);
         fclose($fp);
     }
 }
