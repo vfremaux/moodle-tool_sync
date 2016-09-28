@@ -107,34 +107,9 @@ class tool_sync_renderer extends plugin_base_renderer {
         }
         $str .= '</select>';
         $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= '<table>';
-        $str .= '<tr valign="top">';
-        $str .= '<td>';
-        $str .= '<input class="button"
-                        type="button"
-                        name="select"
-                        value=" >> "
-                        OnClick="javascript:selectcourses(this.form.courselist,this.form.selection)">';
-        $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '<tr>';
-        $str .= '<td>';
-        $str .= '<input class="button"
-                        type="button"
-                        name="deselect"
-                        value=" << "
-                        OnClick="javascript:selectcourses(this.form.selection,this.form.courselist)">';
-        $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '</table>';
-        $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= '<select name="selection"
-                         multiple
-                         style="height:200px"
-                         OnDblClick="javascript:selectcourses(this.form.selection,this.form.courselist)"></select>';
-        $str .= '</td>';
+
+        $str .= $this->course_selector_form();
+
         $str .= '</tr>';
         $str .= '</table>';
         $str .= '<p><input type="submit" value="'.get_string('generate', 'tool_sync').'"/></p>';
@@ -215,6 +190,22 @@ class tool_sync_renderer extends plugin_base_renderer {
         }
         $str .= '</select>';
         $str .= '</td>';
+
+        $str .= $this->course_selector_form();
+
+        $str .= '</tr>';
+        $str .= '</table>';
+        $str .= '<p><input type="submit" value="'.get_string('generate', 'tool_sync').'"/></p>';
+        $str .= '</center>';
+        $str .= '</form>';
+
+        return $str;
+    }
+
+    public function course_selector_form() {
+
+        $str = '';
+
         $str .= '<td align="center">';
         $str .= '<table>';
         $str .= '<tr valign="top">';
@@ -243,11 +234,6 @@ class tool_sync_renderer extends plugin_base_renderer {
                          style="height:200px"
                          OnDblClick="javascript:selectcourses(this.form.selection,this.form.courselist)"></select>';
         $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '</table>';
-        $str .= '<p><input type="submit" value="'.get_string('generate', 'tool_sync').'"/></p>';
-        $str .= '</center>';
-        $str .= '</form>';
 
         return $str;
     }

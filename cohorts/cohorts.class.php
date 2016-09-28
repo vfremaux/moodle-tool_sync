@@ -154,32 +154,8 @@ class cohorts_sync_manager extends sync_manager {
 
         $headers = explode($csvdelimiter2, $text);
 
-        // Check for valid field names.
-        foreach ($headers as $h) {
-            $header[] = trim($h);
-            $patternized = implode('|', $patterns) . "\\d+";
-            $metapattern = implode('|', $metas);
-            if (!(isset($required[$h]) ||
-                    isset($optionaldefaults[$h]) ||
-                            isset($optional[$h]) ||
-                                    preg_match("/$patternized/", $h) ||
-                                            preg_match("/$metapattern/", $h))) {
-                $this->report(get_string('invalidfieldname', 'error', $h));
-                return;
-            }
-
-            if (isset($required[$h])) {
-                $required[$h] = 0;
-            }
-        }
-
-        // Check for required fields.
-        foreach ($required as $key => $value) {
-            if ($value) {
-                // Required field missing.
-                $this->report(get_string('fieldrequired', 'error', $key));
-                return;
-            }
+        if (!$this->check_headers($headers, $required, $patterns, $metas, $optionaldefauls)) {
+            return;
         }
 
         // Header is validated.
