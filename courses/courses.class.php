@@ -1396,7 +1396,7 @@ class course_sync_manager extends sync_manager {
                         return;
                     }
                 } else {
-                      if ($format[1] == 1) {
+                    if ($format[1] == 1) {
                         // Not null?
                         $e = new \StdClass;
                         $e->i = $lineno;
@@ -1594,8 +1594,8 @@ class course_sync_manager extends sync_manager {
                 $transaction = $DB->start_delegated_transaction();
 
                 // Create new course.
-                $categoryid             = $hcategoryid; // e.g. 1 == Miscellaneous
-                $userdoingtherestore    = $USER->id; // e.g. 2 == admin
+                $categoryid             = $hcategoryid; // E.g. 1 == Miscellaneous.
+                $userdoingtherestore    = $USER->id; // E.g. 2 == admin.
                 $newcourseid           = \restore_dbops::create_new_course('', '', $hcategoryid);
 
                 /*
@@ -1648,7 +1648,7 @@ class course_sync_manager extends sync_manager {
                     // Any topic headings specified ?
                     $maxfilledtopics = 1;
                     foreach ($course['topics'] as $dtopicno => $dtopicname) {
-                         if (!empty($dtopicname)) {
+                        if (!empty($dtopicname)) {
                             // We guess the max declared topic.
                             $maxfilledtopics = $dtopicno;
                         }
@@ -1719,10 +1719,7 @@ class course_sync_manager extends sync_manager {
                         $csection->summary = '';
                         $csection->sequence = '';
                         $csection->visible = 1;
-                        try {
-                            $DB->insert_record('course_sections', $csection);
-                        } catch (Exception $e) {
-                        }
+                        $DB->insert_record('course_sections', $csection);
                     }
                 }
                 rebuild_course_cache($newcourse->id, true);

@@ -60,14 +60,14 @@ fclose($file);
 
 // Create a test user definition file.
 
-$filename = $CFG->dataroot.'/sync/uploadusers.csv';	
+$filename = $CFG->dataroot.'/sync/uploadusers.csv';
 $file = fopen($filename, "w");
 
 fputs($file, "username, firstname, lastname, email, password, lang, country, idnumber, auth\n");
 for ($i = 0; $i < 500; $i++) {
     fputs($file, "full$i, short$i, last$i, mail$i@ldap.fr, pass$i, fr_utf8, FR, id$i, ldap\n");
 }
-fputs($file,"full500, short500, last500, mail500@ldap.fr, pass500, fr_utf8, FR, id500, ldap");
+fputs($file, "full500, short500, last500, mail500@ldap.fr, pass500, fr_utf8, FR, id500, ldap");
 fclose($file);
 
 // Create a test enrollement file.

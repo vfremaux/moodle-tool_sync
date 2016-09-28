@@ -201,7 +201,7 @@ class userpictures_sync_manager extends sync_manager {
             if ($item != '.' && $item != '..') {
                 if (is_dir($dir.'/'.$item)) {
                     $this->process_directory($dir.'/'.$item, $userfield, $overwrite, $results);
-                } else if (is_file($dir.'/'.$item))  {
+                } else if (is_file($dir.'/'.$item)) {
                     $result = $this->process_file($dir.'/'.$item, $userfield, $overwrite);
                     switch ($result) {
                         case PIX_FILE_ERROR:

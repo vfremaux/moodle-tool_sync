@@ -427,7 +427,7 @@ class users_sync_manager extends sync_manager {
                             }
 
                             $usersupdated++;
-                        } catch(Exception $e) {
+                        } catch (Exception $e) {
                             if (!empty($syncconfig->filefailed)) {
                                 $this->feed_tryback($text);
                             }
@@ -481,7 +481,7 @@ class users_sync_manager extends sync_manager {
                                 $pref->value = $forcepasswordchange;
                                 $DB->insert_record('user_preferences', $pref);
                             }
-    
+
                             // Save custom profile fields data from csv file.
                             profile_save_data($user);
                         } else {
@@ -490,7 +490,7 @@ class users_sync_manager extends sync_manager {
                             $usersnew++;
                         }
 
-                    } catch(Exception $e) {
+                    } catch (Exception $e) {
                         // Record not added -- possibly some other error.
                         if (!empty($syncconfig->filefailed)) {
                             $this->feed_tryback($text);
@@ -591,7 +591,8 @@ class users_sync_manager extends sync_manager {
                                     }
                                 } else {
                                     if (!user_can_assign($coursecontext, $c->role)) {
-                                        // Notify('--> Can not assign role in course'); // TODO: localize.
+                                        assert(true);
+                                        // Notify Can not assign role in course'); // TODO: localize.
                                     }
                                     if (!$syncconfig->simulate) {
                                         $ret = role_assign($role->id, $user->id, $coursecontext->id);

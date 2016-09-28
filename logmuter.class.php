@@ -56,9 +56,8 @@ class logmuter {
          * configuration settings to allow us to restore them on unmute
          */
         if (self::$oldsettings === null) {
-                self::$oldsettings = (array_key_exists('tool_log', $CFG->forced_plugin_settings)) ?
-                $CFG->forced_plugin_settings['tool_log'] :
-                array();
+            $settingexists = array_key_exists('tool_log', $CFG->forced_plugin_settings);
+            self::$oldsettings = ($settingexists) ? $CFG->forced_plugin_settings['tool_log'] : array();
         }
     }
 
@@ -81,7 +80,7 @@ class logmuter {
         global $CFG;
 
         // If we're already active then there's nothing to do so just return.
-        if ($this->stackidx !== -1){
+        if ($this->stackidx !== -1) {
             return;
         }
 
@@ -94,7 +93,7 @@ class logmuter {
         }
 
         // Override the configuration settings to disable all log stores and force re-construction of log manager singleton.
-        $CFG->forced_plugin_settings['tool_log'] = array('enabled_stores'=>'');
+        $CFG->forced_plugin_settings['tool_log'] = array('enabled_stores' => '');
         get_log_manager( true );
     }
 

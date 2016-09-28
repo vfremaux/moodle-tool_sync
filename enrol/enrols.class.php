@@ -409,7 +409,7 @@ class enrol_sync_manager extends sync_manager {
                                 $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
                                                          $record['endtime'], ENROL_USER_ACTIVE);
                                 $this->report(get_string('enrolled', 'tool_sync', $e));
-                            } catch (Exception $exc){
+                            } catch (Exception $exc) {
                                 $this->report(get_string('errorenrol', 'tool_sync', $e));
                             }
                         } else {
@@ -538,7 +538,7 @@ class enrol_sync_manager extends sync_manager {
                                     $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
                                 }
                             } else {
-                                $this->report(get_string('addedtogroupnotenrolled','', $record['g'.$i]));
+                                $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$i]));
                             }
                         }
                     }

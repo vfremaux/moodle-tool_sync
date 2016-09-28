@@ -33,7 +33,7 @@ class file_checker {
         $name = $CFG->dataroot.'/'.$filename;
         $i = 0;
         $tmp = '';
-        if ($file = fopen($name,'r')) {
+        if ($file = fopen($name, 'r')) {
             while (!feof($file)) {
                 $tmp = fgets($file);
                 $i++;
@@ -86,22 +86,22 @@ class file_checker {
 
         $i = 0;
         $tmp = '';
-        if ($file = fopen($name,'r')) {
+        if ($file = fopen($name, 'r')) {
             while (!feof($file)) {
                 $tmp = fgets($file);
                 $i++;
             }
         }
 
-        $this->setEncoding($filename);
+        $this->set_encoding($filename);
 
-        $this->deleteLine($filename, 2);
+        $this->delete_line($filename, 2);
         $i--;
-        $this->deleteLine($filename, $i);
+        $this->delete_line($filename, $i);
         $i--;
-        $this->deleteLine($filename, $i);
+        $this->delete_line($filename, $i);
         $i--;
-        $this->deleteLine($filename, $i);
+        $this->delete_line($filename, $i);
         $i--;
     }
 
@@ -109,26 +109,26 @@ class file_checker {
      *
      *
      */
-    public function setEncoding($filename) {
+    public function set_encoding($filename) {
         global $CFG;
 
         $filename = $CFG->dataroot.'/'.$filename;
 
         if (file_exists($filename) ) {
-            $csv_encode = '/\&\#44/';
+            $csvencode = '/\&\#44/';
             if (isset($CFG->CSV_DELIMITER)) {
-                $csv_delimiter = '\\'.$CFG->CSV_DELIMITER;
-                $csv_delimiter2 = $CFG->CSV_DELIMITER;
+                $csvdelimiter = '\\'.$CFG->CSV_DELIMITER;
+                $csvdelimiter2 = $CFG->CSV_DELIMITER;
 
                 if (isset($CFG->CSV_ENCODE)) {
-                    $csv_encode = '/\&\#'.$CFG->CSV_ENCODE.'/';
+                    $csvencode = '/\&\#'.$CFG->CSV_ENCODE.'/';
                 }
             } else {
-                $csv_delimiter = "\,";
-                $csv_delimiter2 = ",";
+                $csvdelimiter = "\,";
+                $csvdelimiter2 = ",";
             }
 
-            /**
+            /*
              * File that is used is currently hardcoded here!
              * Large files are likely to take their time and memory. Let PHP know
              * that we'll take longer, and that the process should be recycled soon
@@ -171,7 +171,7 @@ class file_checker {
      * @param string $filename
      * @param int $linenumber
      */
-    public function deleteLine($filename, $linenumber) {
+    public function delete_line($filename, $linenumber) {
         global $CFG;
 
         $filename = $CFG->dataroot.'/'.$filename;

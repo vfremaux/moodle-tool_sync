@@ -177,7 +177,7 @@ class tool_sync_renderer extends plugin_base_renderer {
         $courses = tool_sync_get_all_courses($sortorder);
         $class = 'r0';
         $distinctcourses = array();
-        foreach ($courses as $c){
+        foreach ($courses as $c) {
             $class = ($class == 'r0') ? 'r1' : 'r0';
             if (@$prevc->shortname != $c->shortname) {
                 $str .= '</tr>';
