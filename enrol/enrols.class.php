@@ -323,14 +323,17 @@ class enrol_sync_manager extends sync_manager {
                                 $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
                                                          $record['endtime'], ENROL_USER_ACTIVE);
                                 $this->report(get_string('enrolled', 'tool_sync', $e));
-                            } catch (Exception $exc){
+                            } catch (Exception $exc) {
                                 $this->report(get_string('errorenrol', 'tool_sync', $e));
                             }
                         } else {
                             $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
                         }
                     } else {
-                        $params = array('roleid' => $role->id, 'contextid' => $context->id, 'userid' => $user->id, 'component' => '');
+                        $params = array('roleid' => $role->id,
+                                        'contextid' => $context->id,
+                                        'userid' => $user->id,
+                                        'component' => '');
                         if (!$DB->get_record('role_assignments', $params)) {
                             if (empty($syncconfig->simulate)) {
                                 if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent,
@@ -445,7 +448,7 @@ class enrol_sync_manager extends sync_manager {
 
             if (!empty($record['gcmd'])) {
                 if ($record['gcmd'] == 'gadd' || $record['gcmd'] == 'gaddcreate') {
-                    for ($i = 1 ; $i < 10 ; $i++) {
+                    for ($i = 1; $i < 10; $i++) {
                         if (!empty($record['g'.$i])) {
                             if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
                                 $groupid[$i] = $gid;
@@ -535,12 +538,13 @@ class enrol_sync_manager extends sync_manager {
                                     $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
                                 }
                             } else {
-                                $this->report(get_string('addedtogroupnotenrolled','',$record['g'.$i]));
+                                $this->report(get_string('addedtogroupnotenrolled','', $record['g'.$i]));
                             }
                         }
                     }
                 } else if ($record['gcmd'] == 'gdel') {
-                    // Remove membership.
+                    // TODO : Remove membership.
+                    assert(true);
                 } else {
                     $this->report(get_string('errorgcmdvalue', 'tool_sync', $e));
                 }
