@@ -27,7 +27,6 @@ defined('MOODLE_INTERNAL') || die();
  * An helper function to create the course deletion file from a selection
  */
 function tool_sync_create_course_deletion_file($selection) {
-    global $CFG;
 
     $filename = 'deletecourses.txt';
 
@@ -156,7 +155,7 @@ function tool_sync_config_add_sync_prefix($cfg) {
  * @return a string or false if no more data
  */
 function tool_sync_read($filereader, $length, &$config) {
-    $input = fgets($filereader, 1024);
+    $input = fgets($filereader, $length);
 
     if ($config->encoding != 'UTF-8') {
         return utf8_encode($input);

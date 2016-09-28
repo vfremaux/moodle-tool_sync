@@ -27,8 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_tool_sync_upgrade($oldversion) {
     global $CFG, $DB;
 
-    $dbman = $DB->get_manager();
-
     if ($oldversion < 2015112600) {
         require_once($CFG->dirroot.'/admin/tool/sync/db/install.php');
         xmldb_tool_sync_install();

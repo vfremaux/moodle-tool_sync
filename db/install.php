@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_tool_sync_install() {
-    global $USER, $DB, $CFG;
+    global $DB;
 
     // Will add a custom user info field to stroe avatar checksum.
 

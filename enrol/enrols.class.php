@@ -71,7 +71,7 @@ class enrol_sync_manager extends sync_manager {
     }
 
     public function cron($syncconfig) {
-        global $CFG, $USER, $DB;
+        global $CFG, $DB;
 
         $csvencode = '/\&\#44/';
         if (isset($syncconfig->csvseparator)) {
@@ -342,7 +342,7 @@ class enrol_sync_manager extends sync_manager {
                                         $this->feed_tryback($text);
                                     }
                                     $errorline = get_string('errorline', 'tool_sync')." $i :";
-                                    $errorline .= " $mycmd $myrole $myuser $mycourse : $user->lastname $user->firstname ";
+                                    $errorline .= " $record['cmd'] role : $user->lastname $user->firstname ";
                                     $errorline .= "== $role->shortname ==> $course->shortname";
                                     $this->report($errorline);
                                 } else {

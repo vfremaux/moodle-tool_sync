@@ -46,7 +46,6 @@ class course_sync_manager extends sync_manager {
     }
 
     public function form_elements(&$frm) {
-        global $CFG;
 
         $frm->addElement('text', 'tool_sync/course_fileuploadlocation', get_string('uploadcoursecreationfile', 'tool_sync'));
         $frm->setType('tool_sync/course_fileuploadlocation', PARAM_TEXT);
@@ -383,8 +382,6 @@ class course_sync_manager extends sync_manager {
                                 include_once($modfile);
                                 if (function_exists($modresetcourseformdefinition)) {
                                     $modmap[$modname] = $modresetcourseformdefinition($data['id']);
-                                } else if (!function_exists($modresetuserdata)) {
-                                    $unsupportedmods[] = $mod;
                                 }
                             } else {
                                 debugging('Missing lib.php in '.$modname.' module');
@@ -442,7 +439,6 @@ class course_sync_manager extends sync_manager {
                         }
                     } else {
                         $mods = explode(' ', $record['modules']);
-                        $nbmods = 0;
                         $modlist = array();
                         foreach ($mods as $mod) {
                             $modlist[$mod] = 1;
@@ -470,7 +466,7 @@ class course_sync_manager extends sync_manager {
                                             $data[$fct] = $value;
                                         }
                                     }
-                                    foreach ($negmods as $k => $v) {
+                                    foreach (array_keys($negmods) as $k) {
                                         foreach ($availablemods as $mod => $fcts) {
                                             if ($k == $mod) {
                                                 foreach ($fcts as $fct => $value) {
@@ -587,7 +583,6 @@ class course_sync_manager extends sync_manager {
             if ($filereader = $this->open_input_file($filerec)) {
 
                 $i = 0;
-                $shortnames = array();
 
                 while (!feof($filereader)) {
                     $text = tool_sync_read($filereader, 1024, $syncconfig);
@@ -1081,7 +1076,7 @@ class course_sync_manager extends sync_manager {
                     $catcreated++;
                     break;
                 default:
-                    $caterrors += count($bulkcourse['category']) - $catindex;
+                    $caterrors += 1;
                     $coursetocategory = -1;
                     $e = new \StdClass;
                     $e->catname = $catname;
@@ -1102,7 +1097,7 @@ class course_sync_manager extends sync_manager {
      *
      */
     public function get_default_category() {
-        global $CFG, $DB;
+        global $DB;
 
         if (!$mincat = $DB->get_field('course_categories', 'MIN(id)', array())) {
             return 1; // SHOULD be the Misc category?
@@ -1189,7 +1184,7 @@ class course_sync_manager extends sync_manager {
         switch($format[0]) {
             case 1:
                 // String.
-                if (($maxlen = $format[1]) != 0) {
+                if (($format[1]) != 0) {
                     // Max length?
                     if (strlen($value) > $format[1]) {
                         $e = new \StdClass;
@@ -1365,11 +1360,11 @@ class course_sync_manager extends sync_manager {
                                 ($usersearch !== false) &&
                                         is_array($usersearch) &&
                                                 (($ucountc = count($usersearch)) > 0)) {
-                        if ($ucount > 1) {
+                        if ($ucountc > 1) {
                             $e = new \StdClass;
                             $e->i = $lineno;
                             $e->fieldname = $fieldname;
-                            $e->ucount = $ucount;
+                            $e->ucount = $ucountc;
                             $this->report(get_string('errorvalidationmultipleresults', 'tool_sync', $e));
                             return;
                         }
@@ -1425,7 +1420,7 @@ class course_sync_manager extends sync_manager {
     }
 
     protected function fast_get_category_ex($hname, &$hstatus, $hparent = 0, $syncconfig = null) {
-        global $CFG, $DB;
+        global $DB;
 
         // Find category with the given name and parentID, or create it, in both cases returning a category ID.
         /*
@@ -1456,7 +1451,7 @@ class course_sync_manager extends sync_manager {
             $cat->visible = 1;
             $cat->depth = $parent->depth + 1;
             $cat->timemodified = time();
-            if (empty($synconfig->simulate)) {
+            if (empty($syncconfig->simulate)) {
                 if ($cat->id = $DB->insert_record('course_categories', $cat)) {
                     $hstatus = 2;
 
@@ -1585,18 +1580,15 @@ class course_sync_manager extends sync_manager {
 
             // Actually locally copying archive.
             $contextid = \context_system::instance()->id;
-            $component = 'tool_sync';
-            $filearea = 'temp';
-            $itemid = $uniq;
+
             if ($archive->extract_to_pathname(new \zip_packer(), $tempdir)) {
 
                 // Transaction.
                 $transaction = $DB->start_delegated_transaction();
 
                 // Create new course.
-                $categoryid             = $hcategoryid; // E.g. 1 == Miscellaneous.
-                $userdoingtherestore    = $USER->id; // E.g. 2 == admin.
-                $newcourseid           = \restore_dbops::create_new_course('', '', $hcategoryid);
+                $userdoingtherestore = $USER->id; // E.g. 2 == admin.
+                $newcourseid = \restore_dbops::create_new_course('', '', $hcategoryid);
 
                 /*
                  * Restore backup into course.
@@ -1741,7 +1733,7 @@ class course_sync_manager extends sync_manager {
 
         if (isset($course['teachers_enrol']) && (count($course['teachers_enrol']) > 0)) {
             // Any teachers specified?
-            foreach ($course['teachers_enrol'] as $dteacherno => $dteacherdata) {
+            foreach (array_values($course['teachers_enrol']) as $dteacherdata) {
                 if (isset($dteacherdata['_account'])) {
                     $roleid = $DB->get_field('role', 'id', array('shortname' => 'teacher'));
                     $roleassignrec = new \StdClass;
@@ -1803,12 +1795,11 @@ class course_sync_manager extends sync_manager {
      * @param object $syncconfig
      */
     public function create_course_reinitialisation_file($selection, $syncconfig) {
-        global $CFG, $DB;
+        global $DB;
 
         $fs = get_file_storage();
 
         $filename = 'resetcourses.csv';
-        $size = count($selection);
 
         $identifieroptions = array('idnumber', 'shortname', 'id');
         $identifiername = $identifieroptions[0 + @$syncconfig->course_resetfileidentifier];
