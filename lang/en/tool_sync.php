@@ -257,6 +257,7 @@ $string['nonuniqueidentifierexception'] = 'The ID number at row {$a} leads to a 
 $string['nothingtodelete'] = 'No element to delete';
 $string['optionheader'] = 'Synchronization options';
 $string['parsingfile'] = 'Parsing file...';
+$string['passwordnotification'] = 'Your credentials on {$a}';
 $string['pluginname'] = 'User and course synchronisation by files';
 $string['pluginname_desc'] = 'User and course synchronisation by CSV files';
 $string['predeletewarning'] = '<b><font color="red">WARNING:</font></b> Bulk Deleter is about to delete the following courses:';
@@ -520,4 +521,8 @@ The first line must hold column titles in any order.
 $string['userpicturesformat'] = 'User pictures file format';
 $string['userpicturesformat_help'] = '
 The User Pictures feeding file must be a zip with png, jpg or gif images for users, named using their primary identifier.
+';
+
+$string['passwordnotification_tpl'] = '
+A password has been created for you: {$a}
 ';

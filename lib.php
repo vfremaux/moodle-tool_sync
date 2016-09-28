@@ -262,6 +262,9 @@ function tool_sync_capture_input_files($interactive = false) {
  * TODO write notification code
  */
 function sync_notify_new_user_password($user, $value) {
+    global $SITE, $USER;
+
+    email_to_user($user, $USER, get_string('passwordnotification', 'tool_sync', $SITE->fullname), get_string('passwordnotification_tpl', 'tool_sync', $value));
 }
 
 function trim_array_values(&$e) {

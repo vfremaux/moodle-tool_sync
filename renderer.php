@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die;
 class tool_sync_renderer extends plugin_base_renderer {
 
     public function print_return_button() {
-        global $CFG, $OUTPUT;
+        global $OUTPUT;
 
         $str = '<center>';
         $str .= '<hr/>';

@@ -76,7 +76,7 @@ class users_sync_manager extends sync_manager {
      * Executes this manager main task
      */
     public function cron($syncconfig) {
-        global $CFG, $USER, $DB;
+        global $CFG, $DB, $OUTPUT;
 
         $systemcontext = \context_system::instance();
 
@@ -233,12 +233,6 @@ class users_sync_manager extends sync_manager {
         $userserrors  = 0;
         $renames      = 0;
         $renameerrors = 0;
-
-        /*
-         * Will use this course array a lot
-         * so fetch it early and keep it in memory
-         */
-        $courses = get_courses('all', 'c.sortorder', 'c.id,c.shortname,c.idnumber,c.fullname,c.sortorder,c.visible');
 
         // Take some from admin profile, other fixed by hardcoded defaults.
         while (!feof($filereader)) {

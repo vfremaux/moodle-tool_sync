@@ -139,8 +139,6 @@ function sync_register_image_checksum($id, $directfile) {
 function update_all_user_picture_hashes($verbose) {
     global $DB;
 
-    $fs = get_file_storage();
-
     $allfilerecs = $DB->get_records('file', array('component' => 'user', 'filearea' => 'icon', 'filename' => 'f1.png'));
 
     if ($allfilerecs) {
@@ -149,7 +147,7 @@ function update_all_user_picture_hashes($verbose) {
                 $user = $DB->get_record('user', array('id' => $filerec->userid));
                 mtrace('Generating hash for '.fullname($user));
             }
-            sync_register_image_checksum($id, null);
+            sync_register_image_checksum($filrec->userid, null);
         }
     }
 }

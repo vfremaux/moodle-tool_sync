@@ -251,6 +251,7 @@ $string['nonuniqueidentifierexception'] = 'Cette valeur d\'identifiant à la lig
 $string['nothingtodelete'] = 'Aucun élément à supprimer';
 $string['optionheader'] = 'Options de synchronisation';
 $string['parsingfile'] = 'Examen du fichier...';
+$string['passwordnotification'] = 'Vos accès sur {$a}';
 $string['pluginname'] = 'Synchronisation des cours et utilisateurs par fichiers CSV';
 $string['predeletewarning'] = '<b><font color="red">ATTENTION :</font></b> La suppression des cours suivant va être effectuée :';
 $string['process'] = 'Effectuer l\'opération';
@@ -515,3 +516,6 @@ Le fichier des avatars utilisateurs est une archive ZIP sans sous-répertoires a
 de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation.
 ';
 
+$string['passwordnotification_tpl'] = '
+Un mot de passe vous a été attribué : {$a}
+';

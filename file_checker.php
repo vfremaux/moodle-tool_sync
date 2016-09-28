@@ -177,7 +177,7 @@ class file_checker {
         $filename = $CFG->dataroot.'/'.$filename;
 
         if (!($file = @fopen($filename, 'r'))) {
-            exit;
+            return;
         }
 
         $text = '';
@@ -186,7 +186,7 @@ class file_checker {
             $text .= fgets($file);
             $i++;
         }
-        $tmp = fgets($file);
+        fgets($file);
         while (!feof($file)) {
             $text .= fgets($file);
         }

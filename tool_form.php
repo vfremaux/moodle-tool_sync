@@ -34,7 +34,6 @@ require_once($CFG->dirroot.'/admin/tool/sync/tool.php');
 class ToolForm extends moodleform {
 
     public function definition() {
-        global $CFG;
 
         $coursemanager = new \tool_sync\course_sync_manager();
         $usermanager = new \tool_sync\users_sync_manager();
@@ -42,8 +41,6 @@ class ToolForm extends moodleform {
         $enrolmanager = new \tool_sync\enrol_sync_manager();
         $cohortmanager = new \tool_sync\cohorts_sync_manager();
         $mainmanager = new \tool_sync\tool_plugin_sync();
-
-        $fileoptions = array('context' => context_system::instance());
 
         $mform = $this->_form;
 

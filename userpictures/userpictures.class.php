@@ -70,7 +70,7 @@ class userpictures_sync_manager extends sync_manager {
     }
 
     public function cron($syncconfig) {
-        global $USER, $CFG;
+        global $CFG;
 
         $fs = get_file_storage();
 
@@ -190,7 +190,6 @@ class userpictures_sync_manager extends sync_manager {
      * @return nothing
      */
     protected function process_directory ($dir, $userfield, $overwrite, &$results) {
-        global $OUTPUT, $CFG;
 
         if (!($handle = opendir($dir))) {
             $this->report(get_string('uploadpicture_cannotprocessdir', 'tool_uploaduser'));
@@ -237,7 +236,7 @@ class userpictures_sync_manager extends sync_manager {
      *                  PIX_FILE_SKIPPED
      */
     protected function process_file ($file, $userfield, $overwrite) {
-        global $DB, $OUTPUT, $CFG;
+        global $DB, $CFG;
 
         /*
          * Add additional checks on the filenames, as they are user
