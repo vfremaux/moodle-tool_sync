@@ -6,12 +6,12 @@ function selectcourses(courses, courseselection) {
     var selection;
 
     selection = courses.selectedIndex;
-    if (selection != -1) {
-        while (courseselection.selectedIndex != -1) {
+    if (selection !== -1) {
+        while (courseselection.selectedIndex !== -1) {
             courseselection.options[courseselection.selectedIndex].selected = false;
         }
         while (courses.selectedIndex > -1) {
-            if (courses.options[courses.selectedIndex].value == "Id_type_bien") {
+            if (courses.options[courses.selectedIndex].value === "Id_type_bien") {
                 courses.options[courses.selectedIndex] = null;
                 courses.form.Id_categorie_bien.options[0].select = true;
             } else {
@@ -61,9 +61,9 @@ function priorite_champ(selection, mode) {
 
     old_place = selection.selectedIndex;
 
-    if (mode == 'up' && old_place > 0) {
+    if (mode === 'up' && old_place > 0) {
         new_place = old_place - 1;
-    } else if ((mode == 'down') && (old_place < selection.length - 1)) {
+    } else if ((mode === 'down') && (old_place < selection.length - 1)) {
         new_place = old_place + 1;
     }
 
