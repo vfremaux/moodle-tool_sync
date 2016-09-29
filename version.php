@@ -17,19 +17,20 @@
 /**
  * Version details.
  *
- * @package    tool_sync
- * @copyright  2013 Valery Fremaux 
- * @author     Valery Fremaux
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     tool_sync
+ * @category    tool
+ * @author      Valery Fremaux
+ * @copyright   2012 Valery Fremaux
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016030800;
+$plugin->version  = 2016030802;
 $plugin->requires  = 2015050500;        // Requires this Moodle version.
 $plugin->component = 'tool_sync';  // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_RC;
-$plugin->release = '2.9.0 (Build 2016030800)';
+$plugin->release = '2.9.0 (Build 2016030802)';
 
-// Non Moodle atributes.
+// Non moodle atributes.
 $plugin->codeincrement = '2.9.0003';
