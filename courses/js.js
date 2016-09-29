@@ -1,4 +1,4 @@
-// jshint unused:false
+// jshint undef:false, unused:false
 
 /*
  *
@@ -24,10 +24,12 @@ function selectcourses(courses, courseselection) {
                     }
                 }
                 for (i = courseselection.length; i > place; i--) {
-                    courseselection.options[i] = new Option(courseselection.options[(i - 1)].text, courseselection.options[(i - 1)].value);
+                    courseselection.options[i] = new Option(courseselection.options[(i - 1)].text,
+                                                            courseselection.options[(i - 1)].value);
                 }
 
-                courseselection.options[place] = new Option(courses.options[courses.selectedIndex].text,courses.options[courses.selectedIndex].value);
+                courseselection.options[place] = new Option(courses.options[courses.selectedIndex].text,
+                                                            courses.options[courses.selectedIndex].value);
                 courses.options[courses.selectedIndex] = null;
                 courseselection.options[place].selected = true;
             }
