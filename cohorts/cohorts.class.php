@@ -178,7 +178,7 @@ class cohorts_sync_manager extends sync_manager {
             $record = array();
             foreach ($valueset as $key => $value) {
                 // Decode encoded commas.
-                $record[$header[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
+                $record[$headers[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
             }
 
             // Find assignable items.
