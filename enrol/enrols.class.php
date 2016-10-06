@@ -51,7 +51,7 @@ class enrol_sync_manager extends sync_manager {
 
         $frm->addElement('static', 'enrolsst1', '<hr>');
 
-        $cronurl = new moodle_url('/admin/tool/sync/enrol/execcron.php');
+        $cronurl = new \moodle_url('/admin/tool/sync/enrol/execcron.php');
         $attribs = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualenrols', get_string('manualenrolrun', 'tool_sync'), $attribs);
 
