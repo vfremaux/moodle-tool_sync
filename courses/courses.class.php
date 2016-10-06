@@ -77,15 +77,15 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('static', 'coursesst1', '<hr>');
 
         $barr = array();
-        $deletecreatorurl = new moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
+        $deletecreatorurl = new \moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
         $attribs = array('onclick' => 'document.location.href= \''.$deletecreatorurl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('makedeletefile', 'tool_sync'), $attribs);
-        $resetcreatorurl = new moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
+        $resetcreatorurl = new \moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
         $attribs = array('onclick' => 'document.location.href= \''.$resetcreatorurl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('makeresetfile', 'tool_sync'), $attribs);
-        $checkurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CHECK));
+        $checkurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CHECK));
         $attribs = array('onclick' => 'document.location.href= \''.$checkurl.'\'');
-        $existurl = new moodle_url('/admin/tool/sync/courses/checkcourses.php');
+        $existurl = new \moodle_url('/admin/tool/sync/courses/checkcourses.php');
         $attribs = array('onclick' => 'document.location.href= \''.$existurl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('testcourseexist', 'tool_sync'), $attribs);
         $frm->addGroup($barr, 'utilities', get_string('utilities', 'tool_sync'), array('&nbsp;&nbsp;'), false);
@@ -93,19 +93,19 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('static', 'coursesst2', '<hr>');
 
         $barr = array();
-        $reseturl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_RESET));
+        $reseturl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_RESET));
         $attribs = array('onclick' => 'document.location.href= \''.$reseturl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
-        $createurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CREATE));
+        $createurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CREATE));
         $attribs = array('onclick' => 'document.location.href= \''.$createurl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('manualuploadrun', 'tool_sync'), $attribs);
-        $deleteurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_DELETE));
+        $deleteurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_DELETE));
         $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('manualdeleterun', 'tool_sync'), $attribs);
-        $clearcaturl = new moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
+        $clearcaturl = new \moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
         $attribs = array('onclick' => 'document.location.href= \''.$clearcaturl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('manualcleancategories', 'tool_sync'), $attribs);
-        $courseurl = new moodle_url('/admin/tool/sync/courses/execcron.php');
+        $courseurl = new \moodle_url('/admin/tool/sync/courses/execcron.php');
         $attribs = array('onclick' => 'document.location.href= \''.$courseurl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
