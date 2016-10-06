@@ -59,10 +59,10 @@ class userpictures_sync_manager extends sync_manager {
         $frm->addElement('static', 'userpicturesst1', '<hr>');
 
         $barr = array();
-        $cronurl = new moodle_url('/admin/tool/sync/userpictures/execcron.php');
+        $cronurl = new \moodle_url('/admin/tool/sync/userpictures/execcron.php');
         $attribs = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualuserpictures', get_string('manualuserpicturesrun', 'tool_sync'), $attribs);
-        $registerurl = new moodle_url('/admin/tool/sync/courses/execcron.php', array('what' => 'registerallpictures'));
+        $registerurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('what' => 'registerallpictures'));
         $attribs = array('onclick' => 'document.location.href= \''.$registerurl.'\'');
         $barr[] = $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
