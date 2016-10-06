@@ -240,10 +240,10 @@ class users_sync_manager extends sync_manager {
 
             foreach ($valueset as $key => $value) {
                 // Decode encoded commas.
-                $record[$header[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
+                $record[$headers[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
             }
 
-            if ($record[$header[0]]) {
+            if ($record[$headers[0]]) {
                 // Add a new user to the database.
                 // Add fields to object $user.
                 foreach ($record as $name => $value) {
