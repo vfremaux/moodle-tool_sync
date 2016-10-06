@@ -23,7 +23,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-class tool_sync_renderer extends plugin_base_renderer {
+class tool_sync_renderer extends plugin_renderer_base {
 
     public function print_return_button() {
         global $OUTPUT;

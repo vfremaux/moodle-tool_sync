@@ -57,7 +57,7 @@ class users_sync_manager extends sync_manager {
         $frm->setDefault('tool_sync/primaryidentity', 'idnumber');
         $frm->setType('tool_sync/primaryidentity', PARAM_TEXT);
 
-        $cronurl = new moodle_url('/admin/tool/sync/users/execcron.php');
+        $cronurl = new \moodle_url('/admin/tool/sync/users/execcron.php');
         $params = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualusers', get_string('manualuserrun', 'tool_sync'), $params);
 
