@@ -102,6 +102,7 @@ class enrol_sync_manager extends sync_manager {
                 'cid' => 1,
                 'uid' => 1);
         $optional = array(
+                'hidden' => 1,
                 'starttime' => 1,
                 'endtime' => 1,
                 'cmd' => 1,
