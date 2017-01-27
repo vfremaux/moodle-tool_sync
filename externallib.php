@@ -223,41 +223,14 @@ class tool_sync_external extends external_api {
         $params = self::validate_process_parameters(self::process_parameters(),
                         array('service' => $service, 'action' => $action));
 
-        $validcourseactions = array(
-            'check' => SYNC_COURSE_CHECK,
-            'delete' => SYNC_COURSE_DELETE,
-            'create' => SYNC_COURSE_CREATE,
-            'reset' => SYNC_COURSE_RESET);
-
-        $config = get_config('tool_sync');
-
-        switch ($service) {
-            case 'courses':
-                include_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
-                $manager = new \tool_sync\course_sync_manager($validcourseactions[$action]);
-                $manager->cron($config);
-                break;
-
-            case 'users':
-                include_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
-                $manager = new \tool_sync\users_sync_manager();
-                $manager->cron($config);
-                break;
-
-            case 'cohorts':
-                include_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
-                $manager = new \tool_sync\cohorts_sync_manager();
-                $manager->cron($config);
-                break;
-
-            case 'enrols':
-                include_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
-                $manager = new \tool_sync\enrol_sync_manager();
-                $manager->cron($config);
-                break;
+        if (tool_sync_supports_feature('api/process')) {
+            include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
+            tool_sync_process($draftitemid);
+            return true;
+        } else {
+            throw new moodle_exception('proreleasefeature');
         }
 
-        return $manager->log;
     }
 
     /**
@@ -293,7 +266,8 @@ class tool_sync_external extends external_api {
      * @return array
      * @since Moodle 2.2
      */
-    public static function deploy_course($categorysourceid, $categoryid, $templatesourceid, $templateid, $shortname, $fullname, $idnumber) {
+    public static function deploy_course($categorysourceid, $categoryid, $templatesourceid, $templateid,
+                                         $shortname, $fullname, $idnumber) {
 
         // Validate parameters.
         $params = self::validate_process_parameters(self::process_parameters(), array(
@@ -305,64 +279,14 @@ class tool_sync_external extends external_api {
             'fullname' => $fullname,
             'idnumber' => $idnumber));
 
-        $syncconfig = get_config('tool_sync');
-
-        include_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
-
-        $manager = new \tool_sync\course_sync_manager();
-
-        switch ($templatesourceid) {
-            case 'shortname':
-                $course['template'] = $templateid;
-                if (!$DB->record_exists('course', array('shortname' => $templateid))) {
-                    throw new moodle_exception('templatenotfound');
-                }
-                break;
-
-            case 'idnumber':
-                $shortname = $DB->get_field('course', 'shortname', array('idnumber' => $templateid));
-                if (!$shortname) {
-                    throw new moodle_exception('templatenotfound');
-                }
-                $course['template'] = $shortname;
-                break;
-
-            case 'id':
-                $shortname = $DB->get_field('course', 'shortname', array('idnumber' => $templateid));
-                if (!$shortname) {
-                    throw new moodle_exception('templatenotfound');
-                }
-                $course['template'] = $shortname;
-                break;
+        if (tool_sync_supports_feature('api/deploy')) {
+            include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
+            $result = tool_sync_deploy($categorysourceid, $categoryid, $templatesourceid, $templateid, $shortname,
+                                       $fullname, $idnumber);
+            return $result;
+        } else {
+            throw new moodle_exception('proreleasefeature');
         }
-
-        switch ($categorysourceid) {
-            case 'idnumber':
-                $catid = $DB->get_field('course_categories', 'id', array('idnumber' => $categoryid));
-                if (!$catid) {
-                    throw new moodle_exception('categorynotfound');
-                }
-                $course['category'] = $catid;
-                break;
-
-            case 'id':
-                if (!$catid = $DB->record_exists('course_categories', array('id' => $categoryid))) {
-                    throw new moodle_exception('categorynotfound');
-                }
-                $course['category'] = $categoryid;
-                break;
-        }
-
-        $course['shortname'] = $shortname;
-        $course['fullname'] = $fullname;
-        $course['idnumber'] = $idnumber;
-        $newcourseid = $manager->create_course_from_template($course, null);
-
-        if ($newcourseid < 0) {
-            throw new moodle_exception("course creation failure : $newcourseid ");
-        }
-
-        return $newcourseid;
     }
 
     /**
