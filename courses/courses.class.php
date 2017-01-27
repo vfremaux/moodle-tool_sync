@@ -896,7 +896,7 @@ class course_sync_manager extends sync_manager {
                         $this->report(get_string('errorcategoryparenterror', 'tool_sync', $e));
                         continue;
                     } else {
-                        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $validate, $syncconfig);
+                        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $syncconfig);
                         $e = new \StdClass;
                         $e->coursename = $bulkcourse['shortname'];
                         $e->shortname = $bulkcourse['shortname'];
@@ -1473,10 +1473,10 @@ class course_sync_manager extends sync_manager {
     /**
      * create a course.
      */
-    protected function fast_create_course_ex($hcategoryid, $course, $headers, $validate, $syncconfig) {
+    protected function fast_create_course_ex($hcategoryid, $course, $headers, $syncconfig) {
         global $CFG, $DB, $USER;
 
-        if (!is_array($course) || !is_array($headers) || !is_array($validate)) {
+        if (!is_array($course) || !is_array($headers)) {
             return -1;
         }
 
@@ -1520,116 +1520,11 @@ class course_sync_manager extends sync_manager {
 
         if (!empty($course['template'])) {
 
-            if (tool_sync_is_course_identifier($course['template'])) {
-                // Template is NOT a real path and thus designates a course shortname.
-                if (!$archive = tool_sync_locate_backup_file($tempcourse->id, 'course')) {
-
-                    // Get course template from publishflow backups if publishflow installed.
-                    if ($DB->get_record('block', array('name' => 'publishflow'))) {
-                        $archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
-                        if (!$archive) {
-                            return -20;
-                        }
-                    } else {
-                        return -21;
-                    }
-                }
-            } else {
-                if (!preg_match('/^\/|[a-zA-Z]\:/', $course['template'])) {
-                    /*
-                     * If relative path we expect finding those files somewhere in the distribution.
-                     * Not in dataroot that may be a fresh installed one).
-                     */
-                    $course['template'] = $CFG->dirroot.'/'.$course['template'];
-                }
-
-                /*
-                 * Template is a real path. Integrate in a draft filearea of current user
-                 * (defaults to admin) and get an archive stored_file for it.
-                 */
-                if (!file_exists($course['template'])) {
-                    return -22;
-                }
-
-                // Now create a draft file from this.
-                $fs = get_file_storage();
-
-                $contextid = \context_user::instance($USER->id)->id;
-
-                $fs->delete_area_files($contextid, 'user', 'draft', 0);
-
-                $filerec = new \StdClass;
-                $filerec->contextid = $contextid;
-                $filerec->component = 'user';
-                $filerec->filearea = 'draft';
-                $filerec->itemid = 0;
-                $filerec->filepath = '/';
-                $filerec->filename = basename($course['template']);
-                $archive = $fs->create_file_from_pathname($filerec, $course['template']);
+            $result = $this->tool_sync_create_course_from_template($course, $syncconfig);
+            if ($result < 0) {
+                return $result;
             }
 
-            $this->report(get_string('creatingcoursefromarchive', 'tool_sync', $archive->get_filename()));
-
-            $uniq = rand(1, 9999);
-
-            $tempdir = $CFG->tempdir . '/backup/' . $uniq;
-            if (!is_dir($tempdir)) {
-                mkdir($tempdir, 0777, true);
-            }
-            // Unzip all content in temp dir.
-
-            // Actually locally copying archive.
-            $contextid = \context_system::instance()->id;
-
-            if ($archive->extract_to_pathname(new \zip_packer(), $tempdir)) {
-
-                // Transaction.
-                $transaction = $DB->start_delegated_transaction();
-
-                // Create new course.
-                $userdoingtherestore = $USER->id; // E.g. 2 == admin.
-                $newcourseid = \restore_dbops::create_new_course('', '', $hcategoryid);
-
-                /*
-                 * Restore backup into course.
-                 * folder needs being a relative path from $CFG->tempdir.'/backup/'.
-                 * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
-                 */
-                $controller = new \restore_controller($uniq, $newcourseid,
-                        \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $userdoingtherestore,
-                        \backup::TARGET_NEW_COURSE );
-                $controller->execute_precheck();
-                if (empty($syncconfig->simulate)) {
-                    $controller->execute_plan();
-                }
-
-                // Commit.
-                $transaction->allow_commit();
-
-                // And import.
-                if ($newcourseid) {
-
-                    // Add all changes from incoming courserec.
-                    $newcourse = $DB->get_record('course', array('id' => $newcourseid));
-                    foreach ((array)$courserec as $field => $value) {
-                        if ($field == 'format' || $field == 'id') {
-                            continue; // Protect sensible identifying fields.
-                        }
-                        $newcourse->$field = $value;
-                    }
-                    if (empty($syncconfig->simulate)) {
-                        try {
-                            $DB->update_record('course', $newcourse);
-                        } catch (Exception $e) {
-                            mtrace('failed updating');
-                        }
-                    }
-                } else {
-                    return -23;
-                }
-            } else {
-                return -24;
-            }
         } else {
             // Create default course.
             if (empty($syncconfig->simulate)) {
@@ -1897,6 +1792,124 @@ class course_sync_manager extends sync_manager {
                 $enrolrec->status = 1;
                 $DB->update_record('enrol', $enrolrec);
             }
+        }
+    }
+
+    public function create_course_from_template($course, $syncconfig) {
+
+        $origincourse = $DB->get_record('course', array('shortname' => $course['template']));
+
+        // Find the most suitable archive file.
+        if (tool_sync_is_course_identifier($course['template'])) {
+            // Template is NOT a real path and thus designates a course shortname.
+            if (!$archive = tool_sync_locate_backup_file($origincourse->id, 'course')) {
+
+                // Get course template from publishflow backups if publishflow installed.
+                if ($DB->get_record('block', array('name' => 'publishflow'))) {
+                    $archive = tool_sync_locate_backup_file($origincourse->id, 'publishflow');
+                    if (!$archive) {
+                        return -20;
+                    }
+                } else {
+                    return -21;
+                }
+            }
+        } else {
+            if (!preg_match('/^\/|[a-zA-Z]\:/', $course['template'])) {
+                /*
+                 * If relative path we expect finding those files somewhere in the distribution.
+                 * Not in dataroot that may be a fresh installed one).
+                 */
+                $course['template'] = $CFG->dirroot.'/'.$course['template'];
+            }
+
+            /*
+             * Template is a real path. Integrate in a draft filearea of current user
+             * (defaults to admin) and get an archive stored_file for it.
+             */
+            if (!file_exists($course['template'])) {
+                return -22;
+            }
+
+            // Now create a draft file from this.
+            $fs = get_file_storage();
+
+            $contextid = \context_user::instance($USER->id)->id;
+
+            $fs->delete_area_files($contextid, 'user', 'draft', 0);
+
+            $filerec = new \StdClass;
+            $filerec->contextid = $contextid;
+            $filerec->component = 'user';
+            $filerec->filearea = 'draft';
+            $filerec->itemid = 0;
+            $filerec->filepath = '/';
+            $filerec->filename = basename($course['template']);
+            $archive = $fs->create_file_from_pathname($filerec, $course['template']);
+        }
+
+        $this->report(get_string('creatingcoursefromarchive', 'tool_sync', $archive->get_filename()));
+
+        $uniq = rand(1, 9999);
+
+        $tempdir = $CFG->tempdir . '/backup/' . $uniq;
+        if (!is_dir($tempdir)) {
+            mkdir($tempdir, 0777, true);
+        }
+        // Unzip all content in temp dir.
+
+        // Actually locally copying archive.
+        $contextid = \context_system::instance()->id;
+
+        if ($archive->extract_to_pathname(new \zip_packer(), $tempdir)) {
+
+            // Transaction.
+            $transaction = $DB->start_delegated_transaction();
+
+            // Create new course.
+            $userdoingtherestore = $USER->id; // E.g. 2 == admin.
+            $newcourseid = \restore_dbops::create_new_course('', '', $hcategoryid);
+
+            /*
+             * Restore backup into course.
+             * folder needs being a relative path from $CFG->tempdir.'/backup/'.
+             * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
+             */
+            $controller = new \restore_controller($uniq, $newcourseid,
+                    \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $userdoingtherestore,
+                    \backup::TARGET_NEW_COURSE );
+            $controller->execute_precheck();
+            if (empty($syncconfig->simulate)) {
+                $controller->execute_plan();
+            }
+
+            // Commit.
+            $transaction->allow_commit();
+
+            // And import.
+            if ($newcourseid) {
+
+                // Add all changes from incoming courserec.
+                $newcourse = $DB->get_record('course', array('id' => $newcourseid));
+                foreach ((array)$origincourse as $field => $value) {
+                    if (($field == 'format') || ($field == 'id') || ($field == 'idnumber')) {
+                        continue; // Protect sensible identifying fields.
+                    }
+                    $newcourse->$field = $value;
+                }
+                if (empty($syncconfig->simulate)) {
+                    try {
+                        $DB->update_record('course', $newcourse);
+                    } catch (Exception $e) {
+                        mtrace('failed updating');
+                    }
+                }
+                return $newcourseid;
+            } else {
+                return -23;
+            }
+        } else {
+            return -24;
         }
     }
 }

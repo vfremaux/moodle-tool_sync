@@ -89,10 +89,11 @@ class tool_sync_external extends external_api {
     }
 
     /**
-     * Get course contents
+     * Allows remotely programming the admin tool sync tool.
      *
-     * @param int $courseid course id
-     * @param array $options These options are not used yet, might be used in later version
+     * @param string $service Service name, such as enrols, courses, users, cohorts...
+     * @param string $confkey configuration key
+     * @param string $confvalue Configuration value
      * @return array
      * @since Moodle 2.2
      */
@@ -137,14 +138,14 @@ class tool_sync_external extends external_api {
 
         $validactions = array(
             'course' => array('check' => SYNC_COURSE_CHECK,
-                'delete' = SYNC_COURSE_DELETE,
+                'delete' => SYNC_COURSE_DELETE,
                 'create' => SYNC_COURSE_CREATE),
             'users' => null,
             'cohorts' => null,
             'enrol' => null
         );
 
-        if (!empty($validactions[$inputs['service']]])) {
+        if (!empty($validactions[$inputs['service']])) {
             if (!in_array($inputs['action'], $validkeys[$inputs['service']])) {
                 throw new invalid_parameter_exception('Service action not in acceptable ranges.');
             }
@@ -199,5 +200,109 @@ class tool_sync_external extends external_api {
      */
     public static function process_returns() {
         return new external_value(PARAM_TEXT, 'CSV report');
+    }
+
+    // Create course from a template ------------------------------------------------.
+
+    public static function deploy_course_parameters() {
+        return new external_function_parameters(
+            array(
+                'categoryidsource' => new external_value(PARAM_TEXT, 'ID source for category, can be id or idnumber'),
+                'categoryid' => new external_value(PARAM_TEXT, 'Category identifier'),
+                'templateidsource' => new external_value(PARAM_TEXT, 'ID source to identifiy template course, can be id, idnumber, or shortname'),
+                'templateid' => new external_value(PARAM_TEXT, 'Template ID'),
+                'shortname' => new external_value(PARAM_TEXT, 'New course shortname'),
+                'fullname' => new external_value(PARAM_TEXT, 'New course fullname'),
+                'idnumber' => new external_value(PARAM_TEXT, 'New course idnumber')
+            )
+        );
+    }
+
+    /**
+     * Get query result data as raw data in a single value.
+     *
+     * @param int $courseid course id
+     * @param array $options These options are not used yet, might be used in later version
+     * @return array
+     * @since Moodle 2.2
+     */
+    public static function deploy_course($categorysourceid, $categoryid, $templatesourceid, $templateid, $shortname, $fullname, $idnumber) {
+
+        // Validate parameters.
+        $params = self::validate_process_parameters(self::process_parameters(),
+                        array(
+                            'categorysourceid' => $categorysourceid,
+                            'categoryid' => $categoryid,
+                            'templatesourceid' => $templatesourceid,
+                            'templateid' => $templateid,
+                            'shortname' => $shortname,
+                            'fullname' => $fullname,
+                            'idnumber' => $idnumber));
+
+        $syncconfig = get_config('tool_sync');
+
+        include_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
+
+        $manager = new \tool_sync\course_sync_manager();
+
+        switch ($templatesourceid) {
+            case 'shortname':
+                $course['template'] = $templateid;
+                if (!$DB->record_exists('course', array('shortname' => $templateid))) {
+                    throw new moodle_exception('templatenotfound');
+                }
+                break;
+            case 'idnumber':
+                $shortname = $DB->get_field('course', 'shortname', array('idnumber' => $templateid));
+                if (!$shortname) {
+                    throw new moodle_exception('templatenotfound');
+                }
+                $course['template'] = $shortname;
+                break;
+            case 'id':
+                $shortname = $DB->get_field('course', 'shortname', array('idnumber' => $templateid));
+                if (!$shortname) {
+                    throw new moodle_exception('templatenotfound');
+                }
+                $course['template'] = $shortname;
+                break;
+        }
+
+        switch ($categorysourceid) {
+            case 'idnumber':
+                $catid = $DB->get_field('course_categories', 'id', array('idnumber' => $categoryid));
+                if (!$catid) {
+                    throw new moodle_exception('categorynotfound');
+                }
+                $course['category'] = $catid;
+                break;
+            case 'id':
+                if (!$catid = $DB->record_exists('course_categories', array('id' => $categoryid))) {
+                    throw new moodle_exception('categorynotfound');
+                }
+                $course['category'] = $categoryid;
+                break;
+        }
+
+        $course['shortname'] = $shortname;
+        $course['fullname'] = $fullname;
+        $course['idnumber'] = $idnumber;
+        $newcourseid = $manager->create_course_from_template($course, null);
+
+        if ($newcourseid < 0) {
+            throw new moodle_exception("course creation failure : $newcourseid ");
+        }
+
+        return $newcourseid;
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description
+     * @since Moodle 2.2
+     */
+    public static function deploy_course_returns() {
+        return new external_value(PARAM_INT, 'Course id');
     }
 }
