@@ -392,7 +392,7 @@ class enrol_sync_manager extends sync_manager {
                                     try {
                                         role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent, $enrolinstance);
                                         $this->report(get_string('unassign', 'tool_sync', $e));
-                                    } catch(Exception $ex) {
+                                    } catch (Exception $ex) {
                                         $this->report(get_string('unassignerror', 'tool_sync', $e));
                                     }
                                 } else {
