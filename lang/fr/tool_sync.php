@@ -119,6 +119,8 @@ $string['enrolemailcourseadmins'] = 'Notifier les admissions aux administrateurs
 $string['enrolemailcourseadmins_desc'] = 'Si activé, envoie un résumé des admissions aux enseignants du cours';
 $string['enrolfile'] = 'Fichier d\'inscriptions';
 $string['enrolfilelocation'] = 'Fichier d\'inscriptions';
+$string['enrolled'] = 'Utiisateur {$a->myuser} inscrit dans le cours {$a->mycourse}';
+$string['enrollednot'] = 'Echec inscription {$a->myuser} dans le cours {$a->mycourse}';
 $string['enrolmanualsync'] = 'Exécution manuelle de la synchronisation d\'inscriptions';
 $string['enrolmgtmanual'] = 'Gestion manuelle des inscriptions';
 $string['enrolsconfig'] = 'Configuration des opérations sur les inscriptions';
@@ -257,6 +259,7 @@ $string['predeletewarning'] = '<b><font color="red">ATTENTION :</font></b> La su
 $string['process'] = 'Effectuer l\'opération';
 $string['processingfile'] = 'Examen du fichier : {$a}';
 $string['processresult'] = 'Résultat d\'exécution';
+$string['processerror'] = 'Erreur d\'exécution. La raison est : {$a}';
 $string['purge'] = 'Purger tous les rapports';
 $string['primaryidentity'] = 'champ d\'identité primaire';
 $string['registeringincohort'] = 'Inscription dans la cohorte {$a}';

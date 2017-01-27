@@ -136,9 +136,17 @@ class cohorts_sync_manager extends sync_manager {
         }
 
         // Make arrays of valid fields for error checking.
-        $required = array('userid' => 1, 'cohortid' => 1);
+        $required = array(
+            'userid' => 1,
+            'cohortid' => 1
+        );
         $optionaldefaults = array();
-        $optional = array('cmd', 'cdescription', 'cidnumber');
+        $optional = array(
+            'cmd',
+            'cname',
+            'cdescription',
+            'cidnumber'
+        );
         $patterns = array();
         $metas = array();
 
@@ -216,7 +224,11 @@ class cohorts_sync_manager extends sync_manager {
                     // Make cohort if cohort info explicit and not existing.
                     $t = time();
                     $cohort = new \StdClass();
-                    $cohort->name = $record['cohortid'];
+                    if (!empty($record['cname'])) {
+                        $cohort->name = $record['cname'];
+                    } else {
+                        $cohort->name = $record['cohortid'];
+                    }
                     $cohort->description = @$record['cdescription'];
                     $cohort->idnumber = @$record['cidnumber'];
                     $cohort->descriptionformat = FORMAT_MOODLE;
