@@ -73,6 +73,7 @@ class sync_manager {
 
     /**
      * Initiates tryback buffer and adds the first headline.
+     * @param array $headlines and array of headers that were in the original file.
      */
     protected function init_tryback($headlines) {
         $this->trybackhead = $headlines;
@@ -81,6 +82,8 @@ class sync_manager {
 
     /**
      * Feeds a single line into the tryback buffer.
+     * @param string $line a control file line being processed.
+     * @return void
      */
     protected function feed_tryback($line) {
         $this->trybackarr[] = $line;
@@ -88,6 +91,7 @@ class sync_manager {
 
     /**
      * Writes the tryback buffer in a file.
+     * @param string $originalfilerec the original file record being processed.
      */
     public function write_tryback($originalfilerec) {
 
@@ -115,16 +119,29 @@ class sync_manager {
         $fs->create_file_from_string($filerec, $buffer);
     }
 
+    /**
+     * Provides a full filled moodle file descriptor of a command file
+     * @param string $configfilelocation
+     * @param string $defaultlocation
+     * @return a file record.
+     */
     protected function get_input_file($configlocation, $defaultlocation) {
+
         if (empty($configlocation)) {
             $filename = $defaultlocation;  // Default location.
             $filepath = '/';  // Default name.
         } else {
-            $parts = pathinfo($configlocation);
-            $filename = $parts['basename'];
-            $filepath = $parts['dirname'];
-            // Ensures starts and ends with slashes.
-            $filepath = preg_replace('#//#', '/', '/'.$filepath.'/');
+            if (preg_match('#(http|ftp)s?://#', $configlocation)) {
+                // This is a remotely stored exposed file on the web. First retreive it.
+                return $this->get_remote_file($configlocation);
+            } else {
+                // This is an existing file in our local tool sync filearea.
+                $parts = pathinfo($configlocation);
+                $filename = $parts['basename'];
+                $filepath = $parts['dirname'];
+                // Ensures starts and ends with slashes.
+                $filepath = preg_replace('#//#', '/', '/'.$filepath.'/');
+            }
         }
 
         $filerec = new \StdClass();
@@ -136,6 +153,94 @@ class sync_manager {
         $filerec->filename = $filename;
 
         return $filerec;
+    }
+
+    /**
+     * Pursuant we can retreive this file content, get it through a CURL call and store it in our
+     * filearea.
+     * @param string $fileremoteurl a remote url to the file. you may postpend " POST" suffix to force firing in POST.
+     * @param boolean $proxybypass
+     */
+    public function get_remote_file($fileremoteurl, $proxybypass = false) {
+        global $CFG;
+
+        $parts = pathinfo($fileremoteurl);
+        $filename = $parts['basename'];
+
+        $postdata = '';
+        if (preg_match('/\\s+POST$/', $fileremoteurl)) {
+            $post = true;
+            $fileremoteurl = preg_replace('/\\s+POST$/', '', $fileremoteurl);
+            list($fileremoteurl, $postdata) = @explode('?', $fileremoteurl);
+        } else {
+            $post = false;
+        }
+
+        $ch = curl_init($fileremoteurl);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, $post);
+        if (!empty($postdata)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+        }
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Moodle Admin Tool Sync');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: text/xml charset=UTF-8"));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+
+        if (!empty($CFG->proxyhost) and !@$proxybypass) {
+            // SOCKS supported in PHP5 only.
+            if (!empty($CFG->proxytype) and ($CFG->proxytype == 'SOCKS5')) {
+                if (defined('CURLPROXY_SOCKS5')) {
+                    curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+                }
+            }
+
+            curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, false);
+
+            if (empty($CFG->proxyport)) {
+                curl_setopt($ch, CURLOPT_PROXY, $CFG->proxyhost);
+            } else {
+                curl_setopt($ch, CURLOPT_PROXY, $CFG->proxyhost.':'.$CFG->proxyport);
+            }
+
+            if (!empty($CFG->proxyuser) and !empty($CFG->proxypassword)) {
+                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $CFG->proxyuser.':'.$CFG->proxypassword);
+                if (defined('CURLOPT_PROXYAUTH')) {
+                    // Any proxy authentication if PHP 5.1.
+                    curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC | CURLAUTH_NTLM);
+                }
+            }
+        }
+
+        if ($rawresponse = curl_exec($ch)) {
+            $info = curl_getinfo($ch);
+            if ($info['http_code'] == 200) {
+                $filerec = new \StdClass;
+                $filerec->contextid = \context_system::instance()->id;
+                $filerec->component = 'tool_sync';
+                $filerec->filearea = 'syncfiles';
+                $filerec->itemid = 0;
+                $filerec->filepath = '/uploads/';
+                $filerec->filename = $filename;
+
+                $fs = get_file_storage();
+
+                // Clear previous version if exists.
+                if ($file = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                     $filerec->filepath, $filerec->filename)) {
+                     $file->delete();
+                }
+
+                $fs->create_file_from_string($filerec, $rawresponse);
+                return $filerec;
+            } else {
+                throw new \Exception('Bad remote file URL');
+            }
+        } else {
+            throw new \Exception('Innaccessible remote server or location');
+        }
+
     }
 
     /**

@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot.'/group/lib.php');
 
@@ -45,17 +45,31 @@ class users_sync_manager extends sync_manager {
      */
     public function form_elements(&$frm) {
 
-        $frm->addElement('text', 'tool_sync/users_filelocation', get_string('usersfile', 'tool_sync'));
+        $key = 'tool_sync/users_filelocation';
+        $label = get_string('usersfile', 'tool_sync');
+        $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/users_filelocation', PARAM_TEXT);
 
         $frm->addElement('static', 'usersst1', '<hr>');
 
-        $frm->addElement('checkbox', 'tool_sync/sendpasswordtousers', get_string('sendpasswordtousers', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/users_createpasswords', get_string('createpasswords', 'tool_sync'));
+        $frm->addHelpButton('tool_sync/users_createpasswords', 'createpasswords', 'tool_sync');
+
+        $frm->addElement('checkbox', 'tool_sync/users_sendpasswordtousers', get_string('sendpasswordtousers', 'tool_sync'));
+        $frm->addHelpButton('tool_sync/users_sendpasswordtousers', 'sendpasswordtousers', 'tool_sync');
+
+        $frm->addElement('checkbox', 'tool_sync/users_allowrename', get_string('allowrename', 'tool_sync'));
+        $frm->addHelpButton('tool_sync/users_allowrename', 'allowrename', 'tool_sync');
+
+        $frm->addElement('checkbox', 'tool_sync/users_protectemails', get_string('protectemails', 'tool_sync'));
+        $frm->addHelpButton('tool_sync/users_protectemails', 'protectemails', 'tool_sync');
 
         $identifieroptions = $this->get_userfields();
-        $frm->addElement('select', 'tool_sync/primaryidentity', get_string('primaryidentity', 'tool_sync'), $identifieroptions);
-        $frm->setDefault('tool_sync/primaryidentity', 'idnumber');
-        $frm->setType('tool_sync/primaryidentity', PARAM_TEXT);
+        $key = 'tool_sync/users_primaryidentity';
+        $label = get_string('primaryidentity', 'tool_sync');
+        $frm->addElement('select', $key, $label, $identifieroptions);
+        $frm->setDefault('tool_sync/users_primaryidentity', 'idnumber');
+        $frm->setType('tool_sync/users_primaryidentity', PARAM_TEXT);
 
         $cronurl = new \moodle_url('/admin/tool/sync/users/execcron.php');
         $params = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
@@ -81,11 +95,11 @@ class users_sync_manager extends sync_manager {
         $systemcontext = \context_system::instance();
 
         // Internal process controls.
-        $createpassword = false;
+        $createpassword = @$syncconfig->users_createpasswords;
         $updateaccounts = true;
-        $allowrenames   = false;
-        $keepexistingemailsafe = true;
-        $notifypasswordstousers = @$syncconfig->sendpasswordtousers;
+        $allowrenames   = @$syncconfig->users_allowrename;
+        $keepexistingemailsafe = (isset($syncconfig->users_protectemails)) ? $syncconfig->users_protectemails : true;
+        $notifypasswordstousers = @$syncconfig->users_sendpasswordtousers;
 
         if (!$adminuser = get_admin()) {
             return;
@@ -173,6 +187,8 @@ class users_sync_manager extends sync_manager {
                 'end1' => 1,
                 'wwwroot1' => 1, // Allows MNET propagation to remote node.
                 'password' => $createpassword,
+                'suspended' => 1,
+                'deleted' => 1,
                 'oldusername' => $allowrenames);
 
         $patterns = array('course', // Patternized items are iterative items with indexing integer appended.
@@ -283,6 +299,18 @@ class users_sync_manager extends sync_manager {
                         $user->{$name} = $value;
                     }
                 }
+
+                if (isset($user->deleted)) {
+                    $userid = @$syncconfig->users_primaryidentity;
+                    if (empty($userid)) {
+                        $userid = 'username';
+                    }
+                    if ($olduser = $DB->get_record('user', array($syncconfig->users_primaryidentity => $user->$userid))) {
+                        delete_user($olduser);
+                        continue;
+                    }
+                }
+
                 if (isset($user->country)) {
                     $user->country = strtoupper($user->country);
                 }
@@ -352,13 +380,13 @@ class users_sync_manager extends sync_manager {
                 }
 
                 // Set some default.
-                if (empty($syncconfig->primaryidentity)) {
-                    if (!isset($CFG->primaryidentity)) {
-                        set_config('primaryidentity', 'idnumber', 'tool_sync');
-                        $syncconfig->primaryidentity = 'idnumber';
+                if (empty($syncconfig->users_primaryidentity)) {
+                    if (!isset($CFG->users_primaryidentity)) {
+                        set_config('users_primaryidentity', 'idnumber', 'tool_sync');
+                        $syncconfig->users_primaryidentity = 'idnumber';
                     } else {
-                        set_config('primaryidentity', $CFG->primaryidentity, 'tool_sync');
-                        $syncconfig->primaryidentity = $CFG->primaryidentity;
+                        set_config('users_primaryidentity', $CFG->primaryidentity, 'tool_sync');
+                        $syncconfig->users_primaryidentity = $CFG->primaryidentity;
                     }
                 }
 
@@ -366,9 +394,9 @@ class users_sync_manager extends sync_manager {
                     $user->mnethostid = $CFG->mnet_localhost_id;
                 }
 
-                if (($syncconfig->primaryidentity == 'idnumber') && !empty($idnumber)) {
+                if (($syncconfig->users_primaryidentity == 'idnumber') && !empty($idnumber)) {
                     $olduser = $DB->get_record('user', array('idnumber' => $idnumber, 'mnethostid' => $user->mnethostid));
-                } else if (($syncconfig->primaryidentity == 'email') && !empty($user->email)) {
+                } else if (($syncconfig->users_primaryidentity == 'email') && !empty($user->email)) {
                     $olduser = $DB->get_record('user', array('email' => $user->email, 'mnethostid' => $user->mnethostid));
                 } else {
                     $olduser = $DB->get_record('user', array('username' => $username, 'mnethostid' => $user->mnethostid));
@@ -387,7 +415,7 @@ class users_sync_manager extends sync_manager {
                         }
                         try {
                             // This triggers event as required.
-                            if (!$syncconfig->simulate) {
+                            if (empty($syncconfig->simulate)) {
                                 user_update_user($user, false);
                                 $message = "$user->firstname $user->lastname as [$user->username] ($idnumber)";
                                 $reportline = get_string('useraccountupdated', 'tool_sync', $message);
@@ -409,7 +437,7 @@ class users_sync_manager extends sync_manager {
                         }
 
                         // Save custom profile fields data from csv file.
-                        if (!$syncconfig->simulate) {
+                        if (empty($syncconfig->simulate)) {
                             profile_save_data($user);
                         }
                     } else {
@@ -433,8 +461,8 @@ class users_sync_manager extends sync_manager {
                     }
 
                     try {
-                        // This will also trigger the event.
-                        if (!$syncconfig->simulate) {
+                        if (empty($syncconfig->simulate)) {
+                            // This will also trigger the event.
                             $user->id = user_create_user($user, false);
                             $this->report(get_string('useraccountadded', 'tool_sync', "$user->id , $user->username "));
                             $usersnew++;
@@ -474,7 +502,7 @@ class users_sync_manager extends sync_manager {
                 }
 
                 // Post create check password handling. We need ID of the user !
-                if ($tobegenerated && !$syncconfig->simulate) {
+                if ($tobegenerated && empty($syncconfig->simulate)) {
                     set_user_preference('create_password', 1, $user);
                 }
 
@@ -489,7 +517,7 @@ class users_sync_manager extends sync_manager {
                         $cohort->contextid = $systemcontext->id;
                         $cohort->timecreated = $t;
                         $cohort->timemodified = $t;
-                        if (!$syncconfig->simulate) {
+                        if (empty($syncconfig->simulate)) {
                             $cohort->id = $DB->insert_record('cohort', $cohort);
                         } else {
                             $this->report('SIMULATION : '.get_string('creatingcohort', 'tool_sync', $cohort->name));
@@ -503,7 +531,7 @@ class users_sync_manager extends sync_manager {
                         $cohortmembership->userid = $user->id;
                         $cohortmembership->cohortid = ''.@$cohort->id;
                         $cohortmembership->timeadded = $t;
-                        if (!$syncconfig->simulate) {
+                        if (empty($syncconfig->simulate)) {
                             $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
                         } else {
                             $this->report('SIMULATION : '.get_string('registeringincohort', 'tool_sync', $cohort->name));
@@ -550,7 +578,7 @@ class users_sync_manager extends sync_manager {
                                     $e->mycourse = $crec->idnumber; // Course identifier.
 
                                     try {
-                                        if (!$syncconfig->simulate) {
+                                        if (empty($syncconfig->simulate)) {
                                             $enrolplugin->enrol_user($enrol, $user->id, $role->id, time(), 0, ENROL_USER_ACTIVE);
                                             $this->report(get_string('enrolled', 'tool_sync', $e));
                                         } else {
@@ -565,7 +593,7 @@ class users_sync_manager extends sync_manager {
                                         assert(true);
                                         // Notify Can not assign role in course'); // TODO: localize.
                                     }
-                                    if (!$syncconfig->simulate) {
+                                    if (empty($syncconfig->simulate)) {
                                         $ret = role_assign($role->id, $user->id, $coursecontext->id);
                                         $e = new \StdClass();
                                         $e->contextid = $coursecontext->id;
@@ -581,17 +609,23 @@ class users_sync_manager extends sync_manager {
                             } else {
                                 if (!empty($c->enrol)) {
                                     $role = $DB->get_record('role', array('shortname' => 'student'));
-                                    if (!$syncconfig->simulate) {
+                                    $e = new \StdClass();
+                                    $e->mycourse = $c->idnumber;
+                                    $e->myuser = $user->username;
+                                    if (empty($syncconfig->simulate)) {
                                         $enrolplugin->enrol_user($enrol, $user->id, $role->id, time(), 0, ENROL_USER_ACTIVE);
-                                        $this->report(get_string('enrolledincourse', 'tool_sync', $c->idnumber));
+                                        $this->report(get_string('enrolled', 'tool_sync', $e));
                                     } else {
-                                        $this->report('SIMULATION : '.get_string('enrolledincourse', 'tool_sync', $c->idnumber));
+                                        $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
                                     }
                                 }
                             }
                             if (!@$ret) {
                                 // OK.
-                                $this->report(get_string('enrolledincoursenot', 'tool_sync', $c->idnumber));
+                                $e = new \StdClass();
+                                $e->mycourse = $c->idnumber;
+                                $e->myuser = $user->username;
+                                $this->report(get_string('enrollednot', 'tool_sync', $e));
                             }
 
                             // We only can manage groups for successful enrollments.
@@ -603,7 +637,7 @@ class users_sync_manager extends sync_manager {
                                         $groupsettings = new \StdClass();
                                         $groupsettings->name = $c->group;
                                         $groupsettings->courseid = $crec->id;
-                                        if (!$syncconfig->simulate) {
+                                        if (empty($syncconfig->simulate)) {
                                             if (!$gid = groups_create_group($groupsettings)) {
                                                 $this->report(get_string('groupnotaddederror', 'tool_sync', $c->group));
                                             }
@@ -614,7 +648,7 @@ class users_sync_manager extends sync_manager {
 
                                     if ($gid) {
                                         if (count(get_user_roles($coursecontext, $user->id))) {
-                                            if (!$syncconfig->simulate) {
+                                            if (empty($syncconfig->simulate)) {
                                                 if (groups_add_member($gid, $user->id)) {
                                                     $this->report(get_string('addedtogroup', '', $c->group));
                                                 } else {
@@ -635,7 +669,7 @@ class users_sync_manager extends sync_manager {
                          * if we can propagate user to designates wwwroot let's do it
                          * only if the VMoodle block is installed.
                          */
-                        if (!$syncconfig->simulate) {
+                        if (empty($syncconfig->simulate)) {
                             if (!empty($c->wwwroot) && $DB->get_record('block', array('name' => 'vmoodle'))) {
                                 if (!file_exists($CFG->dirroot.'/blocks/vmoodle/rpclib.php')) {
                                     echo $OUTPUT->notification('This feature works with VMoodle Virtual Moodle Implementation');

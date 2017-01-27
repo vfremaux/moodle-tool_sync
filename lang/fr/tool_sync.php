@@ -25,6 +25,7 @@
 $string['automation'] = 'Alimentations et automatisation';
 $string['addedtogroup'] = 'L\'utilisateur {$a->myuser} a été ajouté au groupe {$a->group}';
 $string['addedtogroupnot'] = 'L\'utilisateur {$a->myuser} n\'a pas été ajouté au groupe {$a->group}';
+$string['allowrename'] = 'Permettre le changement d\'identifiant';
 $string['alreadyassigned'] = 'L\'utilisateur {$a->myuser} est déjà assigné au role {$a->myrole} dans le cours {$a->mycourse}';
 $string['archivecontrolfiles'] = 'Si activé, archive les fichiers de controle après exécution';
 $string['assign'] = 'Role "{$a->myrole}" assigné à {$a->myuser} dans le cours {$a->mycourse}';
@@ -78,6 +79,7 @@ $string['coursescronconfig'] = 'Activer la synchronisation par cron des cours';
 $string['coursesmgtfiles'] = 'Configuration des opérations sur les cours';
 $string['coursesync'] = 'Synchronisation des cours';
 $string['courseupdated'] = 'Cours {$a->shortname} mis à jour.';
+$string['createpasswords'] = 'Créer les mots de passe';
 $string['createtextreport'] = 'Souhaitez vous créer un rapport en format texte ?';
 $string['creatingcohort'] = 'La cohorte {$a} sera créée.';
 $string['creatingcoursefromarchive'] = 'Création du cours à partir de {$a}';
@@ -119,6 +121,8 @@ $string['enrolemailcourseadmins'] = 'Notifier les admissions aux administrateurs
 $string['enrolemailcourseadmins_desc'] = 'Si activé, envoie un résumé des admissions aux enseignants du cours';
 $string['enrolfile'] = 'Fichier d\'inscriptions';
 $string['enrolfilelocation'] = 'Fichier d\'inscriptions';
+$string['enrolled'] = 'Utiisateur {$a->myuser} inscrit dans le cours {$a->mycourse}';
+$string['enrollednot'] = 'Echec inscription {$a->myuser} dans le cours {$a->mycourse}';
 $string['enrolmanualsync'] = 'Exécution manuelle de la synchronisation d\'inscriptions';
 $string['enrolmgtmanual'] = 'Gestion manuelle des inscriptions';
 $string['enrolsconfig'] = 'Configuration des opérations sur les inscriptions';
@@ -257,6 +261,8 @@ $string['predeletewarning'] = '<b><font color="red">ATTENTION :</font></b> La su
 $string['process'] = 'Effectuer l\'opération';
 $string['processingfile'] = 'Examen du fichier : {$a}';
 $string['processresult'] = 'Résultat d\'exécution';
+$string['processerror'] = 'Erreur d\'exécution. La raison est : {$a}';
+$string['protectemails'] = 'Protéger les adresse de courriel';
 $string['purge'] = 'Purger tous les rapports';
 $string['primaryidentity'] = 'champ d\'identité primaire';
 $string['registeringincohort'] = 'Inscription dans la cohorte {$a}';
@@ -519,3 +525,11 @@ de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation.
 $string['passwordnotification_tpl'] = '
 Un mot de passe vous a été attribué : {$a}
 ';
+
+$string['allowrename_help'] = 'Si actif, les identifiants de connexion peuvent être changés. Une colonne "oldusername" doit être rajoutée pour fournir la correspondance avec l\'ancien identifiant.';
+
+$string['protectemails_help'] = 'Si actif, les adresses de courriel exprimées des utilisateurs resteront inchangées. Les adresses vides seront complétées par les données du fichier.';
+
+$string['createpasswords_help'] = 'Si actif et que la colonne "password" n\'est pas fournie, les mots de passe seront générés et envoyés par Moodle.';
+
+$string['sendpasswordtousers_help'] = 'Si actif et que les mots de passes sont fournis par le fichier, ils seront notifiés aux utilisateur sur l\'adresse de courriel fournie.';

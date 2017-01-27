@@ -56,13 +56,13 @@ $PAGE->set_heading($SITE->fullname);
 
 $singlecommand = false;
 if ($action == SYNC_COURSE_DELETE) {
-    $form = new InputfileLoadform($url, array('localfile' => $syncconfig->course_filedeletelocation));
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->course_filedeletelocation));
     $singlecommand = true;
 } else if ($action == SYNC_COURSE_CHECK) {
-    $form = new InputfileLoadform($url, array('localfile' => $syncconfig->course_fileexistlocation));
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->course_fileexistlocation));
     $singlecommand = true;
 } else if ($action == SYNC_COURSE_CREATE) {
-    $form = new InputfileLoadform($url, array('localfile' => $syncconfig->course_fileuploadlocation));
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->course_fileuploadlocation));
     $singlecommand = true;
 } else {
     $form = new InputfileLoadform($url, array('runlocalfiles' => true));
@@ -160,7 +160,13 @@ if ($canprocess) {
 
     echo '</fieldset>';
     echo '<pre>';
-    $coursesmanager->cron($syncconfig);
+    try {
+        $coursesmanager->cron($syncconfig);
+    } catch (Exception $ex) {
+        echo $OUTPUT->notification(get_string('processerror', 'tool_sync', $ex->getMessage()), 'notifyproblem');
+        $returnurl = new moodle_url('/admin/tool/sync/index.php');
+        echo $OUTPUT->continue_button($returnurl);
+    }
     echo '</pre>';
 }
 

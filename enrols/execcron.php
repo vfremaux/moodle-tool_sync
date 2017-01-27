@@ -25,7 +25,7 @@
 require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/enrollib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 // Security.
@@ -44,14 +44,14 @@ raise_memory_limit('512M');
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
 
-$url = new moodle_url('/admin/tool/sync/enrol/execcron.php');
+$url = new moodle_url('/admin/tool/sync/enrols/execcron.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('enrolmgtmanual', 'tool_sync'));
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
-$form = new InputfileLoadform($url, array('localfile' => $syncconfig->enrol_filelocation));
+$form = new InputfileLoadform($url, array('localfile' => @$syncconfig->enrols_filelocation));
 
 $canprocess = false;
 
@@ -66,7 +66,7 @@ if ($data = $form->get_data()) {
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
         $enrolsmanager = new \tool_sync\enrol_sync_manager();
-        $processedfile = $syncconfig->enrol_filelocation;
+        $processedfile = $syncconfig->enrols_filelocation;
         $canprocess = true;
     } else {
         // Use the just uploaded file.
@@ -95,7 +95,13 @@ if ($canprocess) {
     echo "<center>$taskrunmsg</center>";
 
     echo '<pre>';
-    $enrolsmanager->cron($syncconfig);
+    try {
+        $enrolsmanager->cron($syncconfig);
+    } catch (Exception $ex) {
+        echo $OUTPUT->notification(get_string('processerror', 'tool_sync', $ex->getMessage()), 'notifyproblem');
+        $returnurl = new moodle_url('/admin/tool/sync/index.php');
+        echo $OUTPUT->continue_button($returnurl);
+    }
     echo '</pre>';
 
     echo '</fieldset>';
