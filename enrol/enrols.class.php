@@ -102,7 +102,6 @@ class enrol_sync_manager extends sync_manager {
                 'cid' => 1,
                 'uid' => 1);
         $optional = array(
-                'hidden' => 1,
                 'starttime' => 1,
                 'endtime' => 1,
                 'cmd' => 1,
@@ -288,21 +287,22 @@ class enrol_sync_manager extends sync_manager {
                         $enrolinstance = 0;
 
                         if (empty($syncconfig->simulate)) {
-                            if (!role_unassign($role->id, $user->id, $context->id, $enrolcomponent,
-                                               $enrolinstance, time())) {
-                                $this->report(get_string('errorunassign', 'tool_sync', $e));
-                            } else {
+                            try {
+                                role_unassign($role->id, $user->id, $context->id, $enrolcomponent, $enrolinstance, time());
                                 $this->report(get_string('unassign', 'tool_sync', $e));
+                            } catch (Exception $ex) {
+                                $this->report(get_string('errorunassign', 'tool_sync', $e));
                             }
                         } else {
                             $this->report('SIMULATION : '.get_string('unassign', 'tool_sync', $e));
                         }
                     } else {
                         if (empty($syncconfig->simulate)) {
-                            if (!role_unassign(null, $user->id, $context->id, $enrolcomponent, $enrolinstance)) {
-                                $this->report(get_string('errorunassign', 'tool_sync', $e));
-                            } else {
+                            try {
+                                role_unassign(null, $user->id, $context->id, $enrolcomponent, $enrolinstance);
                                 $this->report(get_string('unassignall', 'tool_sync', $e));
+                            } catch (Exception $ex) {
+                                $this->report(get_string('errorunassign', 'tool_sync', $e));
                             }
                         } else {
                             $this->report('SIMULATION : '.get_string('unassignall', 'tool_sync', $e));
@@ -386,11 +386,11 @@ class enrol_sync_manager extends sync_manager {
                                 $enrolcomponent = '';
                                 $enrolinstance = 0;
                                 if (empty($syncconfig->simulate)) {
-                                    if (!role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent,
-                                                       $enrolinstance)) {
-                                        $this->report(get_string('unassignerror', 'tool_sync', $e));
-                                    } else {
+                                    try {
+                                        role_unassign($r->roleid, $user->id, $context->id, $enrolcomponent, $enrolinstance);
                                         $this->report(get_string('unassign', 'tool_sync', $e));
+                                    } catch(Exception $ex) {
+                                        $this->report(get_string('unassignerror', 'tool_sync', $e));
                                     }
                                 } else {
                                     $this->report('SIMULATION : '.get_string('unassign', 'tool_sync', $e));

@@ -82,7 +82,7 @@ $areafiles = $fs->get_area_files($systemcontext->id, $component, $filearea, $ite
 if (!empty($areafiles)) {
     echo '<ul>';
     foreach ($areafiles as $f) {
-        if (preg_match('/^'.$syncconfig->userpictures_fileprefix.'.*\.zip/', $f->get_filename())) {
+        if (preg_match('/^'.@$syncconfig->userpictures_fileprefix.'.*\.zip/', $f->get_filename())) {
             echo '<li>'.$f->get_filename().'</li>';
         }
     }

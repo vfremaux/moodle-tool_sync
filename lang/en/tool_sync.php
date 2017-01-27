@@ -121,6 +121,7 @@ $string['enrolemailcourseadmins_desc'] = 'If enabled, sends a notification (enro
 $string['enrolfile'] = 'Enrol command file';
 $string['enrolfilelocation'] = 'Enrol file location';
 $string['enrolled'] = 'User {$a->myuser} enrolled in course {$a->mycourse}';
+$string['enrollednot'] = 'User enrol {$a->myuser} failure in course {$a->mycourse}';
 $string['enrolmanualsync'] = 'Manual execution of enrollment syncronisation';
 $string['enrolmgtmanual'] = 'Manual execution of the enrollment command file';
 $string['enrolname'] = 'Courses and Users Synchronization Manager ';
@@ -264,6 +265,7 @@ $string['predeletewarning'] = '<b><font color="red">WARNING:</font></b> Bulk Del
 $string['process'] = 'Process';
 $string['processingfile'] = 'Processing...';
 $string['processresult'] = 'Process result';
+$string['processerror'] = 'Process error. the reason is: {$a}';
 $string['purge'] = 'Prune all reports';
 $string['primaryidentity'] = 'Primary identity field';
 $string['reinitialisation'] = 'Reset courses';
