@@ -52,7 +52,7 @@ $PAGE->set_url($url);
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->fullname);
 
-$form = new InputfileLoadform($url, array('localfile' => $syncconfig->users_filelocation));
+$form = new InputfileLoadform($url, array('localfile' => @$syncconfig->users_filelocation));
 
 $canprocess = false;
 
@@ -97,7 +97,13 @@ if ($canprocess) {
     echo "<center>$taskrunmsg</center>";
 
     echo '<pre>';
-    $usersmanager->cron($syncconfig);
+    try {
+        $usersmanager->cron($syncconfig);
+    } catch (Exception $ex) {
+        echo $OUTPUT->notification(get_string('processerror', 'tool_sync', $ex->getMessage()), 'notifyproblem');
+        $returnurl = new moodle_url('/admin/tool/sync/index.php');
+        echo $OUTPUT->continue_button($returnurl);
+    }
     echo '</pre>';
 
     echo '</fieldset>';
