@@ -73,6 +73,7 @@ class sync_manager {
 
     /**
      * Initiates tryback buffer and adds the first headline.
+     * @param array $headlines and array of headers that were in the original file.
      */
     protected function init_tryback($headlines) {
         $this->trybackhead = $headlines;
@@ -81,6 +82,8 @@ class sync_manager {
 
     /**
      * Feeds a single line into the tryback buffer.
+     * @param string $line a control file line being processed.
+     * @return void
      */
     protected function feed_tryback($line) {
         $this->trybackarr[] = $line;
@@ -88,6 +91,7 @@ class sync_manager {
 
     /**
      * Writes the tryback buffer in a file.
+     * @param string $originalfilerec the original file record being processed.
      */
     public function write_tryback($originalfilerec) {
 
@@ -115,6 +119,12 @@ class sync_manager {
         $fs->create_file_from_string($filerec, $buffer);
     }
 
+    /**
+     * Provides a full filled moodle file descriptor of a command file
+     * @param string $configfilelocation
+     * @param string $defaultlocation
+     * @return a file record.
+     */
     protected function get_input_file($configlocation, $defaultlocation) {
 
         if (empty($configlocation)) {
@@ -149,6 +159,7 @@ class sync_manager {
      * Pursuant we can retreive this file content, get it through a CURL call and store it in our 
      * filearea.
      * @param string $fileremoteurl a remote url to the file. you may postpend " POST" suffix to force firing in POST.
+     * @param boolean $proxybypass
      */
     function get_remote_file($fileremoteurl, $proxybypass = false) {
         global $CFG;
