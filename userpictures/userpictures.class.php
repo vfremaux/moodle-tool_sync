@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/lib.php');
 require_once($CFG->libdir.'/gdlib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 
 define('PIX_FILE_UPDATED', 0);
 define('PIX_FILE_ERROR', 1);

@@ -7,4 +7,11 @@
     <version>2.7.0</version>
     <licenseversion>2.7.0</licenseversion>
   </library>
+  <library>
+    <location>tests</location>
+    <name>Tests scripts</name>
+    <license>GPL</license>
+    <version>2.7.0</version>
+    <licenseversion>2.7.0</licenseversion>
+  </library>
 </libraries>

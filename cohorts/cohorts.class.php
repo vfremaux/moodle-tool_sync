@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 
 class cohorts_sync_manager extends sync_manager {
 
@@ -69,6 +69,9 @@ class cohorts_sync_manager extends sync_manager {
 
     }
 
+    /**
+     * Provides the acceptable user identifiers menu
+     */
     public function get_userfields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
@@ -76,6 +79,9 @@ class cohorts_sync_manager extends sync_manager {
                      'email' => 'email');
     }
 
+    /**
+     * Provides the acceptable cohorts identifiers menu
+     */
     public function get_cohortfields() {
         return array('id' => 'id',
                      'idnumber' => 'idnumber',
@@ -90,10 +96,8 @@ class cohorts_sync_manager extends sync_manager {
 
         $systemcontext = \context_system::instance();
 
-        $config = get_config('tool_sync');
-
         // Internal process controls.
-        $autocreatecohorts = 0 + @$config->cohorts_autocreate;
+        $autocreatecohorts = 0 + @$syncconfig->cohorts_autocreate;
 
         if (!get_admin()) {
             return;
@@ -115,8 +119,8 @@ class cohorts_sync_manager extends sync_manager {
             $csvdelimiter = '\\' . $syncconfig->csvseparator;
             $csvdelimiter2 = $syncconfig->csvseparator;
 
-            if (isset($CFG->CSV_ENCODE)) {
-                $csvencode = '/\&\#' . $CFG->CSV_ENCODE . '/';
+            if (isset($syncconfig->encoding)) {
+                $csvencode = '/\&\#' . $syncconfig->encoding . '/';
             }
         } else {
             $csvdelimiter = "\;";
@@ -136,9 +140,17 @@ class cohorts_sync_manager extends sync_manager {
         }
 
         // Make arrays of valid fields for error checking.
-        $required = array('userid' => 1, 'cohortid' => 1);
+        $required = array(
+            'userid' => 1,
+            'cohortid' => 1
+        );
         $optionaldefaults = array();
-        $optional = array('cmd', 'cdescription', 'cidnumber');
+        $optional = array(
+            'cmd',
+            'cname',
+            'cdescription',
+            'cidnumber'
+        );
         $patterns = array();
         $metas = array();
 
@@ -182,12 +194,11 @@ class cohorts_sync_manager extends sync_manager {
             }
 
             // Find assignable items.
-            $userfields = $this->get_userfields();
             if (empty($syncconfig->cohorts_useridentifier)) {
-                $syncconfig->cohorts_useridentifier = 0;
+                $syncconfig->cohorts_useridentifier = 'username';
             }
-            $uid = $userfields[$syncconfig->cohorts_useridentifier];
-            if (!$user = $DB->get_record('user', array( $uid => $record['userid'] ))) {
+            $uid = $syncconfig->cohorts_useridentifier;
+            if (!$user = $DB->get_record('user', array($uid => $record['userid']))) {
                 // TODO track in log, push in runback file.
                 $e = new \StdClass();
                 $e->uid = $uid;
@@ -197,11 +208,10 @@ class cohorts_sync_manager extends sync_manager {
                 continue;
             }
 
-            $cohortfields = $this->get_cohortfields();
             if (empty($syncconfig->cohorts_cohortidentifier)) {
-                $syncconfig->cohorts_cohortidentifier = 0;
+                $syncconfig->cohorts_cohortidentifier = 'idnumber';
             }
-            $cid = $cohortfields[$syncconfig->cohorts_cohortidentifier];
+            $cid = $syncconfig->cohorts_cohortidentifier;
             if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))) {
                 if (!$autocreatecohorts) {
                     if (($syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohort'])) {
@@ -216,7 +226,11 @@ class cohorts_sync_manager extends sync_manager {
                     // Make cohort if cohort info explicit and not existing.
                     $t = time();
                     $cohort = new \StdClass();
-                    $cohort->name = $record['cohortid'];
+                    if (!empty($record['cname'])) {
+                        $cohort->name = $record['cname'];
+                    } else {
+                        $cohort->name = $record['cohortid'];
+                    }
                     $cohort->description = @$record['cdescription'];
                     $cohort->idnumber = @$record['cidnumber'];
                     $cohort->descriptionformat = FORMAT_MOODLE;

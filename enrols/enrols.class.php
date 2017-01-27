@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/group/lib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 
 /**
  * The Enrol Plugin Manager manages role assignations and enrollements from a CSV input file.
@@ -37,17 +37,22 @@ class enrol_sync_manager extends sync_manager {
 
     public function form_elements(&$frm) {
 
-        $frm->addElement('text', 'tool_sync/enrol_filelocation', get_string('enrolfilelocation', 'tool_sync'));
-        $frm->setType('tool_sync/enrol_filelocation', PARAM_TEXT);
+        $key = 'tool_sync/enrols_filelocation';
+        $label = get_string('enrolfilelocation', 'tool_sync');
+        $frm->addElement('text', $key, $label);
+        $frm->setType('tool_sync/enrols_filelocation', PARAM_TEXT);
 
+        $key = 'tool_sync/enrols_courseidentifier';
         $label = get_string('enrolcourseidentifier', 'tool_sync');
-        $frm->addElement('select', 'tool_sync/enrol_courseidentifier', $label, $this->get_coursefields());
+        $frm->addElement('select', $key, $label, $this->get_coursefields());
 
+        $key = 'tool_sync/enrols_useridentifier';
         $label = get_string('enroluseridentifier', 'tool_sync');
-        $frm->addElement('select', 'tool_sync/enrol_useridentifier', $label, $this->get_userfields());
+        $frm->addElement('select', $key, $label, $this->get_userfields());
 
+        $key = 'tool_sync/enrols_mailadmins';
         $label = get_string('enrolemailcourseadmins', 'tool_sync');
-        $frm->addElement('advcheckbox', 'tool_sync/enrol_mailadmins', $label, '', array('group' => 1), array(0, 1));
+        $frm->addElement('advcheckbox', $key, $label, '', array('group' => 1), array(0, 1));
 
         $frm->addElement('static', 'enrolsst1', '<hr>');
 
@@ -87,7 +92,7 @@ class enrol_sync_manager extends sync_manager {
         }
 
         if (empty($this->manualfilerec)) {
-            $filerec = $this->get_input_file(@$syncconfig->enrol_filelocation, 'enrols.csv');
+            $filerec = $this->get_input_file(@$syncconfig->enrols_filelocation, 'enrols.csv');
         } else {
             $filerec = $this->manualfilerec;
         }
@@ -102,7 +107,6 @@ class enrol_sync_manager extends sync_manager {
                 'cid' => 1,
                 'uid' => 1);
         $optional = array(
-                'hidden' => 1,
                 'starttime' => 1,
                 'endtime' => 1,
                 'cmd' => 1,
@@ -172,7 +176,7 @@ class enrol_sync_manager extends sync_manager {
             }
 
             if (!array_key_exists('cmd', $record)) {
-                $record['cmd'] = (empty($syncconfig->enrol_defaultcmd)) ? 'add' : $syncconfig->enrol_defaultcmd;
+                $record['cmd'] = (empty($syncconfig->enrols_defaultcmd)) ? 'add' : $syncconfig->enrols_defaultcmd;
             }
 
             if (!array_key_exists('enrol', $record)) {
@@ -200,11 +204,9 @@ class enrol_sync_manager extends sync_manager {
             $e->mycmd = $record['cmd'];
             $e->myrole = $record['rolename'];
 
-            $cidentifieroptions = array('idnumber', 'shortname', 'id');
-            $cidentifiername = $cidentifieroptions[0 + @$syncconfig->enrol_courseidentifier];
+            $cidentifiername = @$syncconfig->enrols_courseidentifier;
 
-            $uidentifieroptions = array('idnumber', 'username', 'email', 'id');
-            $uidentifiername = $uidentifieroptions[0 + @$syncconfig->enrol_useridentifier];
+            $uidentifiername = @$syncconfig->enrols_useridentifier;
 
             $e->courseby = $cidentifiername;
             $e->myuser = $record['uid']; // User identifier.

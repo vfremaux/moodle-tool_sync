@@ -27,7 +27,8 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
-require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
 
 class tool_plugin_sync {
