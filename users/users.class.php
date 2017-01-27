@@ -581,17 +581,23 @@ class users_sync_manager extends sync_manager {
                             } else {
                                 if (!empty($c->enrol)) {
                                     $role = $DB->get_record('role', array('shortname' => 'student'));
+                                    $e = new \StdClass();
+                                    $e->mycourse = $c->idnumber;
+                                    $e->myuser = $user->username;
                                     if (!$syncconfig->simulate) {
                                         $enrolplugin->enrol_user($enrol, $user->id, $role->id, time(), 0, ENROL_USER_ACTIVE);
-                                        $this->report(get_string('enrolledincourse', 'tool_sync', $c->idnumber));
+                                        $this->report(get_string('enrolled', 'tool_sync', $e));
                                     } else {
-                                        $this->report('SIMULATION : '.get_string('enrolledincourse', 'tool_sync', $c->idnumber));
+                                        $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
                                     }
                                 }
                             }
                             if (!@$ret) {
                                 // OK.
-                                $this->report(get_string('enrolledincoursenot', 'tool_sync', $c->idnumber));
+                                $e = new \StdClass();
+                                $e->mycourse = $c->idnumber;
+                                $e->myuser = $user->username;
+                                $this->report(get_string('enrollednot', 'tool_sync', $e));
                             }
 
                             // We only can manage groups for successful enrollments.
