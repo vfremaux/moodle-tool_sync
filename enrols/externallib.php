@@ -55,91 +55,11 @@ class tool_sync_core_ext_external extends external_api {
         );
 
         if (!$isunenrol) {
-            if (!in_array($inputs['roleidsource'], $validkeys['role'])) {
-                throw new invalid_parameter_exception('Role source not in acceptable ranges.');
-            }
+            $status['roleid'] = self::validate_role_param($inputs, $validkeys['role']);
         }
 
-        if (!in_array($inputs['courseidsource'], $validkeys['course'])) {
-            throw new invalid_parameter_exception('Course source not in acceptable ranges.');
-        }
-
-        if (!in_array($inputs['useridsource'], $validkeys['user'])) {
-            throw new invalid_parameter_exception('User source not in acceptable ranges.');
-        }
-
-        if (!$isunenrol) {
-            switch ($inputs['roleidsource']) {
-                case 'id': {
-                        break;
-                    }
-                case 'shortname': {
-                        if (!$role = $DB->get_record('role', array('shortname' => $inputs['roleid']))) {
-                            throw new invalid_parameter_exception('Role not found by shortname: '.$inputs['roleid']);
-                        }
-                        $status['roleid'] = $role->id;
-                        break;
-                    }
-            }
-        }
-
-        switch ($inputs['courseidsource']) {
-            case 'id': {
-                break;
-            }
-
-            case 'shortname': {
-                if (!$course = $DB->get_record('course', array('shortname' => $inputs['courseid']))) {
-                    throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['courseid']);
-                }
-                $status['courseid'] = $course->id;
-                break;
-            }
-
-            case 'idnumber': {
-                if (!$course = $DB->get_record('course', array('idnumber' => $inputs['courseid']))) {
-                    throw new invalid_parameter_exception('Course not found by idnumber: '.$inputs['courseid']);
-                }
-                $status['courseid'] = $course->id;
-                break;
-            }
-        }
-
-        switch ($inputs['useridsource']) {
-            case 'id': {
-                break;
-            }
-
-            case 'username': {
-                if (preg_match('/^(.*)§(.*)$/', $inputs['userid'])) {
-                    list($username, $hostroot) = explode('§', $inputs['userid']);
-                    $hostid = $DB->get_field('mnet_host', 'id', array('wwwroot' => $hostroot));
-                } else {
-                    $hostid = $CFG->mnet_localhost_id;
-                }
-                if (!$user = $DB->get_record('user', array('username' => $inputs['userid'], 'mnethostid' => $hostid))) {
-                    throw new invalid_parameter_exception('User not found by username: '.$inputs['userid']);
-                }
-                $status['userid'] = $user->id;
-                break;
-            }
-
-            case 'idnumber': {
-                    if (!$user = $DB->get_record('user', array('idnumber' => $inputs['userid']))) {
-                        throw new invalid_parameter_exception('User not found by idnumber: '.$inputs['userid']);
-                    }
-                    $status['userid'] = $user->id;
-                    break;
-                }
-
-            case 'email': {
-                    if (!$user = $DB->get_record('user', array('email' => $inputs['userid']))) {
-                        throw new invalid_parameter_exception('User not found by email: '.$inputs['userid']);
-                    }
-                    $status['userid'] = $user->id;
-                    break;
-                }
-        }
+        $status['courseid'] = self::validate_course_param($inputs, $validkeys['course']);
+        $status['userid'] = self::validate_user_param($inputs, $validkeys['user']);
 
         return $status;
 
@@ -327,67 +247,12 @@ class tool_sync_core_ext_external extends external_api {
             ),
         );
 
-        if (!in_array($inputs['roleidsource'], $validkeys['role'])) {
-            throw new invalid_parameter_exception('Role source not in acceptable ranges.');
-        }
-
         if (!in_array($inputs['instanceidsource'], $validkeys['instance'][$params['contexttype']])) {
             throw new invalid_parameter_exception('Context source not in acceptable ranges for contexttype '.$originaltype);
         }
 
-        if (!in_array($inputs['useridsource'], $validkeys['user'])) {
-            throw new invalid_parameter_exception('User source not in acceptable ranges.');
-        }
-
-        switch ($inputs['roleidsource']) {
-            case 'id': {
-                    break;
-                }
-
-            case 'shortname': {
-                    if (!$role = $DB->get_record('role', array('shortname' => $inputs['roleid']))) {
-                        throw new invalid_parameter_exception('Role not found by shortname: '.$inputs['roleid']);
-                    }
-                    $status['roleid'] = $role->id;
-                    break;
-                }
-        }
-
-        switch ($inputs['useridsource']) {
-            case 'id': {
-                    break;
-                }
-
-            case 'username': {
-                if (preg_match('/^(.*)§(.*)$/', $inputs['userid'])) {
-                    list($username, $hostroot) = explode('§', $inputs['userid']);
-                    $hostid = $DB->get_field('mnet_host', 'id', array('wwwroot' => $hostroot));
-                } else {
-                    $hostid = $CFG->mnet_localhost_id;
-                }
-                if (!$user = $DB->get_record('user', array('username' => $inputs['userid'], 'mnethostid' => $hostid))) {
-                    throw new invalid_parameter_exception('User not found by username: '.$inputs['userid']);
-                }
-                $status['userid'] = $user->id;
-                break;
-            }
-
-            case 'idnumber': {
-                    if (!$user = $DB->get_record('user', array('idnumber' => $inputs['userid']))) {
-                        throw new invalid_parameter_exception('User not found by idnumber: '.$inputs['userid']);
-                    }
-                    $status['userid'] = $user->id;
-                    break;
-                }
-
-            case 'email': {
-                    if (!$user = $DB->get_record('user', array('email' => $inputs['userid']))) {
-                        throw new invalid_parameter_exception('User not found by email: '.$inputs['userid']);
-                    }
-                    $status['userid'] = $user->id;
-                    break;
-                }
-        }
+        $status['roleid'] = self::validate_role_param($inputs, $validkeys);
+        $status['userid'] = self::validate_user_param($inputs, $validkeys);
 
         if ($params['contexttype'] == CONTEXT_SYSTEM) {
             $status['contextid'] = context_system::instance()->id;
@@ -678,29 +543,7 @@ class tool_sync_core_ext_external extends external_api {
             'courseid' => $courseid);
         $params = self::validate_parameters(self::get_enrolled_users_parameters(), $parameters);
 
-        if (!in_array($inputs['instanceidsource'], array('idnumber', 'shortname', 'id'))) {
-            throw new invalid_parameter_exception('Course id source not in acceptable ranges');
-        }
-
-        switch ($courseidsource) {
-            case 'id':
-                $courseid = $courseid;
-                break;
-
-            case 'shortname':
-                if (!$course = $DB->get_record('course', array('shortname' => $courseid))) {
-                    throw new invalid_parameter_exception('Course not found by shortname');
-                }
-                $courseid = $course->id;
-                break;
-
-            case 'idnumber':
-                if (!$course = $DB->get_record('course', array('idnumber' => $courseid))) {
-                    throw new invalid_parameter_exception('Course not found by idnumber');
-                }
-                $courseid = $course->id;
-                break;
-        }
+        $params['courseid'] = self::validate_course_param($inputs, array('idnumber', 'shortname', 'id'));
 
         return \core_enrol_external::get_enrolled_users($courseid, $options);
     }
@@ -828,29 +671,7 @@ class tool_sync_core_ext_external extends external_api {
             'courseid' => $courseid);
         $params = self::validate_parameters(self::get_enrolled_users_parameters(), $parameters);
 
-        if (!in_array($inputs['instanceidsource'], array('idnumber', 'shortname', 'id'))) {
-            throw new invalid_parameter_exception('Course id source not in acceptable ranges');
-        }
-
-        switch ($courseidsource) {
-            case 'id':
-                $courseid = $courseid;
-                break;
-
-            case 'shortname':
-                if (!$course = $DB->get_record('course', array('shortname' => $courseid))) {
-                    throw new invalid_parameter_exception('Course not found by shortname');
-                }
-                $courseid = $course->id;
-                break;
-
-            case 'idnumber':
-                if (!$course = $DB->get_record('course', array('idnumber' => $courseid))) {
-                    throw new invalid_parameter_exception('Course not found by idnumber');
-                }
-                $courseid = $course->id;
-                break;
-        }
+        $courseid = self::validate_course_param($inputs, array('idnumber', 'shortname', 'id'));
 
         return \core_enrol_external::get_enrolled_users($courseid, $options);
     }
@@ -872,5 +693,100 @@ class tool_sync_core_ext_external extends external_api {
                 )
             )
         );
+    }
+
+    protected static function validate_role_param(&$inputs, &$validkeys) {
+
+        if (!in_array($inputs['roleidsource'], $validkeys)) {
+            throw new invalid_parameter_exception('Role source not in acceptable ranges.');
+        }
+
+        switch ($inputs['roleidsource']) {
+            case 'id': {
+                    break;
+                    return $inputs['roleid'];
+                }
+
+            case 'shortname': {
+                    if (!$role = $DB->get_record('role', array('shortname' => $inputs['roleid']))) {
+                        throw new invalid_parameter_exception('Role not found by shortname: '.$inputs['roleid']);
+                    }
+                    return $role->id;
+                    break;
+                }
+        }
+    }
+
+    protected static function validate_user_param(&$inputs, &$validkeys) {
+        global $DB, $CFG;
+
+        if (!in_array($inputs['useridsource'], $validkeys)) {
+            throw new invalid_parameter_exception('User source not in acceptable ranges.');
+        }
+
+        switch ($inputs['useridsource']) {
+            case 'id': {
+                    break;
+                    return $inputs['userid'];
+                }
+
+            case 'username': {
+                if (preg_match('/^(.*)§(.*)$/', $inputs['userid'])) {
+                    list($username, $hostroot) = explode('§', $inputs['userid']);
+                    $hostid = $DB->get_field('mnet_host', 'id', array('wwwroot' => $hostroot));
+                } else {
+                    $hostid = $CFG->mnet_localhost_id;
+                }
+                if (!$user = $DB->get_record('user', array('username' => $inputs['userid'], 'mnethostid' => $hostid))) {
+                    throw new invalid_parameter_exception('User not found by username: '.$inputs['userid']);
+                }
+                return $user->id;
+                break;
+            }
+
+            case 'idnumber': {
+                    if (!$user = $DB->get_record('user', array('idnumber' => $inputs['userid']))) {
+                        throw new invalid_parameter_exception('User not found by idnumber: '.$inputs['userid']);
+                    }
+                    return $user->id;
+                    break;
+                }
+
+            case 'email': {
+                    if (!$user = $DB->get_record('user', array('email' => $inputs['userid']))) {
+                        throw new invalid_parameter_exception('User not found by email: '.$inputs['userid']);
+                    }
+                    return $user->id;
+                    break;
+                }
+        }
+    }
+
+    protected static function validate_course_param(&$inputs, &$validkeys) {
+        global $DB;
+
+        if (!in_array($inputs['courseidsource'], $validkeys)) {
+            throw new invalid_parameter_exception('Course id source not in acceptable ranges');
+        }
+
+        switch ($inputs['courseidsource']) {
+            case 'id':
+                return $inputs['courseid'];
+                break;
+
+            case 'shortname':
+                if (!$course = $DB->get_record('course', array('shortname' => $inputs['courseid']))) {
+                    throw new invalid_parameter_exception('Course not found by shortname');
+                }
+                return $course->id;
+                break;
+
+            case 'idnumber':
+                if (!$course = $DB->get_record('course', array('idnumber' => $inputs['courseid']))) {
+                    throw new invalid_parameter_exception('Course not found by idnumber');
+                }
+                return $course->id;
+                break;
+        }
     }
 }
