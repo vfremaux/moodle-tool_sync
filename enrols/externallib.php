@@ -542,7 +542,7 @@ class tool_sync_core_ext_external extends external_api {
             'courseid' => $courseid);
         $params = self::validate_parameters(self::get_enrolled_users_parameters(), $parameters);
 
-        $params['courseid'] = self::validate_course_param($inputs, array('idnumber', 'shortname', 'id'));
+        $params['courseid'] = self::validate_course_param($params, array('idnumber', 'shortname', 'id'));
 
         return \core_enrol_external::get_enrolled_users($courseid, $options);
     }
@@ -671,7 +671,7 @@ class tool_sync_core_ext_external extends external_api {
         $params = self::validate_parameters(self::get_enrolled_users_parameters(), $parameters);
 
         $validkeys = array('idnumber', 'shortname', 'id');
-        $courseid = self::validate_course_param($inputs, $validkeys);
+        $courseid = self::validate_course_param($params, $validkeys);
 
         return \core_enrol_external::get_enrolled_users($courseid, $options);
     }
