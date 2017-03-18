@@ -145,7 +145,7 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Operation status');
     }
 
-    // Commit an uploaded file ----------------------------------------------.
+    // Commit an uploaded file.
 
     /**
      * Returns description of method parameters
@@ -172,7 +172,6 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function unenrol_user($useridsource, $userid, $courseidsource, $courseid, $roleidsource = '', $roleid = '',
                                         $method = 'manual') {
-        global $CFG;
 
         $parameters = array('useridsource' => $useridsource,
             'userid' => $userid,
@@ -214,7 +213,7 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success status');
     }
 
-    // Role assigns related
+    // Role assigns related.
 
     public function validate_role_paramters($configparamdefs, $inputs) {
         global $DB, $CFG;
@@ -304,26 +303,26 @@ class tool_sync_core_ext_external extends external_api {
 
                 // Only in course context.
                 case 'shortname': {
-                        if (!$course = $DB->get_record('course', array('shortname' => $inputs['instanceid']))) {
-                            throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['instanceid']);
-                        }
-                        $status['contextid'] = context_course::instance($instance->id)->id;
-                        break;
+                    if (!$course = $DB->get_record('course', array('shortname' => $inputs['instanceid']))) {
+                        throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['instanceid']);
                     }
+                    $status['contextid'] = context_course::instance($instance->id)->id;
+                    break;
+                }
 
                 // Only in course module context.
                 case 'instanceref': {
-                        if (!preg_match('/^([a-z_]+)\:(\d+)$/', $inputs['instanceref'])) {
-                            // We check the instanceref has modname§id syntax.
-                            throw new invalid_parameter_exception('Malformed instance ref: '.$inputs['instanceid']);
-                        }
-                        list($modname, $instanceid) = explode('§', $params['instanceid']);
-                        if (!$cm = get_coursemodule_from_instance($modname, $instanceid)) {
-                            throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['instanceid']);
-                        }
-                        $status['contextid'] = context_course::instance($instance->id)->id;
-                        break;
+                    if (!preg_match('/^([a-z_]+)\:(\d+)$/', $inputs['instanceref'])) {
+                        // We check the instanceref has modname§id syntax.
+                        throw new invalid_parameter_exception('Malformed instance ref: '.$inputs['instanceid']);
                     }
+                    list($modname, $instanceid) = explode('§', $params['instanceid']);
+                    if (!$cm = get_coursemodule_from_instance($modname, $instanceid)) {
+                        throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['instanceid']);
+                    }
+                    $status['contextid'] = context_course::instance($instance->id)->id;
+                    break;
+                }
 
                 case 'idnumber': {
                     switch ($params['contexttype']) {
@@ -342,7 +341,7 @@ class tool_sync_core_ext_external extends external_api {
                             $status['contextid'] = context_course::instance($instance->id)->id;
                             break;
                         }
-    
+
                         case CONTEXT_MODULE: {
                             if (!$instance = $DB->get_record('course_modules', array('idnumber' => $inputs['instanceid']))) {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
@@ -350,7 +349,7 @@ class tool_sync_core_ext_external extends external_api {
                             $status['contextid'] = context_module::instance($instance->id)->id;
                             break;
                         }
-    
+
                         case CONTEXT_BLOCK: {
                             if (!$instance = $DB->get_record('format_page_items', array('idnumber' => $inputs['instanceid']))) {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
@@ -358,7 +357,7 @@ class tool_sync_core_ext_external extends external_api {
                             $status['contextid'] = context_block::instance($instance->id)->id;
                             break;
                         }
-    
+
                         case CONTEXT_USER: {
                             if (!$instance = $DB->get_record('user', array('idnumber' => $inputs['instanceid']))) {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
@@ -368,7 +367,7 @@ class tool_sync_core_ext_external extends external_api {
                         }
                     }
                 }
-    
+
                 // User context specific.
                 case 'username': {
                     if (preg_match('/^(.*)§(.*)$/', $inputs['userid'])) {
@@ -383,7 +382,7 @@ class tool_sync_core_ext_external extends external_api {
                     $status['contextid'] = context_user::instance($user->id)->id;
                     break;
                 }
-    
+
                 // User context specific.
                 case 'email': {
                     if (!$user = $DB->get_record('user', array('email' => $inputs['userid']))) {
@@ -671,7 +670,8 @@ class tool_sync_core_ext_external extends external_api {
             'courseid' => $courseid);
         $params = self::validate_parameters(self::get_enrolled_users_parameters(), $parameters);
 
-        $courseid = self::validate_course_param($inputs, array('idnumber', 'shortname', 'id'));
+        $validkeys = array('idnumber', 'shortname', 'id');
+        $courseid = self::validate_course_param($inputs, $validkeys);
 
         return \core_enrol_external::get_enrolled_users($courseid, $options);
     }
@@ -703,17 +703,17 @@ class tool_sync_core_ext_external extends external_api {
 
         switch ($inputs['roleidsource']) {
             case 'id': {
-                    break;
-                    return $inputs['roleid'];
-                }
+                return $inputs['roleid'];
+                break;
+            }
 
             case 'shortname': {
-                    if (!$role = $DB->get_record('role', array('shortname' => $inputs['roleid']))) {
-                        throw new invalid_parameter_exception('Role not found by shortname: '.$inputs['roleid']);
-                    }
-                    return $role->id;
-                    break;
+                if (!$role = $DB->get_record('role', array('shortname' => $inputs['roleid']))) {
+                    throw new invalid_parameter_exception('Role not found by shortname: '.$inputs['roleid']);
                 }
+                return $role->id;
+                break;
+            }
         }
     }
 
@@ -726,9 +726,9 @@ class tool_sync_core_ext_external extends external_api {
 
         switch ($inputs['useridsource']) {
             case 'id': {
-                    break;
-                    return $inputs['userid'];
-                }
+                break;
+                return $inputs['userid'];
+            }
 
             case 'username': {
                 if (preg_match('/^(.*)§(.*)$/', $inputs['userid'])) {
@@ -745,20 +745,20 @@ class tool_sync_core_ext_external extends external_api {
             }
 
             case 'idnumber': {
-                    if (!$user = $DB->get_record('user', array('idnumber' => $inputs['userid']))) {
-                        throw new invalid_parameter_exception('User not found by idnumber: '.$inputs['userid']);
-                    }
-                    return $user->id;
-                    break;
+                if (!$user = $DB->get_record('user', array('idnumber' => $inputs['userid']))) {
+                    throw new invalid_parameter_exception('User not found by idnumber: '.$inputs['userid']);
                 }
+                return $user->id;
+                break;
+            }
 
             case 'email': {
-                    if (!$user = $DB->get_record('user', array('email' => $inputs['userid']))) {
-                        throw new invalid_parameter_exception('User not found by email: '.$inputs['userid']);
-                    }
-                    return $user->id;
-                    break;
+                if (!$user = $DB->get_record('user', array('email' => $inputs['userid']))) {
+                    throw new invalid_parameter_exception('User not found by email: '.$inputs['userid']);
                 }
+                return $user->id;
+                break;
+            }
         }
     }
 
@@ -770,23 +770,26 @@ class tool_sync_core_ext_external extends external_api {
         }
 
         switch ($inputs['courseidsource']) {
-            case 'id':
+            case 'id': {
                 return $inputs['courseid'];
                 break;
+            }
 
-            case 'shortname':
+            case 'shortname': {
                 if (!$course = $DB->get_record('course', array('shortname' => $inputs['courseid']))) {
                     throw new invalid_parameter_exception('Course not found by shortname');
                 }
                 return $course->id;
                 break;
+            }
 
-            case 'idnumber':
+            case 'idnumber': {
                 if (!$course = $DB->get_record('course', array('idnumber' => $inputs['courseid']))) {
                     throw new invalid_parameter_exception('Course not found by idnumber');
                 }
                 return $course->id;
                 break;
+            }
         }
     }
 }
