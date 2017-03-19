@@ -29,8 +29,9 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once("$CFG->libdir/externallib.php");
+require_once($CFG->libdir.'/externallib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
+require_once($CFG->dirroot.'/enrole/externallibb.php');
 
 /**
  * Tool Sync control functions
