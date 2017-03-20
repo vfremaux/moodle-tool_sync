@@ -90,15 +90,20 @@ class course_sync_manager extends sync_manager {
         $barr = array();
         $deletecreatorurl = new \moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
         $attribs = array('onclick' => 'document.location.href= \''.$deletecreatorurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('makedeletefile', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualdeletecourses', get_string('makedeletefile', 'tool_sync'), $attribs);
+
         $resetcreatorurl = new \moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
         $attribs = array('onclick' => 'document.location.href= \''.$resetcreatorurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('makeresetfile', 'tool_sync'), $attribs);
-        $checkurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CHECK));
-        $attribs = array('onclick' => 'document.location.href= \''.$checkurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualcreatecourses', get_string('makeresetfile', 'tool_sync'), $attribs);
+
         $existurl = new \moodle_url('/admin/tool/sync/courses/checkcourses.php');
         $attribs = array('onclick' => 'document.location.href= \''.$existurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('testcourseexist', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualcheckcourses', get_string('testcourseexist', 'tool_sync'), $attribs);
+
+        $cleancaturl = new \moodle_url('/admin/tool/sync/courses/cleancategories.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$cleancaturl.'\'');
+        $barr[] = $frm->createElement('button', 'manualcleancats', get_string('cleancategories', 'tool_sync'), $attribs);
+
         $frm->addGroup($barr, 'utilities', get_string('utilities', 'tool_sync'), array('&nbsp;&nbsp;'), false);
 
         $frm->addElement('static', 'coursesst2', '<hr>');
@@ -1156,7 +1161,7 @@ class course_sync_manager extends sync_manager {
      * Validates each field based on information in the $validate array
      */
     protected function validate_as($value, $validatename, $lineno, $fieldname = '') {
-        global $CFG;
+        global $CFG, $DB;
         global $validate;
 
         if (!isset($validate)) {
@@ -1832,6 +1837,7 @@ class course_sync_manager extends sync_manager {
     }
 
     public function create_course_from_template($course, $syncconfig) {
+        global $DB, $CFG, $USER;
 
         $origincourse = $DB->get_record('course', array('shortname' => $course['template']));
 
@@ -1897,14 +1903,16 @@ class course_sync_manager extends sync_manager {
         // Actually locally copying archive.
         $contextid = \context_system::instance()->id;
 
-        if ($archive->extract_to_pathname(new \zip_packer(), $tempdir)) {
+        require_once($CFG->dirroot.'/lib/filestorage/mbz_packer.php');
+
+        if ($archive->extract_to_pathname(new \mbz_packer(), $tempdir)) {
 
             // Transaction.
             $transaction = $DB->start_delegated_transaction();
 
             // Create new course.
             $userdoingtherestore = $USER->id; // E.g. 2 == admin.
-            $newcourseid = \restore_dbops::create_new_course('', '', $hcategoryid);
+            $newcourseid = \restore_dbops::create_new_course('', '', $course['category']);
 
             /*
              * Restore backup into course.
@@ -1927,8 +1935,8 @@ class course_sync_manager extends sync_manager {
 
                 // Add all changes from incoming courserec.
                 $newcourse = $DB->get_record('course', array('id' => $newcourseid));
-                foreach ((array)$origincourse as $field => $value) {
-                    if (($field == 'format') || ($field == 'id') || ($field == 'idnumber')) {
+                foreach ((array)$course as $field => $value) {
+                    if (($field == 'format') || ($field == 'id')) {
                         continue; // Protect sensible identifying fields.
                     }
                     $newcourse->$field = $value;
