@@ -334,7 +334,7 @@ class tool_sync_core_ext_external extends external_api {
                             $status['contextid'] = context_coursecat::instance($instance->id)->id;
                             break;
                         }
-    
+
                         case CONTEXT_COURSE: {
                             if (!$instance = $DB->get_record('course', array('idnumber' => $inputs['instanceid']))) {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
@@ -501,9 +501,6 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Operation status');
     }
 
-
-    // 
-
     /**
      * Returns description of method parameters
      *
@@ -520,12 +517,14 @@ class tool_sync_core_ext_external extends external_api {
                             'value' => new external_value(PARAM_RAW, 'option value')
                         )
                     ), 'Option names:
-                            * withcapability (string) return only users with this capability. This option requires \'moodle/role:review\' on the course context.
+                            * withcapability (string) return only users with this capability. This option requires \'moodle/role:review\'
+                            * on the course context.
                             * groupid (integer) return only users in this group id. If the course has groups enabled and this param
                                                 isn\'t defined, returns all the viewable users.
                                                 This option requires \'moodle/site:accessallgroups\' on the course context if the
                                                 user doesn\'t belong to the group.
-                            * onlyactive (integer) return only users with active enrolments and matching time restrictions. This option requires \'moodle/course:enrolreview\' on the course context.
+                            * onlyactive (integer) return only users with active enrolments and matching time restrictions. This option
+                            * requires \'moodle/course:enrolreview\' on the course context.
                             * userfields (\'string, string, ...\') return only the values of these user fields.
                             * limitfrom (integer) sql limit from.
                             * limitnumber (integer) maximum number of returned users.
@@ -554,6 +553,9 @@ class tool_sync_core_ext_external extends external_api {
      * @return external_description
      */
     public static function get_enrolled_full_users_returns() {
+
+        $desc = 'The shortname of the custom field - to be able to build the field class in the code';
+
         return new external_multiple_structure(
             new external_single_structure(
                 array(
@@ -590,7 +592,7 @@ class tool_sync_core_ext_external extends external_api {
                                 'type'  => new external_value(PARAM_ALPHANUMEXT, 'The type of the custom field - text field, checkbox...'),
                                 'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
                                 'name' => new external_value(PARAM_RAW, 'The name of the custom field'),
-                                'shortname' => new external_value(PARAM_RAW, 'The shortname of the custom field - to be able to build the field class in the code'),
+                                'shortname' => new external_value(PARAM_RAW, $desc),
                             )
                         ), 'User custom fields (also known as user profil fields)', VALUE_OPTIONAL),
                     'groups' => new external_multiple_structure(
@@ -648,12 +650,14 @@ class tool_sync_core_ext_external extends external_api {
                             'value' => new external_value(PARAM_RAW, 'option value')
                         )
                     ), 'Option names:
-                            * withcapability (string) return only users with this capability. This option requires \'moodle/role:review\' on the course context.
+                            * withcapability (string) return only users with this capability. This option requires \'moodle/role:review\'
+                            * on the course context.
                             * groupid (integer) return only users in this group id. If the course has groups enabled and this param
                                                 isn\'t defined, returns all the viewable users.
                                                 This option requires \'moodle/site:accessallgroups\' on the course context if the
                                                 user doesn\'t belong to the group.
-                            * onlyactive (integer) return only users with active enrolments and matching time restrictions. This option requires \'moodle/course:enrolreview\' on the course context.
+                            * onlyactive (integer) return only users with active enrolments and matching time restrictions. This option
+                            * requires \'moodle/course:enrolreview\' on the course context.
                             * userfields (\'string, string, ...\') return only the values of these user fields.
                             * limitfrom (integer) sql limit from.
                             * limitnumber (integer) maximum number of returned users.
