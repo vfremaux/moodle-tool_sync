@@ -71,22 +71,24 @@ class admin_tool_webservices_testcase extends advanced_testcase {
         // Enrol user 1 and unenrol
         \tool_sync_core_ext_external::enrol_user('shortname', 'student', 'id', $user1->id, 'id', $course->id);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
-        print_object($enrolled);
-        $this->assertTrue(array_key_exists($user1->id, $enrolled));
+        $euser = array_shift($enrolled);
+        $this->assertEqual($euser->id, $user1->id);
         \tool_sync_core_ext_external::unenrol_user('id', $user1->id, 'id', $course->id);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
         $this->assertEqual(0, count($enrolled));
 
         \tool_sync_core_ext_external::enrol_user('shortname', 'student', 'username', $user1->username, 'shortname', $course->shortname);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
-        $this->assertTrue(array_key_exists($user1->id, $enrolled));
+        $euser = array_shift($enrolled);
+        $this->assertEqual($euser->id, $user1->id);
         \tool_sync_core_ext_external::unenrol_user('id', $user1->id, 'shortname', $course->shortname);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
         $this->assertEqual(0, count($enrolled));
 
         \tool_sync_core_ext_external::enrol_user('shortname', 'student', 'idnumber', $user1->idnumber, 'idnumber', $course->idnumber);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
-        $this->assertTrue(array_key_exists($user1->id, $enrolled));
+        $euser = array_shift($enrolled);
+        $this->assertEqual($euser->id, $user1->id);
         \tool_sync_core_ext_external::unenrol_user('idnumber', $user1->idnumber, 'idnumber', $course->idnumber);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
         $this->assertEqual(0, count($enrolled));
