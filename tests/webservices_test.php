@@ -60,6 +60,8 @@ class admin_tool_webservices_testcase extends advanced_testcase {
         $user3->idnumber = 'ALUMN3';
         $user4->idnumber = 'ALUMN4';
 
+        $this->setAdminUser();
+
         // Get course enrollments at start trying all idsources.
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('shortname', $course->shortname, array());
