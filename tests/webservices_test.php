@@ -56,13 +56,13 @@ class admin_tool_webservices_testcase extends advanced_testcase {
         $user3 = self::getDataGenerator()->create_user();
         $user4 = self::getDataGenerator()->create_user();
         $user1->idnumber = 'ALUMN1';
-        $DB->set_field('user', 'idnumber', 'ALUMN1', array('id' = $user1->id));
+        $DB->set_field('user', 'idnumber', 'ALUMN1', array('id' => $user1->id));
         $user2->idnumber = 'ALUMN2';
-        $DB->set_field('user', 'idnumber', 'ALUMN2', array('id' = $user2->id));
+        $DB->set_field('user', 'idnumber', 'ALUMN2', array('id' => $user2->id));
         $user3->idnumber = 'ALUMN3';
-        $DB->set_field('user', 'idnumber', 'ALUMN3', array('id' = $user3->id));
+        $DB->set_field('user', 'idnumber', 'ALUMN3', array('id' => $user3->id));
         $user4->idnumber = 'ALUMN4';
-        $DB->set_field('user', 'idnumber', 'ALUMN4', array('id' = $user4->id));
+        $DB->set_field('user', 'idnumber', 'ALUMN4', array('id' => $user4->id));
 
         $this->setAdminUser();
 
