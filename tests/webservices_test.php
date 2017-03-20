@@ -40,7 +40,6 @@ class admin_tool_webservices_testcase extends advanced_testcase {
      *
      */
     public function test_enrols() {
-        global $DB, $SESSION;
 
         $this->resetAfterTest();
 

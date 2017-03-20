@@ -697,6 +697,7 @@ class tool_sync_core_ext_external extends external_api {
     }
 
     protected static function validate_role_param(&$inputs, &$validkeys) {
+        global $DB;
 
         if (!in_array($inputs['roleidsource'], $validkeys)) {
             throw new invalid_parameter_exception('Role source not in acceptable ranges.');
