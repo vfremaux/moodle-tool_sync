@@ -183,7 +183,7 @@ class tool_sync_core_ext_external extends external_api {
             'method' => $method);
         $params = self::validate_enrol_parameters(self::unenrol_user_parameters(), $parameters, true);
 
-        $class = 'enrol_'.$param['method'].'_external';
+        $class = 'enrol_'.$params['method'].'_external';
 
         if (!class_exists($class)) {
             throw new moodle_exception('This enrol method does not support unenrol_users()');
