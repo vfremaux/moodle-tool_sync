@@ -728,8 +728,8 @@ class tool_sync_core_ext_external extends external_api {
 
         switch ($inputs['useridsource']) {
             case 'id': {
-                break;
                 return $inputs['userid'];
+                break;
             }
 
             case 'username': {
