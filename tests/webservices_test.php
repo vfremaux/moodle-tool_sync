@@ -71,6 +71,7 @@ class admin_tool_webservices_testcase extends advanced_testcase {
         // Enrol user 1 and unenrol
         \tool_sync_core_ext_external::enrol_user('shortname', 'student', 'id', $user1->id, 'id', $course->id);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
+        print_object($enrolled);
         $this->assertTrue(array_key_exists($user1->id, $enrolled));
         \tool_sync_core_ext_external::unenrol_user('id', $user1->id, 'id', $course->id);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
