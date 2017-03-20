@@ -338,7 +338,7 @@ $client->test_create_courses();
 $client->test_reset_courses();
 
 $client->test_create_users();
-/*
+
 $client->test_update_users();
 
 $client->test_enrol_users();
@@ -346,8 +346,7 @@ $client->test_rolechange_users();
 
 $client->test_suspend_users();
 $client->test_delete_users();
-*/
 
 $client->test_create_cohorts();
 
-// $client->test_delete_courses();
+$client->test_delete_courses();
