@@ -71,8 +71,7 @@ class admin_tool_webservices_testcase extends advanced_testcase {
         // Enrol user 1 and unenrol
         \tool_sync_core_ext_external::enrol_user('shortname', 'student', 'id', $user1->id, 'id', $course->id);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
-        $euser = array_shift($enrolled);
-        print_object($euser);
+        $euser = (object) array_shift($enrolled);
         $this->assertEquals($euser->id, $user1->id);
         \tool_sync_core_ext_external::unenrol_user('id', $user1->id, 'id', $course->id);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
@@ -80,7 +79,7 @@ class admin_tool_webservices_testcase extends advanced_testcase {
 
         \tool_sync_core_ext_external::enrol_user('shortname', 'student', 'username', $user1->username, 'shortname', $course->shortname);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
-        $euser = array_shift($enrolled);
+        $euser = (object) array_shift($enrolled);
         $this->assertEquals($euser->id, $user1->id);
         \tool_sync_core_ext_external::unenrol_user('id', $user1->id, 'shortname', $course->shortname);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
@@ -88,7 +87,7 @@ class admin_tool_webservices_testcase extends advanced_testcase {
 
         \tool_sync_core_ext_external::enrol_user('shortname', 'student', 'idnumber', $user1->idnumber, 'idnumber', $course->idnumber);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
-        $euser = array_shift($enrolled);
+        $euser = (object) array_shift($enrolled);
         $this->assertEquals($euser->id, $user1->id);
         \tool_sync_core_ext_external::unenrol_user('idnumber', $user1->idnumber, 'idnumber', $course->idnumber);
         $enrolled = \tool_sync_core_ext_external::get_enrolled_users('id', $course->id, array());
