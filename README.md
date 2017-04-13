@@ -8,3 +8,8 @@ Roadmap
 
 Next to do : a REST feeding of incoming files to the command
 file.
+
+2017021500
+===================================
+
+Add the core extension web services

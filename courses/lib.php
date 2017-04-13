@@ -20,8 +20,9 @@
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot.'/lib/coursecatlib.php');
 
 /**
  * An helper function to create the course deletion file from a selection
@@ -199,3 +200,75 @@ function tool_sync_receive_file() {
     }
     return false;
 }
+
+function tool_sync_get_empty_categories($catid, $ignoresubs, &$hascontent) {
+    global $DB;
+
+    $cat = $DB->get_record('course_categories', array('id' => $catid));
+    $emptycats = array();
+
+    $hascontent = false;
+    if ($catid > 0) {
+        if ($DB->record_exists('course', array('category' => $catid))) {
+            // Really not empty, thus parent is not empty anyway.
+            $hascontent = true;
+        }
+    }
+    if ($childs = $DB->get_records('course_categories', array('parent' => $catid), 'id,id')) {
+        $childshavecontent = false;
+        foreach ($childs as $child) {
+            $emptycats = array_merge($emptycats, tool_sync_get_empty_categories($child->id, $ignoresubs, $childhascontent));
+            if ($childhascontent) {
+                $childshavecontent = true;
+            }
+        }
+
+        if (!$ignoresubs || ($childshavecontent == true)) {
+            $hascontent = true;
+        }
+    }
+
+    if (($catid > 0) && !$hascontent) {
+        $emptycats[] = $cat;
+    }
+
+    return $emptycats;
+}
+
+function tool_sync_erase_empty_categories($catid, $ignoresubs, &$hascontent) {
+    global $DB;
+
+    $str = '';
+
+    $cat = $DB->get_record('course_categories', array('id' => $catid));
+
+    $hascontent = false;
+    if ($catid > 0) {
+        if ($DB->record_exists('course', array('category' => $catid))) {
+            // Really not empty, thus parent is not empty anyway.
+            $hascontent = true;
+        }
+    }
+    if ($childs = $DB->get_records('course_categories', array('parent' => $catid), 'id,id')) {
+        $childshavecontent = false;
+        foreach ($childs as $child) {
+            $str .= tool_sync_erase_empty_categories($child->id, $ignoresubs, $childhascontent);
+            if ($childhascontent) {
+                $childshavecontent = true;
+            }
+        }
+
+        if (!$ignoresubs || $childshavecontent == true) {
+            $hascontent = true;
+        }
+    }
+
+    if (($catid > 0) && !$hascontent) {
+        $str .= get_string('coursecatdeleted', 'tool_sync', $cat->name)."\n";
+        $catobj = coursecat::get($catid);
+        $catobj->delete_full();
+    }
+
+    return $str;
+}
+

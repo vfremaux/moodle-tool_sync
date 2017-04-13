@@ -47,7 +47,7 @@ class tool_sync_external extends external_api {
         $status = self::validate_parameters($configparamdefs, $inputs);
 
         $validkeys = array(
-            'course' => array('fileuploadlocation',
+            'courses' => array('fileuploadlocation',
                 'filedeletelocation',
                 'filedeleteidentifier',
                 'fileexistslocation',
@@ -61,12 +61,12 @@ class tool_sync_external extends external_api {
                 'cohortidentifier',
                 'autocreate',
                 'syncdelete'),
-            'enrol' => array('filelocation',
+            'enrols' => array('filelocation',
                 'courseidentifier',
                 'useridentifier')
         );
 
-        if (!in_array($inputs['configkey'], $validkeys[$inputs['service']])) {
+        if (!in_array($inputs['confkey'], $validkeys[$inputs['service']])) {
             throw new invalid_parameter_exception('Service keys not in acceptable ranges.');
         }
 
@@ -82,8 +82,8 @@ class tool_sync_external extends external_api {
     public static function set_config_parameters() {
         return new external_function_parameters(
             array('service' => new external_value(PARAM_TEXT, 'The synchronisation service name'),
-                  'confkey' => new external_value(PARAM_TEXT, 'a configuration key for the service'),
-                  'confvalue' => new external_value(PARAM_TEXT, 'a configuration key for the service')
+                'confkey' => new external_value(PARAM_TEXT, 'a configuration key for the service'),
+                'confvalue' => new external_value(PARAM_TEXT, 'a configuration key for the service')
             )
         );
     }
@@ -118,6 +118,58 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success');
     }
 
+    // Commit an uploaded file ----------------------------------------------.
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function commit_file_parameters() {
+        return new external_function_parameters(
+            array(
+                'draftitemid' => new external_value(PARAM_INT, 'Awaiting draftitem'),
+            )
+        );
+    }
+
+    /**
+     * Commits the version that has ben previously uploaded using the webservice/upload.php facility.
+     *
+     * @param string $vridsource the source field for the resource identifier.
+     * @param string $vrid the versionnedresource id
+     * @param int $draftitemid the temporary draft id of the uploaded file. This has been given by the upload return.
+     *
+     * @return external_description
+     */
+    public static function commit_file($draftitemid) {
+        global $CFG;
+
+        $parameters = array(
+            'draftitemid' => $draftitemid,
+        );
+        $params = self::validate_parameters(self::commit_file_parameters(), $parameters);
+
+        if (tool_sync_supports_feature('api/commit')) {
+            include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
+            tool_sync_commit($draftitemid);
+            return true;
+        } else {
+            throw new moodle_exception('proreleasefeature');
+        }
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     */
+    public static function commit_file_returns() {
+        return new external_value(PARAM_BOOL, 'Success status');
+    }
+
+    // Process a synchronisation task -----------------------------------------.
+
     /**
      * Returns description of method parameters
      *
@@ -137,18 +189,20 @@ class tool_sync_external extends external_api {
         $status = self::validate_parameters($configparamdefs, $inputs);
 
         $validactions = array(
-            'course' => array('check' => SYNC_COURSE_CHECK,
+            'courses' => array('check' => SYNC_COURSE_CHECK,
                 'delete' => SYNC_COURSE_DELETE,
-                'create' => SYNC_COURSE_CREATE),
-            'users' => null,
-            'cohorts' => null,
-            'enrol' => null
+                'create' => SYNC_COURSE_CREATE,
+                'reset' => SYNC_COURSE_RESET),
+            'users' => array('sync' => true),
+            'cohorts' => array('sync' => true),
+            'enrols' => array('sync' => true)
         );
 
-        if (!empty($validactions[$inputs['service']])) {
-            if (!in_array($inputs['action'], $validkeys[$inputs['service']])) {
-                throw new invalid_parameter_exception('Service action not in acceptable ranges.');
-            }
+        if (!array_key_exists($inputs['service'], $validactions)) {
+            throw new invalid_parameter_exception('Service not in acceptable ranges.');
+        }
+        if (!array_key_exists($inputs['action'], $validactions[$inputs['service']])) {
+            throw new invalid_parameter_exception('Service action not in acceptable ranges.');
         }
 
         return $status;
@@ -163,59 +217,121 @@ class tool_sync_external extends external_api {
      * @since Moodle 2.2
      */
     public static function process($service, $action = '') {
+        global $CFG;
 
         // Validate parameters.
         $params = self::validate_process_parameters(self::process_parameters(),
                         array('service' => $service, 'action' => $action));
 
-        $syncconfig = get_config('tool_sync');
-
-        switch ($service) {
-            case 'course':
-                $manager = new course_sync_manager($action);
-                $manager->cron();
-                break;
-            case 'users':
-                $manager = new users_sync_manager();
-                $manager->cron();
-                break;
-            case 'cohorts':
-                $manager = new cohorts_sync_manager();
-                $manager->cron();
-                break;
-            case 'enrol' :
-                $manager = new enrol_sync_manager();
-                $manager->cron();
-                break;
+        if (tool_sync_supports_feature('api/process')) {
+            include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
+            tool_sync_process($draftitemid);
+            return true;
+        } else {
+            throw new moodle_exception('proreleasefeature');
         }
 
-        return $manager->log;
     }
 
     /**
      * Returns description of method result value
      *
      * @return external_description
-     * @since Moodle 2.2
      */
     public static function process_returns() {
         return new external_value(PARAM_TEXT, 'CSV report');
     }
 
+    // Check a courxe exists ------------------------------------------------.
+
+    public static function check_course_parameters() {
+        return new external_function_parameters(array(
+                'courseidsource' => new external_value(PARAM_TEXT, 'ID source to check, can be id, idnumber, or shortname'),
+                'courseid' => new external_value(PARAM_TEXT, 'Template ID'),
+            )
+        );
+    }
+
+    protected static function validate_check_parameters($configparamdefs, $inputs) {
+        $status = self::validate_parameters($configparamdefs, $inputs);
+
+        $validsources = array('id', 'idnumber', 'shortname');
+
+        if (!in_array($inputs['courseidsource'], $validsources)) {
+            throw new invalid_parameter_exception('ID source not in acceptable range.');
+        }
+
+        return $status;
+    }
+
+    /**
+     * Get query result data as raw data in a single value.
+     *
+     * @param int $courseid course id
+     * @param array $options These options are not used yet, might be used in later version
+     * @return array
+     */
+    public static function check_course($courseidsource, $courseid) {
+        global $DB;
+
+        // Validate parameters.
+        $params = self::validate_check_parameters(self::check_course_parameters(), array(
+            'courseidsource' => $courseidsource,
+            'courseid' => $courseid,
+            )
+        );
+
+        return $DB->record_exists('course', array($courseidsource => $courseid));
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description
+     * @since Moodle 2.2
+     */
+    public static function check_course_returns() {
+        return new external_value(PARAM_BOOL, 'Course existance status');
+    }
+
     // Create course from a template ------------------------------------------------.
 
     public static function deploy_course_parameters() {
-        return new external_function_parameters(
-            array(
+        return new external_function_parameters(array(
                 'categoryidsource' => new external_value(PARAM_TEXT, 'ID source for category, can be id or idnumber'),
                 'categoryid' => new external_value(PARAM_TEXT, 'Category identifier'),
                 'templateidsource' => new external_value(PARAM_TEXT, 'ID source to identifiy template course, can be id, idnumber, or shortname'),
                 'templateid' => new external_value(PARAM_TEXT, 'Template ID'),
                 'shortname' => new external_value(PARAM_TEXT, 'New course shortname'),
                 'fullname' => new external_value(PARAM_TEXT, 'New course fullname'),
-                'idnumber' => new external_value(PARAM_TEXT, 'New course idnumber')
+                'idnumber' => new external_value(PARAM_TEXT, 'New course idnumber'),
+                'replacements' => new external_value(PARAM_TEXT, 'Replacement JSON structure', VALUE_DEFAULT, '', true)
             )
         );
+    }
+
+    protected static function validate_deploy_parameters($configparamdefs, $inputs) {
+        global $DB;
+
+        $status = self::validate_parameters($configparamdefs, $inputs);
+
+        $validsources = array('id', 'idnumber');
+
+        if (!in_array($inputs['categoryidsource'], $validsources)) {
+            throw new invalid_parameter_exception('Category ID source not in acceptable range.');
+        }
+
+        if (!$DB->record_exists('course_categories', array($inputs['categoryidsource'] => $inputs['categoryid']))) {
+            throw new invalid_parameter_exception('Category does not exist.');
+        }
+
+        $validsources = array('id', 'idnumber', 'shortname');
+
+        if (!in_array($inputs['templateidsource'], $validsources)) {
+            throw new invalid_parameter_exception('Template ID source not in acceptable range.');
+        }
+
+        return $status;
     }
 
     /**
@@ -226,74 +342,29 @@ class tool_sync_external extends external_api {
      * @return array
      * @since Moodle 2.2
      */
-    public static function deploy_course($categorysourceid, $categoryid, $templatesourceid, $templateid, $shortname, $fullname, $idnumber) {
+    public static function deploy_course($categoryidsource, $categoryid, $templateidsource, $templateid,
+                                         $shortname, $fullname, $idnumber, $replacements = '') {
+        global $CFG;
 
         // Validate parameters.
-        $params = self::validate_process_parameters(self::process_parameters(),
-                        array(
-                            'categorysourceid' => $categorysourceid,
-                            'categoryid' => $categoryid,
-                            'templatesourceid' => $templatesourceid,
-                            'templateid' => $templateid,
-                            'shortname' => $shortname,
-                            'fullname' => $fullname,
-                            'idnumber' => $idnumber));
+        $params = self::validate_deploy_parameters(self::deploy_course_parameters(), array(
+            'categoryidsource' => $categoryidsource,
+            'categoryid' => $categoryid,
+            'templateidsource' => $templateidsource,
+            'templateid' => $templateid,
+            'shortname' => $shortname,
+            'fullname' => $fullname,
+            'idnumber' => $idnumber,
+            'replacements' => $replacements));
 
-        $syncconfig = get_config('tool_sync');
-
-        include_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
-
-        $manager = new \tool_sync\course_sync_manager();
-
-        switch ($templatesourceid) {
-            case 'shortname':
-                $course['template'] = $templateid;
-                if (!$DB->record_exists('course', array('shortname' => $templateid))) {
-                    throw new moodle_exception('templatenotfound');
-                }
-                break;
-            case 'idnumber':
-                $shortname = $DB->get_field('course', 'shortname', array('idnumber' => $templateid));
-                if (!$shortname) {
-                    throw new moodle_exception('templatenotfound');
-                }
-                $course['template'] = $shortname;
-                break;
-            case 'id':
-                $shortname = $DB->get_field('course', 'shortname', array('idnumber' => $templateid));
-                if (!$shortname) {
-                    throw new moodle_exception('templatenotfound');
-                }
-                $course['template'] = $shortname;
-                break;
+        if (tool_sync_supports_feature('api/deploy')) {
+            include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
+            $result = tool_sync_deploy($categoryidsource, $categoryid, $templateidsource, $templateid, $shortname,
+                                       $fullname, $idnumber, $replacements);
+            return $result;
+        } else {
+            throw new moodle_exception('proreleasefeature');
         }
-
-        switch ($categorysourceid) {
-            case 'idnumber':
-                $catid = $DB->get_field('course_categories', 'id', array('idnumber' => $categoryid));
-                if (!$catid) {
-                    throw new moodle_exception('categorynotfound');
-                }
-                $course['category'] = $catid;
-                break;
-            case 'id':
-                if (!$catid = $DB->record_exists('course_categories', array('id' => $categoryid))) {
-                    throw new moodle_exception('categorynotfound');
-                }
-                $course['category'] = $categoryid;
-                break;
-        }
-
-        $course['shortname'] = $shortname;
-        $course['fullname'] = $fullname;
-        $course['idnumber'] = $idnumber;
-        $newcourseid = $manager->create_course_from_template($course, null);
-
-        if ($newcourseid < 0) {
-            throw new moodle_exception("course creation failure : $newcourseid ");
-        }
-
-        return $newcourseid;
     }
 
     /**
@@ -303,6 +374,6 @@ class tool_sync_external extends external_api {
      * @since Moodle 2.2
      */
     public static function deploy_course_returns() {
-        return new external_value(PARAM_INT, 'Course id');
+        return new external_value(PARAM_INT, 'Course ID');
     }
 }

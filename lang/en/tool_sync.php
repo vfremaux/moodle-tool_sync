@@ -25,6 +25,7 @@
 $string['automation'] = 'Feeders and automation';
 $string['addedtogroup'] = 'User {$a->myuser} added to group {$a->group}';
 $string['addedtogroupnot'] = 'User {$a->myuser} NOT added to group {$a->group}';
+$string['allowrename'] = 'Allow renaming users';
 $string['alreadyassigned'] = 'User {$a->myuser} already assigned to {$a->myrole} in course {$a->mycourse}';
 $string['archivecontrolfiles'] = 'Archivates command files after sync has run';
 $string['assign'] = 'Role "{$a->myrole}" added for {$a->myuser} in course {$a->mycourse}';
@@ -60,7 +61,9 @@ $string['configdefaultcmd'] = 'Default value for the command column';
 $string['configuration'] = 'Input files format configuration';
 $string['confirm'] = 'Confirm';
 $string['confirmdelete'] = 'Confirm deletion with the choosen file';
+$string['confirmcleancats'] = 'Confirm deletion of empty categories';
 $string['coursecheck'] = 'course check';
+$string['coursecatdeleted'] = 'Course category {$a} has been deleted.';
 $string['coursecreated'] = 'Course [{$a->shortname}] {$a->fullname} has been created.';
 $string['coursecronprocessing'] = 'Course synchronisation by cron';
 $string['coursedefaultsummary'] = 'Write a concise and interesting paragraph here that explains what this course is about';
@@ -74,12 +77,13 @@ $string['coursemanualsync'] = 'Manual execution of course synchronisation proces
 $string['coursemgtmanual'] = 'Manual management for courses';
 $string['coursenodeleteadvice'] = 'Bulk Deleter will not delete the course : {$a}. Course not found.';
 $string['coursenotfound'] = 'Course {$a} does not exist in this Moodle. \n';
-$string['coursenotfound2'] = 'Course with idnumber {$a->idnumber} ( {$a->description} ) not found in this moodle';
+$string['coursenotfound2'] = 'Course with idnumber "{$a->idnumber}" "{$a->description}" not found in this moodle';
 $string['coursereset'] = 'Mass reinitialization of courses';
 $string['coursescronconfig'] = 'Enable synchronization cron courses';
 $string['coursesmgtfiles'] = 'Course management command files';
 $string['coursesync'] = 'Courses synchronization';
 $string['courseupdated'] = 'Course {$a->shortname} updated.';
+$string['createpasswords'] = 'Create passwords';
 $string['createtextreport'] = 'Do you want to create a text report?';
 $string['creatingcohort'] = 'Creating cohort {$a}';
 $string['creatingcoursefromarchive'] = 'Creating course with {$a}';
@@ -106,6 +110,11 @@ $string['deletethisreport'] = 'Do you want to delete this report?';
 $string['description'] = '<center><a href="/enrol/sync/index.php">Complete course and user synchronization manager</a></center>';
 $string['disabled'] = 'Disabled.';
 $string['displayoldreport'] = 'Display an old report';
+$string['rootcategory'] = '--- Root category ---';
+$string['startcategory'] = 'Starting category';
+$string['ignoresubcats'] = 'Ignore subcategories (if empty)';
+$string['cleancats'] = 'Cleanup categories';
+$string['emptycats'] = 'Empty categories from: {$a}';
 $string['emptygroupsdeleted'] = 'Empty groups deleted';
 $string['encoding'] = 'Source file encoding';
 $string['endofprocess'] = 'End of process<br/>';
@@ -227,6 +236,7 @@ $string['groupnotaddederror'] = 'Error on group assignation : {$a}';
 $string['hiddenroleadded'] = 'Hidden role added on context:';
 $string['hour'] = 'hour';
 $string['importfile'] = 'Import a new test file';
+$string['invalidseparatordetected'] = 'Invalid separator detected. The file formatting may not match the tool settings.';
 $string['load'] = 'Load';
 $string['location'] = 'Emplacement';
 $string['mail'] = 'Process report';
@@ -239,10 +249,16 @@ $string['manualcohortrun'] = 'Run this script manually from the stored command f
 $string['manualdeleterun'] = 'Run manually course deletion';
 $string['manualenrolrun'] = 'Run this script manually from the stored command file';
 $string['manualhandling'] = 'Manual handling of operations';
-$string['manualuploadrun'] = 'Run manually a course sync';
+$string['manualmetasrun'] = 'Manual programming metacourse relations';
+$string['manualuploadrun'] = 'Run manually a course creation';
 $string['manualuserpicturesrun'] = 'Run user pictures resync manually';
 $string['manualuserrun'] = 'Run user sync manually from the stored command file';
 $string['manualuserrun2'] = 'Run user sync manually from a file upload';
+$string['metabindingfile'] = 'Metacourse binding file';
+$string['metabindingfileidentifier'] = 'course identifier for Metacourse bindings';
+$string['metalinkcreated'] = 'Metacourse binding for {$e->for} from {$e->from} created';
+$string['metalinkrevived'] = 'Metacourse binding for {$e->for} from {$e->from} restored';
+$string['metalinkdisabled'] = 'Metacourse binding for {$e->for} from {$e->from} disabled';
 $string['missingidentifier'] = 'Required identifier {$a} is missing in input data';
 $string['minute'] = 'minute';
 $string['ncategoriesdeleted'] = '{$a} categories deleted';
@@ -266,6 +282,7 @@ $string['process'] = 'Process';
 $string['processingfile'] = 'Processing...';
 $string['processresult'] = 'Process result';
 $string['processerror'] = 'Process error. the reason is: {$a}';
+$string['protectemails'] = 'Protect emails';
 $string['purge'] = 'Prune all reports';
 $string['primaryidentity'] = 'Primary identity field';
 $string['reinitialisation'] = 'Reset courses';
@@ -528,3 +545,11 @@ The User Pictures feeding file must be a zip with png, jpg or gif images for use
 $string['passwordnotification_tpl'] = '
 A password has been created for you: {$a}
 ';
+
+$string['allowrename_help'] = 'If checked, username can be changed. an "oldusername" column needs to be present to match the old identity.';
+
+$string['protectemails_help'] = 'If checked, import will not change user emails when they have one in their account. Missing emails will be completed from the file data.';
+
+$string['createpasswords_help'] = 'If checked, missing password will be created when password column is missing.';
+
+$string['sendpasswordtousers_help'] = 'If checked and passwords are incoming from the user creation file, passwords will be notified to users.';
