@@ -25,7 +25,7 @@ namespace tool_sync\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/logmuter.class.php');
 
