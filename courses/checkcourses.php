@@ -46,7 +46,7 @@ $PAGE->set_heading($SITE->fullname);
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
-$form = new InputFileLoadForm($url, array('localfile' => $syncconfig->course_fileexistlocation));
+$form = new InputFileLoadForm($url, array('localfile' => $syncconfig->courses_fileexistlocation));
 
 $canprocess = false;
 
@@ -55,7 +55,7 @@ if ($data = $form->get_data()) {
     if (!empty($data->uselocal)) {
         $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CHECK);
         $canprocess = true;
-        $processedfile = $syncconfig->course_fileexistlocation;
+        $processedfile = $syncconfig->courses_fileexistlocation;
     } else {
         if (!$manualfilerec = tool_sync_receive_file()) {
             $errormes = "Failed loading a file";
