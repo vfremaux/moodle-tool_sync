@@ -79,6 +79,17 @@ class course_sync_manager extends sync_manager {
         $label = get_string('resetfileidentifier', 'tool_sync');
         $frm->addElement('select', $key, $label, $this->identifieroptions);
 
+        if (enrol_is_enabled('meta')) {
+            $key = 'tool_sync/courses_filemetabindinglocation';
+            $label = get_string('metabindingfile', 'tool_sync');
+            $frm->addElement('text', $key, $label);
+            $frm->setType('tool_sync/courses_filemetabindinglocation', PARAM_TEXT);
+
+            $key = 'tool_sync/courses_filemetabindingidentifier';
+            $label = get_string('metabindingfileidentifier', 'tool_sync');
+            $frm->addElement('select', $key, $label, $this->identifieroptions);
+        }
+
         $rarr = array();
         $rarr[] = $frm->createElement('radio', 'tool_sync/courses_forceupdate', '', get_string('yes'), 1);
         $rarr[] = $frm->createElement('radio', 'tool_sync/courses_forceupdate', '', get_string('no'), 0);
@@ -111,19 +122,29 @@ class course_sync_manager extends sync_manager {
         $barr = array();
         $reseturl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_RESET));
         $attribs = array('onclick' => 'document.location.href= \''.$reseturl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualreset', get_string('reinitialisation', 'tool_sync'), $attribs);
+
         $createurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CREATE));
         $attribs = array('onclick' => 'document.location.href= \''.$createurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualuploadrun', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualcreate', get_string('manualuploadrun', 'tool_sync'), $attribs);
+
         $deleteurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_DELETE));
         $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualdeleterun', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualdelete', get_string('manualdeleterun', 'tool_sync'), $attribs);
+
+        if (enrol_is_enabled('meta')) {
+            $deleteurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_METAS));
+            $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
+            $barr[] = $frm->createElement('button', 'manualmetas', get_string('manualmetasrun', 'tool_sync'), $attribs);
+        }
+
         $clearcaturl = new \moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
         $attribs = array('onclick' => 'document.location.href= \''.$clearcaturl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualcleancategories', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualclearcats', get_string('manualcleancategories', 'tool_sync'), $attribs);
+
         $courseurl = new \moodle_url('/admin/tool/sync/courses/execcron.php');
         $attribs = array('onclick' => 'document.location.href= \''.$courseurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualdoall', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
     }
@@ -213,6 +234,13 @@ class course_sync_manager extends sync_manager {
                     $i++;
                     continue;
                 }
+
+                if (!tool_sync_check_separator($text)) {
+                    // This is a column name line that should NOT contain any of other separators.
+                    $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    return;
+                }
+
                 $headers = explode($syncconfig->csvseparator, $text);
 
                 foreach ($headers as $h) {
@@ -751,6 +779,12 @@ class course_sync_manager extends sync_manager {
                     $i++;
                 }
 
+                if (!tool_sync_check_separator($text)) {
+                    // This is a column name line that should NOT contain any of other separators.
+                    $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    return;
+                }
+
                 $headers = explode($syncconfig->csvseparator, $text);
 
                 // Check for valid field names.
@@ -1085,6 +1119,125 @@ class course_sync_manager extends sync_manager {
 
             if (!empty($syncconfig->filecleanup)) {
                 $this->cleanup_input_file($filerec);
+            }
+        }
+
+        /* ****** Launching metas tool ****** */
+
+        if ($this->execute & SYNC_COURSE_METAS) {
+
+            $required = array(
+                    'course' => 1,
+                    'meta' => 1
+            );
+
+            $optional = array('cmd' => 'add');
+
+            if (empty($this->manualfilerec)) {
+                $filerec = $this->get_input_file(@$syncconfig->courses_filemetaslocation, 'metacourses.csv');
+            } else {
+                $filerec = $this->manualfilerec;
+            }
+
+            if ($filereader = $this->open_input_file($filerec)) {
+
+                $i = 0;
+
+                while (!feof($filereader)) {
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
+                    if (!tool_sync_is_empty_line_or_format($text, $i == 0)) {
+                        break;
+                    }
+                    $i++;
+                }
+
+                if (!tool_sync_check_separator($text)) {
+                    // This is a column name line that should NOT contain any of other separators.
+                    $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    return;
+                }
+
+                $headers = tool_sync_validate_headers($text, $required, $this);
+                if (empty($headers)) {
+                    return;
+                }
+
+                // Header is validated for metas.
+                $this->init_tryback(implode($syncconfig->csvseparator, $headers));
+
+                $fieldcount = count($headers);
+
+                // Start processing meta lines.
+
+                while (!feof($filereader)) {
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
+
+                    if (tool_sync_is_empty_line_or_format($text)) {
+                        $i++;
+                        continue;
+                    }
+
+                    $valueset = explode($syncconfig->csvseparator, $text);
+
+                    // Validate incoming values.
+                    $valuearr = array_map($headers, $valueset);
+
+                    if (!array_key_exists('cmd', $valuearr)) {
+                        $valuearr['cmd'] = 'add';
+                    }
+
+                    // Check we have a meta binding master to meta.
+
+                    $masterid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['master']);
+                    $metaid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['meta']);
+
+                    $previous = $DB->get_record('enrol', array('enrol' => 'meta', 'courseid' => $meta->id, 'customint1' => $master->id));
+
+                    // Process command.
+                    switch ($valuearr['cmd']) {
+                        case 'add': {
+                            if ($previous) {
+                                if ($previous->status = 1) {
+                                    $previous->enrolstartdate = time();
+                                    $previous->enrolenddate = 0;
+                                }
+                                $previous->status = 0;
+                                $DB->update('enrol', $previous);
+                                $e = new StdClass();
+                                $e->for = $valuearr['meta'];
+                                $e->from = $valuearr['master'];
+                                $this->report(get_string('metalinkrevived', 'tool_sync', $e));
+                            } else {
+                                $enrol = new StdClass;
+                                $enrol->enrol = 'meta';
+                                $enrol->courseid = $meta->id;
+                                $enrol->status = 0;
+                                $enrol->enrolstartdate = time();
+                                $enrol->enrolenddate = 0;
+                                $enrol->customint1 = $master->id;
+
+                                $DB->insert_record('enrol', $enrol);
+                                $e = new StdClass();
+                                $e->for = $valuearr['meta'];
+                                $e->from = $valuearr['master'];
+                                $this->report(get_string('metalinkcreated', 'tool_sync', $e));
+                            }
+                        }
+
+                        case 'del': {
+                            if ($previous) {
+                                if ($previous->status = 0) {
+                                    $previous->status = 1;
+                                    $DB->update('enrol', $previous);
+                                    $e = new StdClass();
+                                    $e->for = $valuearr['meta'];
+                                    $e->from = $valuearr['master'];
+                                    $this->report(get_string('metalinkdisabled', 'tool_sync', $e));
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1561,7 +1714,7 @@ class course_sync_manager extends sync_manager {
 
         if (!empty($course['template'])) {
 
-            $result = $this->tool_sync_create_course_from_template($course, $syncconfig);
+            $result = $this->create_course_from_template($course, $syncconfig);
             if ($result < 0) {
                 return $result;
             }
