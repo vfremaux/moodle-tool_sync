@@ -27,7 +27,7 @@ require_once($CFG->dirroot.'/lib/formslib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
-require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/tool.php');
 

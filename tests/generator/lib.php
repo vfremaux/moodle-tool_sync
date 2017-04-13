@@ -15,23 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Tool Sync data generator.
  *
- * @package     tool_sync
- * @category    tool
- * @author      Valery Fremaux <valery.fremaux@gmail.com>
- * @copyright   2013 onwards Valery Fremaux (http://www.mylearningfactory.com)
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    tool_sync
+ * @category   tool
+ * @copyright  2016 Valery Fremaux
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017031700;
-$plugin->requires = 2015111000; // Requires this Moodle version.
-$plugin->component = 'tool_sync'; // Full name of the plugin (used for diagnostics).
-$plugin->maturity = MATURITY_RC;
-$plugin->release = '3.0.0 (Build 2017031700)';
+/**
+ * local_shop data generator class.
+ */
+class tool_sync_generator extends component_generator_base {
 
-// Non moodle attributes.
-$plugin->codeincrement = '3.0.0007';
-$plugin->privacy = 'dualrelease';
+    /**
+     * To be called from data reset code only,
+     * do not use in tests.
+     * @return void
+     */
+    public function reset() {
+        parent::reset();
+    }
+
+}
+

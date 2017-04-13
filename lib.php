@@ -25,14 +25,77 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
-require_once($CFG->dirroot.'/admin/tool/sync/enrol/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
 
 define('SYNC_COURSE_CHECK', 0x001);
 define('SYNC_COURSE_CREATE', 0x002);
 define('SYNC_COURSE_DELETE', 0x004);
 define('SYNC_COURSE_RESET', 0x008);
+define('SYNC_COURSE_METAS', 0x010);
 define('SYNC_COURSE_CREATE_DELETE', 0x006);
+
+/**
+ * Tells wether a feature is supported or not. Gives back the
+ * implementation path where to fetch resources.
+ * @param string $feature a feature key to be tested.
+ */
+function tool_sync_supports_feature($feature) {
+    global $CFG;
+    static $supports;
+
+    $config = get_config('report_trainingsessions');
+
+    if (!isset($supports)) {
+        $supports = array(
+            'pro' => array(
+                'api' => array('config', 'process', 'commit', 'deploy'),
+            ),
+            'community' => array(
+                'api' => array(),
+            ),
+        );
+        $prefer = array();
+    }
+
+    // Check existance of the 'pro' dir in plugin.
+    if (is_dir(__DIR__.'/pro')) {
+        if ($feature == 'emulate/community') {
+            return 'pro';
+        }
+        if (empty($config->emulatecommunity)) {
+            $versionkey = 'pro';
+        } else {
+            $versionkey = 'community';
+        }
+    } else {
+        $versionkey = 'community';
+    }
+
+    list($feat, $subfeat) = explode('/', $feature);
+
+    if (!array_key_exists($feat, $supports[$versionkey])) {
+        return false;
+    }
+
+    if (!in_array($subfeat, $supports[$versionkey][$feat])) {
+        return false;
+    }
+
+    if (in_array($feat, $supports['community'])) {
+        if (in_array($subfeat, $supports['community'][$feat])) {
+            // If community exists, default path points community code.
+            if (isset($prefer[$feat][$subfeat])) {
+                // Configuration tells which location to prefer if explicit.
+                $versionkey = $prefer[$feat][$subfeat];
+            } else {
+                $versionkey = 'community';
+            }
+        }
+    }
+
+    return $versionkey;
+}
 
 /**
  * prints a report to a log stream and output ir also to screen if required
@@ -79,6 +142,70 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
     }
 
     return preg_match('/^$/', $text) || preg_match('/^(\(|\[|-|#|\/| )/', $text);
+}
+
+/**
+ * Checks if a text (csv line) do contain an unwanted csv separator. this helps
+ * to detect an eventually non format matching file.
+ * @param string $text a raw line
+ * @return bool true if no other separator found.
+ */
+function tool_sync_check_separator($text) {
+
+    $config = get_config('tool_sync');
+
+    $seps = array("\t" => "\t", ',' => ',', ';' => ';', ':' => ':');
+    unset($seps[$config->csvseparator]);
+    foreach (array_keys($seps) as $sep) {
+        if (strpos($text, $sep) !== false) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function tool_sync_validate_headers($text, $required, $processor) {
+
+    $config = get_config('tool_sync');
+
+    $headers = explode($config->csvseparator, $text);
+
+    // Check for valid field names.
+    array_walk($headers, 'trim_array_values');
+
+    foreach ($headers as $h) {
+        if (empty($h)) {
+            $processor->report(get_string('errornullcsvheader', 'tool_sync'));
+            return;
+        }
+    }
+
+    // Check for required fields.
+    foreach ($required as $key => $value) {
+        if ($value != true) {
+            $processor->report(get_string('fieldrequired', 'error', $key));
+            return;
+        }
+    }
+
+    return $headers;
+}
+
+/**
+ * Get the primary id of the record, whatever the identifier provided.
+ * @param string $table
+ * @param string $source the identifier fieldname
+ * @param string $identifier
+ * @return int the id.
+ */
+function tool_sync_get_internal_id($table, $source, $identifier) {
+    global $DB;
+
+    if ($source == 'id') {
+        return $identifier;
+    }
+
+    return $DB->get_field($table, 'id', array($source => $identifier));
 }
 
 /**
