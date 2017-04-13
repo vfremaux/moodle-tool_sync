@@ -29,7 +29,8 @@ require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
-$action = optional_param('action', SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE_DELETE, PARAM_INT);
+$default = SYNC_COURSE_CHECK | SYNC_COURSE_DELETE | SYNC_COURSE_CREATE_DELETE | SYNC_COURSE_METAS;
+$action = optional_param('action', $default, PARAM_INT);
 
 set_time_limit(1800);
 raise_memory_limit('512M');
@@ -56,13 +57,13 @@ $PAGE->set_heading($SITE->fullname);
 
 $singlecommand = false;
 if ($action == SYNC_COURSE_DELETE) {
-    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->course_filedeletelocation));
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->courses_filedeletelocation));
     $singlecommand = true;
 } else if ($action == SYNC_COURSE_CHECK) {
-    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->course_fileexistlocation));
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->courses_fileexistlocation));
     $singlecommand = true;
 } else if ($action == SYNC_COURSE_CREATE) {
-    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->course_fileuploadlocation));
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->courses_fileuploadlocation));
     $singlecommand = true;
 } else {
     $form = new InputfileLoadform($url, array('runlocalfiles' => true));
@@ -79,7 +80,7 @@ if ($data = $form->get_data()) {
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
         $coursesmanager = new \tool_sync\course_sync_manager($action);
-        $processedfile = $syncconfig->course_fileuploadlocation;
+        $processedfile = $syncconfig->courses_fileuploadlocation;
         $canprocess = true;
     } else if (!empty($data->runlocalfiles)) {
         $coursesmanager = new \tool_sync\course_sync_manager($action);
@@ -129,8 +130,8 @@ if ($canprocess) {
     echo "<br/><fieldset><legend><strong>$coursemgtmanual</strong></legend>";
 
     if ($action & SYNC_COURSE_CHECK) {
-        if ($syncconfig->course_fileexistlocation) {
-            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_fileexistlocation);
+        if ($syncconfig->courses_fileexistlocation) {
+            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->courses_fileexistlocation);
             echo "<center>$taskrunmsg</center>";
         } else {
             $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
@@ -139,8 +140,8 @@ if ($canprocess) {
     }
 
     if ($action & SYNC_COURSE_DELETE) {
-        if ($syncconfig->course_filedeletelocation) {
-            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_filedeletelocation);
+        if ($syncconfig->courses_filedeletelocation) {
+            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->courses_filedeletelocation);
             echo "<center>$taskrunmsg</center>";
         } else {
             $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
@@ -149,8 +150,8 @@ if ($canprocess) {
     }
 
     if ($action & SYNC_COURSE_CREATE) {
-        if ($syncconfig->course_fileuploadlocation) {
-            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->course_fileuploadlocation);
+        if ($syncconfig->courses_fileuploadlocation) {
+            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->courses_fileuploadlocation);
             echo "<center>$taskrunmsg</center>";
         } else {
             $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');

@@ -57,7 +57,7 @@ echo $OUTPUT->heading_with_help(get_string('coursedeletion', 'tool_sync'), 'cour
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
-$form = new InputfileLoadform($url, array('localfile' => $syncconfig->course_filedeletelocation));
+$form = new InputfileLoadform($url, array('localfile' => $syncconfig->courses_filedeletelocation));
 
 $canprocess = false;
 
@@ -66,7 +66,7 @@ if ($data = $form->get_data()) {
     if ($data->uselocal) {
         $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $canprocess = true;
-        $processedfile = $syncconfig->course_filedeletelocation;
+        $processedfile = $syncconfig->courses_filedeletelocation;
     } else {
         if (!$manualfilerec = tool_sync_receive_file()) {
             $errormes = "Failed loading a file";
