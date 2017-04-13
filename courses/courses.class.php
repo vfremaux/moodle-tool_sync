@@ -1224,6 +1224,7 @@ class course_sync_manager extends sync_manager {
                                 $e->from = $valuearr['master'];
                                 $this->report(get_string('metalinkcreated', 'tool_sync', $e));
                             }
+                            break;
                         }
 
                         case 'del': {
@@ -1237,7 +1238,10 @@ class course_sync_manager extends sync_manager {
                                     $this->report(get_string('metalinkdisabled', 'tool_sync', $e));
                                 }
                             }
+                            break;
                         }
+
+                        default:
                     }
                 }
             }
