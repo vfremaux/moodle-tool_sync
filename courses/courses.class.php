@@ -1714,7 +1714,7 @@ class course_sync_manager extends sync_manager {
 
         if (!empty($course['template'])) {
 
-            $course->['category'] = $hcategoryid;
+            $course['category'] = $hcategoryid;
             $result = $this->create_course_from_template($course, $syncconfig);
             if ($result < 0) {
                 return $result;
