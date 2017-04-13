@@ -28,7 +28,7 @@ require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/moodlelib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
-require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
+require_once($CFG->dirroot.'/admin/tool/sync/courses/cleancategories_form.php');
 
 // Security.
 
@@ -37,53 +37,58 @@ $systemcontext = context_system::instance();
 $PAGE->set_context($systemcontext);
 require_capability('tool/sync:configure', $systemcontext);
 
-$url = new moodle_url('/admin/tool/sync/courses/checkcourses.php');
+$url = new moodle_url('/admin/tool/sync/courses/cleancategories.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
-$PAGE->navigation->add(get_string('coursecheck', 'tool_sync'), null);
+$PAGE->navigation->add(get_string('cleancategories', 'tool_sync'), null);
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
-$form = new InputFileLoadForm($url, array('localfile' => $syncconfig->courses_fileexistlocation));
+$form = new clean_categories_form($url);
 
 $canprocess = false;
 
+$report = '';
 if ($data = $form->get_data()) {
-
-    if (!empty($data->uselocal)) {
-        $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CHECK);
-        $canprocess = true;
-        $processedfile = $syncconfig->courses_fileexistlocation;
-    } else {
-        if (!$manualfilerec = tool_sync_receive_file()) {
-            $errormes = "Failed loading a file";
-        } else {
-            $processedfile = $manualfilerec->filename;
-            $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CHECK, $manualfilerec);
-            $canprocess = true;
-        }
+    if (!empty($data->confirm)) {
+        $report = tool_sync_erase_empty_categories($data->startcategory, @$data->ignoresubcategories, $foo);
     }
 }
 
+$startcat = null;
+if (!empty($data->startcategory)) {
+    $startcat = $DB->get_record('course_categories', array('id' => $data->startcategory));
+}
+
+$emptycats = tool_sync_get_empty_categories(@$data->startcategory, @$data->ignoresubcategories, $foo);
+
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(get_string('checkingcourse', 'tool_sync'));
+echo $OUTPUT->heading(get_string('cleancats', 'tool_sync'));
 
 $form->display();
 
-if ($canprocess) {
+$startcatname = get_string('rootcategory', 'tool_sync');
+if ($startcat) {
+    $startcatname = $startcat->name;
+}
+
+if (!empty($report)) {
     echo '<pre>';
-    $coursesmanager->cron($syncconfig);
+    echo $report;
     echo '</pre>';
+}
 
-    $usermgtmanual = get_string('checkingcourse', 'tool_sync');
-    $cronrunmsg = get_string('cronrunmsg', 'tool_sync', $processedfile);
+echo $OUTPUT->heading(get_string('emptycats', 'tool_sync', $startcatname));
 
-    echo "<br/><fieldset><legend><strong>$usermgtmanual</strong></legend>";
-    echo "<center>$cronrunmsg</center>";
-    echo '</fieldset>';
+if ($emptycats) {
+    echo '<code>';
+    foreach ($emptycats as $ecat) {
+        echo $ecat->name.'<br/>';
+    }
+    echo '</code>';
 }
 
 // Always return to main tool view.

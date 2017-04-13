@@ -1,0 +1,10 @@
+cmd;cid;uid;rolename;enrol
+add;TESTCOURSE1;U0001;editingteacher;manual
+add;TESTCOURSE2;U0001;editingteacher;manual
+add;TESTCOURSE3;U0002;editingteacher;manual
+add;TESTCOURSE1;U0003;student;manual
+add;TESTCOURSE1;U0004;student;manual
+add;TESTCOURSE1;U0005;student;manual
+add;TESTCOURSE2;U0003;student;manual
+add;TESTCOURSE2;U0004;student;manual
+add;TESTCOURSE3;U0005;student;manual
