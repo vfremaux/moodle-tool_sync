@@ -154,7 +154,7 @@ function tool_sync_check_separator($text) {
 
     $config = get_config('tool_sync');
 
-    $seps = array("\t" => "\t", ',' => ',', ';' => ';', ':' => ':'); 
+    $seps = array("\t" => "\t", ',' => ',', ';' => ';', ':' => ':');
     unset($seps[$config->csvseparator]);
     foreach (array_keys($seps) as $sep) {
         if (strpos($text, $sep) !== false) {
