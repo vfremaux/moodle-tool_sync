@@ -43,4 +43,5 @@ Drop the folder into the <moodleroot>/admin/tool directory.
 given back to sender and checked for changes.
 
 2016032400 : Adding the LogMuter class to avoid tons of logs when syncing.
- 
+
+2017021500 : Add the core extension web services

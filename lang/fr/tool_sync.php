@@ -25,6 +25,7 @@
 $string['automation'] = 'Alimentations et automatisation';
 $string['addedtogroup'] = 'L\'utilisateur {$a->myuser} a été ajouté au groupe {$a->group}';
 $string['addedtogroupnot'] = 'L\'utilisateur {$a->myuser} n\'a pas été ajouté au groupe {$a->group}';
+$string['allowrename'] = 'Permettre le changement d\'identifiant';
 $string['alreadyassigned'] = 'L\'utilisateur {$a->myuser} est déjà assigné au role {$a->myrole} dans le cours {$a->mycourse}';
 $string['archivecontrolfiles'] = 'Si activé, archive les fichiers de controle après exécution';
 $string['assign'] = 'Role "{$a->myrole}" assigné à {$a->myuser} dans le cours {$a->mycourse}';
@@ -59,10 +60,12 @@ $string['configdefaultcmd'] = 'Configuration par défaut pour la colonne cmd';
 $string['configuration'] = 'Configuration du format des fichiers d\'entrée';
 $string['confirm'] = 'Confirmer';
 $string['confirmdelete'] = 'Supprimer les cours avec ce fichier';
+$string['confirmcleancats'] = 'Supprimer les catégories vides';
 $string['coursecheck'] = 'Vérification des cours';
 $string['coursecreated'] = 'Le cours [{$a->shortname}] {$a->fullname} a été créé.';
 $string['coursecronprocessing'] = 'Exécution de la synchronisation des cours';
 $string['coursedefaultsummary'] = 'Ecrire un résumé court et motivant expliquant le contenu et objectifs du cours';
+$string['coursecatdeleted'] = 'La catégorie de cours {$a} a été supprimée.';
 $string['coursedeleted'] = 'Cours {$a} supprimé.';
 $string['coursedeletefile'] = 'Fichier de suppression';
 $string['coursedeletion'] = 'Destruction de cours';
@@ -72,12 +75,13 @@ $string['coursefullname'] = 'Nom long';
 $string['coursemgtmanual'] = 'Gestion manuelle des cours';
 $string['coursenodeleteadvice'] = 'La suppression de cours ne supprimera pas le cours {$a}. Cours inexistant.';
 $string['coursenotfound'] = 'Le cours {$a} n\'existe pas dans moodle.';
-$string['coursenotfound2'] = 'Le cours d\'idnumber {{$a->idnumber}} ( {$a->description} ) n\'existe pas dans moodle';
+$string['coursenotfound2'] = 'Le cours d\'idnumber [{$a->idnumber}] "{$a->description}" n\'existe pas dans moodle';
 $string['coursereset'] = 'Réinitalisation massive des cours';
 $string['coursescronconfig'] = 'Activer la synchronisation par cron des cours';
 $string['coursesmgtfiles'] = 'Configuration des opérations sur les cours';
 $string['coursesync'] = 'Synchronisation des cours';
 $string['courseupdated'] = 'Cours {$a->shortname} mis à jour.';
+$string['createpasswords'] = 'Créer les mots de passe';
 $string['createtextreport'] = 'Souhaitez vous créer un rapport en format texte ?';
 $string['creatingcohort'] = 'La cohorte {$a} sera créée.';
 $string['creatingcoursefromarchive'] = 'Création du cours à partir de {$a}';
@@ -104,7 +108,12 @@ $string['deletethisreport'] = 'Voulez-vous effacer ce rapport ?';
 $string['description'] = '<center><a href="/enrol/sync/index.php">Gestionnaire complet de synchronisation</a></center>';
 $string['disabled'] = 'Désactivé.';
 $string['displayoldreport'] = 'Afficher un ancien rapport';
+$string['rootcategory'] = '--- Catégorie racine ---';
 $string['emptygroupsdeleted'] = 'Groupes vides supprimés';
+$string['startcategory'] = 'Catégorie parente';
+$string['ignoresubcats'] = 'Ignorer les sous-categories vides';
+$string['cleancats'] = 'Nettoyer les catégories';
+$string['emptycats'] = 'Catégories vides sous : {$a}';
 $string['encoding'] = 'Encodage des fichiers source';
 $string['endofprocess'] = ' - Fin d\'exécution';
 $string['endofreport'] = 'Fin du rapport de traitement';
@@ -222,6 +231,7 @@ $string['groupunknown'] = 'Le groupe {$a->group} n\'existe pas dans {$a->mycours
 $string['hiddenroleadded'] = 'Rôle masqué ajouté dans le contexte :';
 $string['hour'] = 'heure';
 $string['importfile'] = 'Importer un nouveau fichier de test';
+$string['invalidseparatordetected'] = 'Séparateur de champ innatendu dans les noms de colonne. Le format du fichier ne semble pas correspondre au régalge de l\'outil.';
 $string['load'] = 'Charger';
 $string['location'] = 'Emplacement';
 $string['mail'] = 'Rapport de traitement';
@@ -234,10 +244,16 @@ $string['manualcohortrun'] = 'Exécuter manuellement la synchronisation des coho
 $string['manualdeleterun'] = 'Exécuter manuellement une destruction de cours';
 $string['manualenrolrun'] = 'Exécuter manuellement ce script à partir du fichier de commande';
 $string['manualhandling'] = 'Gestion manuelle des opérations';
+$string['manualmetasrun'] = 'Mettre en place manuellement les relations metacours';
 $string['manualuploadrun'] = 'Exécuter manuellement une creation de cours';
 $string['manualuserpicturesrun'] = 'Exécuter manuellement le rechargement d\'avatars';
 $string['manualuserrun'] = 'Exécuter manuellement ce script à partir du fichier de commande';
 $string['manualuserrun2'] = 'Exécuter manuellement ce script à partir d\'un fichier distant';
+$string['metabindingfile'] = 'Fichier de liaison metacours';
+$string['metabindingfileidentifier'] = 'Identifiant de cours pour les liaisons Metacours';
+$string['metalinkcreated'] = 'Liaison Metacours pour {$e->for} à partir de {$e->from} créée';
+$string['metalinkrevived'] = 'Liaison Metacours pour {$e->for} à partir de {$e->from} restaurée';
+$string['metalinkdisabled'] = 'Liaison Metacours pour {$e->for} à partir de {$e->from} désactivée';
 $string['minute'] = 'minute';
 $string['missingidentifier'] = 'L\'identifiant {$a} requis par la configuration est manquant dans le fichier';
 $string['ncategoriesdeleted'] = '{$a} catégories supprimées';
@@ -260,6 +276,7 @@ $string['process'] = 'Effectuer l\'opération';
 $string['processingfile'] = 'Examen du fichier : {$a}';
 $string['processresult'] = 'Résultat d\'exécution';
 $string['processerror'] = 'Erreur d\'exécution. La raison est : {$a}';
+$string['protectemails'] = 'Protéger les adresse de courriel';
 $string['purge'] = 'Purger tous les rapports';
 $string['primaryidentity'] = 'champ d\'identité primaire';
 $string['registeringincohort'] = 'Inscription dans la cohorte {$a}';
@@ -522,3 +539,11 @@ de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation.
 $string['passwordnotification_tpl'] = '
 Un mot de passe vous a été attribué : {$a}
 ';
+
+$string['allowrename_help'] = 'Si actif, les identifiants de connexion peuvent être changés. Une colonne "oldusername" doit être rajoutée pour fournir la correspondance avec l\'ancien identifiant.';
+
+$string['protectemails_help'] = 'Si actif, les adresses de courriel exprimées des utilisateurs resteront inchangées. Les adresses vides seront complétées par les données du fichier.';
+
+$string['createpasswords_help'] = 'Si actif et que la colonne "password" n\'est pas fournie, les mots de passe seront générés et envoyés par Moodle.';
+
+$string['sendpasswordtousers_help'] = 'Si actif et que les mots de passes sont fournis par le fichier, ils seront notifiés aux utilisateur sur l\'adresse de courriel fournie.';
