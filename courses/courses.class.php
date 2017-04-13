@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/courses/lib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/sync_manager.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
 
 class course_sync_manager extends sync_manager {
@@ -42,52 +42,79 @@ class course_sync_manager extends sync_manager {
     public function __construct($execute = SYNC_COURSE_CREATE_DELETE, $manualfilerec = null) {
         $this->manualfilerec = $manualfilerec;
         $this->execute = $execute;
-        $this->identifieroptions = array('0' => 'idnumber', '1' => 'shortname', '2' => 'id');
+        $this->identifieroptions = array('idnumber' => 'idnumber', 'shortname' => 'shortname', 'id' => 'id');
     }
 
     public function form_elements(&$frm) {
 
-        $frm->addElement('text', 'tool_sync/course_fileuploadlocation', get_string('uploadcoursecreationfile', 'tool_sync'));
-        $frm->setType('tool_sync/course_fileuploadlocation', PARAM_TEXT);
+        $key = 'tool_sync/courses_fileuploadlocation';
+        $label = get_string('uploadcoursecreationfile', 'tool_sync');
+        $frm->addElement('text', $key, $label);
+        $frm->setType('tool_sync/courses_fileuploadlocation', PARAM_TEXT);
 
-        $frm->addElement('text', 'tool_sync/course_filedeletelocation', get_string('coursedeletefile', 'tool_sync'));
-        $frm->setType('tool_sync/course_filedeletelocation', PARAM_TEXT);
+        $key = 'tool_sync/courses_filedeletelocation';
+        $label = get_string('coursedeletefile', 'tool_sync');
+        $frm->addElement('text', $key, $label);
+        $frm->setType('tool_sync/courses_filedeletelocation', PARAM_TEXT);
 
+        $key = 'tool_sync/courses_filedeleteidentifier';
         $label = get_string('deletefileidentifier', 'tool_sync');
-        $frm->addElement('select', 'tool_sync/course_filedeleteidentifier', $label, $this->identifieroptions);
+        $frm->addElement('select', $key, $label, $this->identifieroptions);
 
-        $frm->addElement('text', 'tool_sync/course_fileexistlocation', get_string('existcoursesfile', 'tool_sync'));
-        $frm->setType('tool_sync/course_fileexistlocation', PARAM_TEXT);
+        $key = 'tool_sync/courses_fileexistlocation';
+        $label = get_string('existcoursesfile', 'tool_sync');
+        $frm->addElement('text', $key, $label);
+        $frm->setType('tool_sync/courses_fileexistlocation', PARAM_TEXT);
 
+        $key = 'tool_sync/courses_existfileidentifier';
         $label = get_string('existfileidentifier', 'tool_sync');
-        $frm->addElement('select', 'tool_sync/course_existfileidentifier', $label, $this->identifieroptions);
+        $frm->addElement('select', $key, $label, $this->identifieroptions);
 
-        $frm->addElement('text', 'tool_sync/course_fileresetlocation', get_string('resetfile', 'tool_sync'));
-        $frm->setType('tool_sync/course_fileresetlocation', PARAM_TEXT);
+        $key = 'tool_sync/courses_fileresetlocation';
+        $label = get_string('resetfile', 'tool_sync');
+        $frm->addElement('text', $key, $label);
+        $frm->setType('tool_sync/courses_fileresetlocation', PARAM_TEXT);
 
+        $key = 'tool_sync/courses_fileresetidentifier';
         $label = get_string('resetfileidentifier', 'tool_sync');
-        $frm->addElement('select', 'tool_sync/course_fileresetidentifier', $label, $this->identifieroptions);
+        $frm->addElement('select', $key, $label, $this->identifieroptions);
+
+        if (enrol_is_enabled('meta')) {
+            $key = 'tool_sync/courses_filemetabindinglocation';
+            $label = get_string('metabindingfile', 'tool_sync');
+            $frm->addElement('text', $key, $label);
+            $frm->setType('tool_sync/courses_filemetabindinglocation', PARAM_TEXT);
+
+            $key = 'tool_sync/courses_filemetabindingidentifier';
+            $label = get_string('metabindingfileidentifier', 'tool_sync');
+            $frm->addElement('select', $key, $label, $this->identifieroptions);
+        }
 
         $rarr = array();
-        $rarr[] = $frm->createElement('radio', 'tool_sync/forcecourseupdate', '', get_string('yes'), 1);
-        $rarr[] = $frm->createElement('radio', 'tool_sync/forcecourseupdate', '', get_string('no'), 0);
+        $rarr[] = $frm->createElement('radio', 'tool_sync/courses_forceupdate', '', get_string('yes'), 1);
+        $rarr[] = $frm->createElement('radio', 'tool_sync/courses_forceupdate', '', get_string('no'), 0);
         $label = get_string('syncforcecourseupdate', 'tool_sync');
-        $frm->addGroup($rarr, 'courseupdategroup', $label, array('&nbsp;&nbsp;&nbsp;&nbsp;'), false);
+        $frm->addGroup($rarr, 'courses_updategroup', $label, array('&nbsp;&nbsp;&nbsp;&nbsp;'), false);
 
         $frm->addElement('static', 'coursesst1', '<hr>');
 
         $barr = array();
         $deletecreatorurl = new \moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
         $attribs = array('onclick' => 'document.location.href= \''.$deletecreatorurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('makedeletefile', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualdeletecourses', get_string('makedeletefile', 'tool_sync'), $attribs);
+
         $resetcreatorurl = new \moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
         $attribs = array('onclick' => 'document.location.href= \''.$resetcreatorurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('makeresetfile', 'tool_sync'), $attribs);
-        $checkurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CHECK));
-        $attribs = array('onclick' => 'document.location.href= \''.$checkurl.'\'');
+        $barr[] = $frm->createElement('button', 'manualcreatecourses', get_string('makeresetfile', 'tool_sync'), $attribs);
+
         $existurl = new \moodle_url('/admin/tool/sync/courses/checkcourses.php');
         $attribs = array('onclick' => 'document.location.href= \''.$existurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('testcourseexist', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualcheckcourses', get_string('testcourseexist', 'tool_sync'), $attribs);
+
+        $cleancaturl = new \moodle_url('/admin/tool/sync/courses/cleancategories.php');
+        $attribs = array('onclick' => 'document.location.href= \''.$cleancaturl.'\'');
+        $barr[] = $frm->createElement('button', 'manualcleancats', get_string('cleancategories', 'tool_sync'), $attribs);
+
         $frm->addGroup($barr, 'utilities', get_string('utilities', 'tool_sync'), array('&nbsp;&nbsp;'), false);
 
         $frm->addElement('static', 'coursesst2', '<hr>');
@@ -95,19 +122,29 @@ class course_sync_manager extends sync_manager {
         $barr = array();
         $reseturl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_RESET));
         $attribs = array('onclick' => 'document.location.href= \''.$reseturl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('reinitialisation', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualreset', get_string('reinitialisation', 'tool_sync'), $attribs);
+
         $createurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CREATE));
         $attribs = array('onclick' => 'document.location.href= \''.$createurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualuploadrun', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualcreate', get_string('manualuploadrun', 'tool_sync'), $attribs);
+
         $deleteurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_DELETE));
         $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualdeleterun', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualdelete', get_string('manualdeleterun', 'tool_sync'), $attribs);
+
+        if (enrol_is_enabled('meta')) {
+            $deleteurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_METAS));
+            $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
+            $barr[] = $frm->createElement('button', 'manualmetas', get_string('manualmetasrun', 'tool_sync'), $attribs);
+        }
+
         $clearcaturl = new \moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
         $attribs = array('onclick' => 'document.location.href= \''.$clearcaturl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('manualcleancategories', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualclearcats', get_string('manualcleancategories', 'tool_sync'), $attribs);
+
         $courseurl = new \moodle_url('/admin/tool/sync/courses/execcron.php');
         $attribs = array('onclick' => 'document.location.href= \''.$courseurl.'\'');
-        $barr[] = $frm->createElement('button', 'manualusers', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
+        $barr[] = $frm->createElement('button', 'manualdoall', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
     }
@@ -132,12 +169,12 @@ class course_sync_manager extends sync_manager {
 
             // Get file rec to process depending on something has been provided for immediate processing.
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file(@$syncconfig->course_fileresetlocation, 'resetcourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->courses_fileresetlocation, 'resetcourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
 
-            $identifiername = $this->identifieroptions[$syncconfig->course_fileresetidentifier];
+            $identifiername = $syncconfig->courses_fileresetidentifier;
 
             if ($filereader = $this->open_input_file($filerec)) {
                 $required = array(
@@ -197,13 +234,14 @@ class course_sync_manager extends sync_manager {
                     $i++;
                     continue;
                 }
-                $headers = explode($syncconfig->csvseparator, $text);
 
-                function trim_elements(&$e) {
-                    $e = trim($e); // Remove whitespaces.
+                if (!tool_sync_check_separator($text)) {
+                    // This is a column name line that should NOT contain any of other separators.
+                    $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    return;
                 }
 
-                array_walk($headers, 'trim_elements');
+                $headers = explode($syncconfig->csvseparator, $text);
 
                 foreach ($headers as $h) {
                     if (!isset($required[$h]) and !isset($optional[$h])) {
@@ -214,36 +252,40 @@ class course_sync_manager extends sync_manager {
                         $required[$h] = 0;
                     }
                 }
+
                 foreach ($required as $key => $value) {
-                    if ($value) { // Required field missing.
+                    if ($value) {
+                        // Required field missing.
                         $this->report(get_string('fieldrequired', 'error', $key));
                         return;
                     }
                 }
+
                 while (!feof ($filereader)) {
+                    $data = array();
                     $text = tool_sync_read($filereader, 1024, $syncconfig);
 
                     if (tool_sync_is_empty_line_or_format($text, false)) {
                         continue;
                     }
 
-                    $line = explode($CFG->tool_sync_csvseparator, $text);
-                    foreach ($line as $key => $value) {
-                        // Decode encoded commas.
-                        $record[$headers[$key]] = trim($value);
-                    }
+                    $values = explode($syncconfig->csvseparator, $text);
+                    $record = array_combine($headers, $values);
                     $data['reset_start_date'] = 0;
 
                     // Adaptative identifier.
-                    $identifieroptions = array('idnumber', 'shortname', 'id');
-                    $identifiername = $identifieroptions[0 + @$syncconfig->course_resetfileidentifier];
+                    $identifiername = @$syncconfig->course_resetfileidentifier;
+                    if (empty($identifiername)) {
+                        echo "Setting default ";
+                        $identifiername = 'shortname';
+                    }
 
                     if (!array_key_exists($identifiername, $record)) {
                         $this->report(get_string('missingidentifier', 'tool_sync', $identifiername));
                         return;
                     }
 
-                    if (@$syncconfig->course_resetfileidentifier == 0 &&
+                    if ($identifiername == 'idnumber' &&
                                 $DB->count_records('course', array('idnumber' => $record['idnumber']))) {
                         $this->report(get_string('nonuniqueidentifierexception', 'tool_sync', $i));
                         continue;
@@ -319,7 +361,7 @@ class course_sync_manager extends sync_manager {
 
                     // Processing role assignations.
                     if ($record['roles'] == 'all') {
-                        $roles = $DB->get_record('roles');
+                        $roles = $DB->get_records('role');
                         foreach ($roles as $role) {
                             $data['unenrol_users'][] = $role->id;
                         }
@@ -524,7 +566,7 @@ class course_sync_manager extends sync_manager {
 
             // Get file rec to process depending on somethoing has been provided for immediate processing.
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file(@$syncconfig->course_fileexistlocation, 'courses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->courses_fileexistlocation, 'courses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -533,8 +575,10 @@ class course_sync_manager extends sync_manager {
 
                 $i = 0;
 
-                $identifieroptions = array('idnumber', 'shortname', 'id');
-                $identifiername = $identifieroptions[0 + @$syncconfig->course_existfileidentifier];
+                $identifiername = @$syncconfig->courses_existfileidentifier;
+                if (empty($identifiername)) {
+                    $identifiername = 'shortname';
+                }
 
                 while (!feof($filereader)) {
 
@@ -575,7 +619,7 @@ class course_sync_manager extends sync_manager {
             $this->report(get_string('startingdelete', 'tool_sync'));
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file(@$syncconfig->course_filedeletelocation, 'deletecourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->courses_filedeletelocation, 'deletecourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -595,8 +639,10 @@ class course_sync_manager extends sync_manager {
 
                 // Fill this with a list of comma seperated id numbers to delete courses.
                 $deleted = 0;
-                $identifieroptions = array('idnumber', 'shortname', 'id');
-                $identifiername = $identifieroptions[0 + @$syncconfig->course_filedeleteidentifier];
+                $identifiername = @$syncconfig->courses_filedeleteidentifier;
+                if (empty($identifiername)) {
+                    $identifiername = 'shortname';
+                }
 
                 foreach ($identifiers as $cid) {
                     if (!($c = $DB->get_record('course', array($identifiername => $cid)))) {
@@ -674,13 +720,24 @@ class course_sync_manager extends sync_manager {
                                 'guest' => 0, // Special processing adding a guest enrollment plugin instance.
                                 'template' => '');
 
+            $manager = \core_plugin_manager::instance();
+            $formats = $manager->get_plugins_of_type('format');
+            $fnames = array();
+            if (!empty($formats)) {
+                foreach ($formats as $format) {
+                    $fnames[] = $format->name;
+                }
+            }
+            $installedformats = implode(',', $fnames);
+
             // TODO : change default format from weeks to course default options.
+            global $validate;
             $validate = array(  'fullname' => array(1, 254, 1), // Validation information - see validate_as function.
                                 'shortname' => array(1, 15, 1),
                                 'category' => array(5),
                                 'sortorder' => array(2, 4294967295, 0),
                                 'summary' => array(1, 0, 0),
-                                'format' => array(4, 'social,topics,weeks,page,flexpage,activity'),
+                                'format' => array(4, $installedformats),
                                 'showgrades' => array(4, '0,1'),
                                 'newsitems' => array(2, 10, 0),
                                 'legacyfiles' => array(4, '0,1'),
@@ -705,7 +762,7 @@ class course_sync_manager extends sync_manager {
                                 'teacher_role' => array(1, 40, 0));
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file(@$syncconfig->course_fileuploadlocation, 'uploadcourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->courses_fileuploadlocation, 'uploadcourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -720,6 +777,12 @@ class course_sync_manager extends sync_manager {
                         break;
                     }
                     $i++;
+                }
+
+                if (!tool_sync_check_separator($text)) {
+                    // This is a column name line that should NOT contain any of other separators.
+                    $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    return;
                 }
 
                 $headers = explode($syncconfig->csvseparator, $text);
@@ -795,6 +858,11 @@ class course_sync_manager extends sync_manager {
                     // Set course array to defaults.
                     foreach ($optional as $key => $value) {
                         $coursetocreate[$key] = $value;
+                    }
+
+                    // prepare category
+                    if (!is_numeric($coursetocreate['category'])) {
+                        $coursetocreate['category'] = explode('/', $coursetocreate['category']);
                     }
 
                     $coursetopics = array();
@@ -878,9 +946,10 @@ class course_sync_manager extends sync_manager {
                     if (is_array($bulkcourse['category'])) {
                         // Course Category creation routine as a category path was given.
 
-                        $coursetocategory = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i,
+                        $results = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i,
                                                                  $catcreated, $caterrors);
                         // Last category created will contain the actual course.
+                        $coursetocategory = $results[0];
                     } else {
                         // It's just a straight category ID.
                         $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1;
@@ -896,7 +965,7 @@ class course_sync_manager extends sync_manager {
                         $this->report(get_string('errorcategoryparenterror', 'tool_sync', $e));
                         continue;
                     } else {
-                        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $validate, $syncconfig);
+                        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $syncconfig);
                         $e = new \StdClass;
                         $e->coursename = $bulkcourse['shortname'];
                         $e->shortname = $bulkcourse['shortname'];
@@ -978,7 +1047,7 @@ class course_sync_manager extends sync_manager {
                         }
                     }
                 } else {
-                    if (!empty($syncconfig->forcecourseupdate)) {
+                    if (!empty($syncconfig->courses_forceupdate)) {
 
                         $coursetocategory = 0;
 
@@ -1053,6 +1122,125 @@ class course_sync_manager extends sync_manager {
             }
         }
 
+        /* ****** Launching metas tool ****** */
+
+        if ($this->execute & SYNC_COURSE_METAS) {
+
+            $required = array(
+                    'course' => 1,
+                    'meta' => 1
+            );
+
+            $optional = array('cmd' => 'add');
+
+            if (empty($this->manualfilerec)) {
+                $filerec = $this->get_input_file(@$syncconfig->courses_filemetaslocation, 'metacourses.csv');
+            } else {
+                $filerec = $this->manualfilerec;
+            }
+
+            if ($filereader = $this->open_input_file($filerec)) {
+
+                $i = 0;
+
+                while (!feof($filereader)) {
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
+                    if (!tool_sync_is_empty_line_or_format($text, $i == 0)) {
+                        break;
+                    }
+                    $i++;
+                }
+
+                if (!tool_sync_check_separator($text)) {
+                    // This is a column name line that should NOT contain any of other separators.
+                    $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    return;
+                }
+
+                $headers = tool_sync_validate_headers($text, $required, $this);
+                if (empty($headers)) {
+                    return;
+                }
+
+                // Header is validated for metas.
+                $this->init_tryback(implode($syncconfig->csvseparator, $headers));
+
+                $fieldcount = count($headers);
+
+                // Start processing meta lines.
+
+                while (!feof($filereader)) {
+                    $text = tool_sync_read($filereader, 1024, $syncconfig);
+
+                    if (tool_sync_is_empty_line_or_format($text)) {
+                        $i++;
+                        continue;
+                    }
+
+                    $valueset = explode($syncconfig->csvseparator, $text);
+
+                    // Validate incoming values.
+                    $valuearr = array_map($headers, $valueset);
+
+                    if (!array_key_exists('cmd', $valuearr)) {
+                        $valuearr['cmd'] = 'add';
+                    }
+
+                    // Check we have a meta binding master to meta.
+
+                    $masterid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['master']);
+                    $metaid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['meta']);
+
+                    $previous = $DB->get_record('enrol', array('enrol' => 'meta', 'courseid' => $meta->id, 'customint1' => $master->id));
+
+                    // Process command.
+                    switch ($valuearr['cmd']) {
+                        case 'add': {
+                            if ($previous) {
+                                if ($previous->status = 1) {
+                                    $previous->enrolstartdate = time();
+                                    $previous->enrolenddate = 0;
+                                }
+                                $previous->status = 0;
+                                $DB->update('enrol', $previous);
+                                $e = new StdClass();
+                                $e->for = $valuearr['meta'];
+                                $e->from = $valuearr['master'];
+                                $this->report(get_string('metalinkrevived', 'tool_sync', $e));
+                            } else {
+                                $enrol = new StdClass;
+                                $enrol->enrol = 'meta';
+                                $enrol->courseid = $meta->id;
+                                $enrol->status = 0;
+                                $enrol->enrolstartdate = time();
+                                $enrol->enrolenddate = 0;
+                                $enrol->customint1 = $master->id;
+
+                                $DB->insert_record('enrol', $enrol);
+                                $e = new StdClass();
+                                $e->for = $valuearr['meta'];
+                                $e->from = $valuearr['master'];
+                                $this->report(get_string('metalinkcreated', 'tool_sync', $e));
+                            }
+                        }
+
+                        case 'del': {
+                            if ($previous) {
+                                if ($previous->status = 0) {
+                                    $previous->status = 1;
+                                    $DB->update('enrol', $previous);
+                                    $e = new StdClass();
+                                    $e->for = $valuearr['meta'];
+                                    $e->from = $valuearr['master'];
+                                    $this->report(get_string('metalinkdisabled', 'tool_sync', $e));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // F.e. for course reset operation.
         if (isset($satus)) {
             return $status;
@@ -1066,7 +1254,9 @@ class course_sync_manager extends sync_manager {
         $curstatus = 0;
 
         foreach ($categories as $catindex => $catname) {
+
             $curparent = $this->fast_get_category_ex($catname, $curstatus, $curparent, $syncconfig);
+
             switch ($curstatus) {
                 case 1:
                     // Skipped the category, already exists.
@@ -1086,10 +1276,10 @@ class course_sync_manager extends sync_manager {
                     if (!empty($syncconfig->filefailed)) {
                         $this->feed_tryback($sourcetext[$line]);
                     }
-                    continue;
+                    break 2;
             }
         }
-        ($coursetocategory == -1) || $coursetocategory = $curparent;
+        (@$coursetocategory == -1) || $coursetocategory = $curparent;
         return array($coursetocategory, $catcreated, $caterrors);
     }
 
@@ -1124,49 +1314,52 @@ class course_sync_manager extends sync_manager {
      * Validates each field based on information in the $validate array
      */
     protected function validate_as($value, $validatename, $lineno, $fieldname = '') {
-        global $CFG;
+        global $CFG, $DB;
         global $validate;
 
-        $validate = array(  'fullname' => array(1, 254, 1), // Validation information - see validate_as function.
-                            'shortname' => array(1, 100, 1),
-                            'category' => array(5),
-                            'sortorder' => array(2, 4294967295, 0),
-                            'summary' => array(1, 0, 0),
-                            'format' => array(4, 'social,topics,weeks'),
-                            'showgrades' => array(4, '0,1'),
-                            'newsitems' => array(2, 10, 0),
-                            'teacher' => array(1, 100, 1),
-                            'teachers' => array(1, 100, 1),
-                            'student' => array(1, 100, 1),
-                            'students' => array(1, 100, 1),
-                            'startdate' => array(3),
-                            'numsections' => array(2, 52, 0),
-                            'maxbytes' => array(2, $CFG->maxbytes, 0),
-                            'visible' => array(4, '0,1'),
-                            'groupmode' => array(4, NOGROUPS.','.SEPARATEGROUPS.','.VISIBLEGROUPS),
-                            'timecreated' => array(3),
-                            'timemodified' => array(3),
-                            'idnumber' => array(1, 100, 0),
-                            'password' => array(1, 50, 0),
-                            'enrolperiod' => array(2, 4294967295, 0),
-                            'groupmodeforce' => array(4, '0,1'),
-                            'metacourse' => array(4, '0,1'),
-                            'lang' => array(1, 50, 0),
-                            'theme' => array(1, 50, 0),
-                            'cost' => array(1, 10, 0),
-                            'showreports' => array(4, '0,1'),
-                            'guest' => array(4, '0,1'),
-                            'self' => array(4, '0,1'),
-                            'enrollable' => array(4, '0,1'),
-                            'enrolstartdate' => array(3),
-                            'enrolenddate' => array(3),
-                            'notifystudents' => array(4, '0,1'),
-                            'template' => array(1, 0, 0),
-                            'expirynotify' => array(4, '0,1'),
-                            'expirythreshold' => array(2, 30, 1), // Following ones cater for [something]N.
-                            'topic' => array(1, 0, 0),
-                            'teacher_account' => array(6, 0),
-                            'teacher_role' => array(1, 40, 0));
+        if (!isset($validate)) {
+            // Default validation
+            $validate = array(  'fullname' => array(1, 254, 1), // Validation information - see validate_as function.
+                                'shortname' => array(1, 100, 1),
+                                'category' => array(5),
+                                'sortorder' => array(2, 4294967295, 0),
+                                'summary' => array(1, 0, 0),
+                                'format' => array(4, 'social,topics,weeks'),
+                                'showgrades' => array(4, '0,1'),
+                                'newsitems' => array(2, 10, 0),
+                                'teacher' => array(1, 100, 1),
+                                'teachers' => array(1, 100, 1),
+                                'student' => array(1, 100, 1),
+                                'students' => array(1, 100, 1),
+                                'startdate' => array(3),
+                                'numsections' => array(2, 52, 0),
+                                'maxbytes' => array(2, $CFG->maxbytes, 0),
+                                'visible' => array(4, '0,1'),
+                                'groupmode' => array(4, NOGROUPS.','.SEPARATEGROUPS.','.VISIBLEGROUPS),
+                                'timecreated' => array(3),
+                                'timemodified' => array(3),
+                                'idnumber' => array(1, 100, 0),
+                                'password' => array(1, 50, 0),
+                                'enrolperiod' => array(2, 4294967295, 0),
+                                'groupmodeforce' => array(4, '0,1'),
+                                'metacourse' => array(4, '0,1'),
+                                'lang' => array(1, 50, 0),
+                                'theme' => array(1, 50, 0),
+                                'cost' => array(1, 10, 0),
+                                'showreports' => array(4, '0,1'),
+                                'guest' => array(4, '0,1'),
+                                'self' => array(4, '0,1'),
+                                'enrollable' => array(4, '0,1'),
+                                'enrolstartdate' => array(3),
+                                'enrolenddate' => array(3),
+                                'notifystudents' => array(4, '0,1'),
+                                'template' => array(1, 0, 0),
+                                'expirynotify' => array(4, '0,1'),
+                                'expirythreshold' => array(2, 30, 1), // Following ones cater for [something]N.
+                                'topic' => array(1, 0, 0),
+                                'teacher_account' => array(6, 0),
+                                'teacher_role' => array(1, 40, 0));
+        }
 
         if ($fieldname == '') {
             $fieldname = $validatename;
@@ -1419,33 +1612,33 @@ class course_sync_manager extends sync_manager {
         return ((float)$usec + (float)$sec);
     }
 
-    protected function fast_get_category_ex($hname, &$hstatus, $hparent = 0, $syncconfig = null) {
+    /**
+     * Find category with the given name and parentID, or create it, in both cases returning a category ID.
+     *
+     *  Output status:
+     *  -1 : Failed to create category
+     *   1 : Existing category found
+     *   2 : Created new category successfully
+     */
+    protected function fast_get_category_ex($hname, &$hstatus, $parentid = 0, $syncconfig = null) {
         global $DB;
 
-        // Find category with the given name and parentID, or create it, in both cases returning a category ID.
-        /*
-         *  $hstatus:
-         *  -1  :   Failed to create category
-         *  1   :   Existing category found
-         *  2   :   Created new category successfully
-         */
-
         // Check if a category with the same name and parent ID already exists.
-        if ($cat = $DB->get_field_select('course_categories', 'id', " name = ? AND parent = ? ", array($hname, $hparent))) {
+        if ($cat = $DB->get_field_select('course_categories', 'id', " name = ? AND parent = ? ", array($hname, $parentid))) {
             $hstatus = 1;
             return $cat;
         } else {
-            if (!$parent = $DB->get_record('course_categories', array('id' => $hparent))) {
+            if (!$parent = $DB->get_record('course_categories', array('id' => $parentid))) {
                 $parent = new \StdClass;
                 $parent->path = '';
                 $parent->depth = 0;
-                $hparent = 0;
+                $parentid = 0;
             }
 
             $cat = new \StdClass;
             $cat->name = $hname;
             $cat->description = '';
-            $cat->parent = $hparent;
+            $cat->parent = $parentid;
             $cat->sortorder = 999;
             $cat->coursecount = 0;
             $cat->visible = 1;
@@ -1458,6 +1651,7 @@ class course_sync_manager extends sync_manager {
                     // Must post update.
                     $cat->path = $parent->path.'/'.$cat->id;
                     $DB->update_record('course_categories', $cat);
+
                     // We must make category context.
                     \context_helper::create_instances(CONTEXT_COURSECAT);
                 } else {
@@ -1473,10 +1667,10 @@ class course_sync_manager extends sync_manager {
     /**
      * create a course.
      */
-    protected function fast_create_course_ex($hcategoryid, $course, $headers, $validate, $syncconfig) {
+    protected function fast_create_course_ex($hcategoryid, $course, $headers, $syncconfig) {
         global $CFG, $DB, $USER;
 
-        if (!is_array($course) || !is_array($headers) || !is_array($validate)) {
+        if (!is_array($course) || !is_array($headers)) {
             return -1;
         }
 
@@ -1520,116 +1714,11 @@ class course_sync_manager extends sync_manager {
 
         if (!empty($course['template'])) {
 
-            if (tool_sync_is_course_identifier($course['template'])) {
-                // Template is NOT a real path and thus designates a course shortname.
-                if (!$archive = tool_sync_locate_backup_file($tempcourse->id, 'course')) {
-
-                    // Get course template from publishflow backups if publishflow installed.
-                    if ($DB->get_record('block', array('name' => 'publishflow'))) {
-                        $archive = tool_sync_locate_backup_file($tempcourse->id, 'publishflow');
-                        if (!$archive) {
-                            return -20;
-                        }
-                    } else {
-                        return -21;
-                    }
-                }
-            } else {
-                if (!preg_match('/^\/|[a-zA-Z]\:/', $course['template'])) {
-                    /*
-                     * If relative path we expect finding those files somewhere in the distribution.
-                     * Not in dataroot that may be a fresh installed one).
-                     */
-                    $course['template'] = $CFG->dirroot.'/'.$course['template'];
-                }
-
-                /*
-                 * Template is a real path. Integrate in a draft filearea of current user
-                 * (defaults to admin) and get an archive stored_file for it.
-                 */
-                if (!file_exists($course['template'])) {
-                    return -22;
-                }
-
-                // Now create a draft file from this.
-                $fs = get_file_storage();
-
-                $contextid = \context_user::instance($USER->id)->id;
-
-                $fs->delete_area_files($contextid, 'user', 'draft', 0);
-
-                $filerec = new \StdClass;
-                $filerec->contextid = $contextid;
-                $filerec->component = 'user';
-                $filerec->filearea = 'draft';
-                $filerec->itemid = 0;
-                $filerec->filepath = '/';
-                $filerec->filename = basename($course['template']);
-                $archive = $fs->create_file_from_pathname($filerec, $course['template']);
+            $result = $this->create_course_from_template($course, $syncconfig);
+            if ($result < 0) {
+                return $result;
             }
 
-            $this->report(get_string('creatingcoursefromarchive', 'tool_sync', $archive->get_filename()));
-
-            $uniq = rand(1, 9999);
-
-            $tempdir = $CFG->tempdir . '/backup/' . $uniq;
-            if (!is_dir($tempdir)) {
-                mkdir($tempdir, 0777, true);
-            }
-            // Unzip all content in temp dir.
-
-            // Actually locally copying archive.
-            $contextid = \context_system::instance()->id;
-
-            if ($archive->extract_to_pathname(new \zip_packer(), $tempdir)) {
-
-                // Transaction.
-                $transaction = $DB->start_delegated_transaction();
-
-                // Create new course.
-                $userdoingtherestore = $USER->id; // E.g. 2 == admin.
-                $newcourseid = \restore_dbops::create_new_course('', '', $hcategoryid);
-
-                /*
-                 * Restore backup into course.
-                 * folder needs being a relative path from $CFG->tempdir.'/backup/'.
-                 * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
-                 */
-                $controller = new \restore_controller($uniq, $newcourseid,
-                        \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $userdoingtherestore,
-                        \backup::TARGET_NEW_COURSE );
-                $controller->execute_precheck();
-                if (empty($syncconfig->simulate)) {
-                    $controller->execute_plan();
-                }
-
-                // Commit.
-                $transaction->allow_commit();
-
-                // And import.
-                if ($newcourseid) {
-
-                    // Add all changes from incoming courserec.
-                    $newcourse = $DB->get_record('course', array('id' => $newcourseid));
-                    foreach ((array)$courserec as $field => $value) {
-                        if ($field == 'format' || $field == 'id') {
-                            continue; // Protect sensible identifying fields.
-                        }
-                        $newcourse->$field = $value;
-                    }
-                    if (empty($syncconfig->simulate)) {
-                        try {
-                            $DB->update_record('course', $newcourse);
-                        } catch (Exception $e) {
-                            mtrace('failed updating');
-                        }
-                    }
-                } else {
-                    return -23;
-                }
-            } else {
-                return -24;
-            }
         } else {
             // Create default course.
             if (empty($syncconfig->simulate)) {
@@ -1898,5 +1987,130 @@ class course_sync_manager extends sync_manager {
                 $DB->update_record('enrol', $enrolrec);
             }
         }
+    }
+
+    public function create_course_from_template($course, $syncconfig) {
+        global $DB, $CFG, $USER;
+
+        $origincourse = $DB->get_record('course', array('shortname' => $course['template']));
+
+        // Find the most suitable archive file.
+        if (tool_sync_is_course_identifier($course['template'])) {
+            // Template is NOT a real path and thus designates a course shortname.
+            if (!$archive = tool_sync_locate_backup_file($origincourse->id, 'course')) {
+
+                // Get course template from publishflow backups if publishflow installed.
+                if ($DB->get_record('block', array('name' => 'publishflow'))) {
+                    $archive = tool_sync_locate_backup_file($origincourse->id, 'publishflow');
+                    if (!$archive) {
+                        return -20;
+                    }
+                } else {
+                    return -21;
+                }
+            }
+        } else {
+            if (!preg_match('/^\/|[a-zA-Z]\:/', $course['template'])) {
+                /*
+                 * If relative path we expect finding those files somewhere in the distribution.
+                 * Not in dataroot that may be a fresh installed one).
+                 */
+                $course['template'] = $CFG->dirroot.'/'.$course['template'];
+            }
+
+            /*
+             * Template is a real path. Integrate in a draft filearea of current user
+             * (defaults to admin) and get an archive stored_file for it.
+             */
+            if (!file_exists($course['template'])) {
+                return -22;
+            }
+
+            // Now create a draft file from this.
+            $fs = get_file_storage();
+
+            $contextid = \context_user::instance($USER->id)->id;
+
+            $fs->delete_area_files($contextid, 'user', 'draft', 0);
+
+            $filerec = new \StdClass;
+            $filerec->contextid = $contextid;
+            $filerec->component = 'user';
+            $filerec->filearea = 'draft';
+            $filerec->itemid = 0;
+            $filerec->filepath = '/';
+            $filerec->filename = basename($course['template']);
+            $archive = $fs->create_file_from_pathname($filerec, $course['template']);
+        }
+
+        $this->report(get_string('creatingcoursefromarchive', 'tool_sync', $archive->get_filename()));
+
+        $uniq = rand(1, 9999);
+
+        $tempdir = $CFG->tempdir . '/backup/' . $uniq;
+        if (!is_dir($tempdir)) {
+            mkdir($tempdir, 0777, true);
+        }
+        // Unzip all content in temp dir.
+
+        // Actually locally copying archive.
+        $contextid = \context_system::instance()->id;
+
+        require_once($CFG->dirroot.'/lib/filestorage/mbz_packer.php');
+
+        if ($archive->extract_to_pathname(new \mbz_packer(), $tempdir)) {
+
+            // Transaction.
+            $transaction = $DB->start_delegated_transaction();
+
+            // Create new course.
+            $userdoingtherestore = $USER->id; // E.g. 2 == admin.
+            $newcourseid = \restore_dbops::create_new_course('', '', $course['category']);
+
+            /*
+             * Restore backup into course.
+             * folder needs being a relative path from $CFG->tempdir.'/backup/'.
+             * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
+             */
+            $controller = new \restore_controller($uniq, $newcourseid,
+                    \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $userdoingtherestore,
+                    \backup::TARGET_NEW_COURSE );
+            $controller->execute_precheck();
+            if (empty($syncconfig->simulate)) {
+                $controller->execute_plan();
+            }
+
+            // Commit.
+            $transaction->allow_commit();
+
+            // And import.
+            if ($newcourseid) {
+
+                // Add all changes from incoming courserec.
+                $newcourse = $DB->get_record('course', array('id' => $newcourseid));
+                foreach ((array)$course as $field => $value) {
+                    if (($field == 'format') || ($field == 'id')) {
+                        continue; // Protect sensible identifying fields.
+                    }
+                    $newcourse->$field = $value;
+                }
+                if (empty($syncconfig->simulate)) {
+                    try {
+                        $DB->update_record('course', $newcourse);
+                    } catch (Exception $e) {
+                        mtrace('failed updating');
+                    }
+                }
+                return $newcourseid;
+            } else {
+                return -23;
+            }
+        } else {
+            return -24;
+        }
+    }
+
+    public static function trimvalues(&$arr, $k) {
+        $arr[$k] = trim($arr[$k]); // Remove whitespaces.
     }
 }
