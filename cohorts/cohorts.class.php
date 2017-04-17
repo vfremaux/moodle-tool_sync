@@ -212,7 +212,7 @@ class cohorts_sync_manager extends sync_manager {
             $userserrors  = 0;
 
             while (!feof ($filereader)) {
-    
+
                 // Note: semicolon within a field should be encoded as &#59 (for semicolon separated csv files).
                 $text = tool_sync_read($filereader, 1024, $syncconfig);
                 if (tool_sync_is_empty_line_or_format($text, false)) {
@@ -435,6 +435,7 @@ class cohorts_sync_manager extends sync_manager {
                         $e->cohort = $valuearr['cohort'];
                         $e->role = $valuearr['role'];
                         $this->report(get_string('cohortbindingadded', 'tool_sync', $e));
+                        break;
                     }
 
                     case 'del': {
@@ -456,7 +457,10 @@ class cohorts_sync_manager extends sync_manager {
                                 $this->report(get_string('cohortbindingdisabled', 'tool_sync', $e));
                             }
                         }
+                        break;
                     }
+
+                    default:
                 }
             }
         }
