@@ -1193,7 +1193,7 @@ class course_sync_manager extends sync_manager {
                     $masterid = tool_sync_get_internal_id('course', $source, $valuearr['master']);
                     $metaid = tool_sync_get_internal_id('course', $source, $valuearr['meta']);
 
-                    $params = array('enrol' => 'meta', 'courseid' => $meta->id, 'customint1' => $master->id);
+                    $params = array('enrol' => 'meta', 'courseid' => $metaid, 'customint1' => $masterid);
                     $previous = $DB->get_record('enrol', $params);
 
                     // Process command.
@@ -1207,22 +1207,22 @@ class course_sync_manager extends sync_manager {
                                 $previous->status = 0;
                                 $DB->update('enrol', $previous);
                                 $e = new StdClass();
-                                $e->for = $valuearr['meta'];
-                                $e->from = $valuearr['master'];
+                                $e->for = $valuearr['meta']; // Real imput value for report.
+                                $e->from = $valuearr['master']; // Real imput value for report.
                                 $this->report(get_string('metalinkrevived', 'tool_sync', $e));
                             } else {
                                 $enrol = new StdClass;
                                 $enrol->enrol = 'meta';
-                                $enrol->courseid = $meta->id;
+                                $enrol->courseid = $metaid;
                                 $enrol->status = 0;
                                 $enrol->enrolstartdate = time();
                                 $enrol->enrolenddate = 0;
-                                $enrol->customint1 = $master->id;
+                                $enrol->customint1 = $masterid;
 
                                 $DB->insert_record('enrol', $enrol);
                                 $e = new StdClass();
-                                $e->for = $valuearr['meta'];
-                                $e->from = $valuearr['master'];
+                                $e->for = $valuearr['meta']; // Real imput value for report.
+                                $e->from = $valuearr['master']; // Real imput value for report.
                                 $this->report(get_string('metalinkcreated', 'tool_sync', $e));
                             }
                             break;
@@ -1234,8 +1234,8 @@ class course_sync_manager extends sync_manager {
                                     $previous->status = 1;
                                     $DB->update('enrol', $previous);
                                     $e = new StdClass();
-                                    $e->for = $valuearr['meta'];
-                                    $e->from = $valuearr['master'];
+                                    $e->for = $valuearr['meta']; // Real imput value for report.
+                                    $e->from = $valuearr['master']; // Real imput value for report.
                                     $this->report(get_string('metalinkdisabled', 'tool_sync', $e));
                                 }
                             }
@@ -1675,7 +1675,7 @@ class course_sync_manager extends sync_manager {
      * create a course.
      */
     protected function fast_create_course_ex($hcategoryid, $course, $headers, $syncconfig) {
-        global $CFG, $DB, $USER;
+        global $DB;
 
         if (!is_array($course) || !is_array($headers)) {
             return -1;
@@ -1683,7 +1683,7 @@ class course_sync_manager extends sync_manager {
 
         // Trap when template not found.
         if (!empty($course['template'])) {
-            if (!($tempcourse = $DB->get_record('course', array('shortname' => $course['template'])))) {
+            if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
                 return -7;
             }
         }

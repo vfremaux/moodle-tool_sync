@@ -37,6 +37,7 @@ class cohorts_sync_manager extends sync_manager {
     public $execute;
 
     public function __construct($execute = SYNC_COHORT_CREATE_UPDATE, $manualfilerec = null) {
+        $this->execute = $execute;
         $this->manualfilerec = $manualfilerec;
     }
 
@@ -63,6 +64,11 @@ class cohorts_sync_manager extends sync_manager {
         $frm->addElement('select', 'tool_sync/cohorts_courseidentifier', $label, $this->get_coursefields());
         $frm->setDefault('tool_sync/cohorts_courseidentifier', 'idnumber');
         $frm->setType('tool_sync/cohorts_courseidentifier', PARAM_TEXT);
+
+        $label = get_string('cohortroleidentifier', 'tool_sync');
+        $frm->addElement('select', 'tool_sync/cohorts_roleidentifier', $label, $this->get_rolefields());
+        $frm->setDefault('tool_sync/cohorts_roleidentifier', 'idnumber');
+        $frm->setType('tool_sync/cohorts_roleidentifier', PARAM_TEXT);
 
         $frm->addElement('checkbox', 'tool_sync/cohorts_autocreate', get_string('cohortautocreate', 'tool_sync'));
         $frm->setDefault('tool_sync/cohorts_autocreate', 1);
@@ -109,10 +115,18 @@ class cohorts_sync_manager extends sync_manager {
     }
 
     /**
+     * Provides the acceptable cohorts identifiers menu
+     */
+    public function get_rolefields() {
+        return array('id' => 'id',
+                     'shortname' => 'shortname');
+    }
+
+    /**
      *
      */
     public function cron($syncconfig) {
-        global $CFG, $DB;
+        global $DB;
 
         $systemcontext = \context_system::instance();
 
@@ -210,7 +224,7 @@ class cohorts_sync_manager extends sync_manager {
                 $record = array();
                 foreach ($valueset as $key => $value) {
                     // Decode encoded commas.
-                    $record[$headers[$key]] = preg_replace($csvencode, $csvdelimiter2, trim($value));
+                    $record[$headers[$key]] = trim($value);
                 }
 
                 // Find assignable items.
@@ -307,6 +321,8 @@ class cohorts_sync_manager extends sync_manager {
                 return;
             }
 
+            $defaultrolestudent = $DB->get_record('role', array('shortname' => 'student'));
+
             if (empty($this->manualfilerec)) {
                 $filerec = $this->get_input_file(@$syncconfig->cohorts_coursebindingfilelocation, 'cohortscourses.csv');
             } else {
@@ -315,14 +331,15 @@ class cohorts_sync_manager extends sync_manager {
 
             // Make arrays of valid fields for error checking.
             $required = array(
-                'cohortid' => 1,
-                'courseid' => 1,
+                'cohort' => 1,
+                'course' => 1,
             );
             $optionaldefaults = array();
             $optional = array(
-                'cmd',
-                'enrolstart',
-                'enrolend',
+                'cmd' => 1,
+                'enrolstart' => 1,
+                'enrolend' => 1,
+                'role' => 1,
             );
             $patterns = array();
             $metas = array();
@@ -370,18 +387,75 @@ class cohorts_sync_manager extends sync_manager {
                     $valuearr['cmd'] = 'add';
                 }
 
+                if (!array_key_exists('role', $valuearr)) {
+                    $roleid = $defaultrolestudent->id;
+                } else {
+                    if (empty($valuearr['role'])) {
+                        $roleid = $defaultrolestudent->id;
+                    } else {
+                        if ($valuearr['role'] != '*') {
+                            $source = $syncconfig->cohorts_roleidentifier;
+                            $roleid = tool_sync_get_internal_id('role', $source, $valuearr['role']);
+                        } else {
+                            // Only for deletion. Means delete enrols for all roles).
+                            $roleid = '*';
+                        }
+                    }
+                }
+
                 // Check we have a meta binding master to meta.
 
                 $source = $syncconfig->cohorts_courseidentifier;
-                $courseid = tool_sync_get_internal_id('course', $source, $valuearr['courseid']);
+                $courseid = tool_sync_get_internal_id('course', $source, $valuearr['course']);
                 $source = $syncconfig->cohorts_cohortidentifier;
-                $cohortid = tool_sync_get_internal_id('cohort', $source, $valuearr['cohortid']);
+                $cohortid = tool_sync_get_internal_id('cohort', $source, $valuearr['cohort']);
 
                 switch ($cmd) {
                     case 'add': {
+                        $params = array('enrol' => 'cohort', 'course' => $coursid, 'customint1' => $cohortid, 'roleid' => $roleid);
+                        if (!$oldrec = $DB->get_record('enrol', $params)) {
+                            $enrol = new StdClass;
+                            $enrol->enrol = 'enrol';
+                            $enrol->status = 0;
+                            $enrol->courseid = $courseid;
+                            $enrol->enrolstartdate = time();
+                            $enrol->enrolenddate = 0;
+                            $enrol->roleid = $roleid;
+                            $enrol->customint1 = $cohortid;
+                            $DB->insert_record('enrol', $enrol);
+                        } else {
+                            if ($oldrec->status == 1) {
+                                $oldrec->status = 0;
+                                $enrol->enrolstartdate = time();
+                                $DB->update_record('enrol', $oldrec);
+                            }
+                        }
+                        $e = new StdClass;
+                        $e->course = $valuearr['course'];
+                        $e->cohort = $valuearr['cohort'];
+                        $e->role = $valuearr['role'];
+                        $this->report(get_string('cohortbindingadded', 'tool_sync', $e));
                     }
 
                     case 'del': {
+                        if ($roleid != '*') {
+                            $params = array('enrol' => 'cohort', 'course' => $coursid, 'customint1' => $cohortid, 'roleid' => $roleid);
+                        } else {
+                            $params = array('enrol' => 'cohort', 'course' => $coursid, 'customint1' => $cohortid);
+                        }
+                        if ($oldrecs = $DB->get_records('enrol', $params)) {
+                            foreach ($oldrecs as $oldrec) {
+                                // Disable all enrols of any role on this cohort.
+                                $oldrec->status = 1;
+                                $DB->update_record('enrol', $oldrec);
+
+                                $e = new StdClass;
+                                $e->course = $valuearr['course'];
+                                $e->cohort = $valuearr['cohort'];
+                                $e->role = $DB->get_field('role', 'shortname', array('id' => $oldrec->roleid));
+                                $this->report(get_string('cohortbindingdisabled', 'tool_sync', $e));
+                            }
+                        }
                     }
                 }
             }
