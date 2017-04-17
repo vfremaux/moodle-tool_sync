@@ -158,7 +158,7 @@ function tool_sync_config_add_sync_prefix($cfg) {
 function tool_sync_read($filereader, $length, &$config) {
     $input = fgets($filereader, $length);
 
-    if ($config->encoding != 'UTF-8') {
+    if (@$config->encoding != 'UTF-8') {
         return utf8_encode($input);
     }
     return $input;
