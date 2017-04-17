@@ -112,21 +112,21 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         // Start tests.
 
-        $coursemanager = new course_sync_manager(SYNC_COURSE_CREATE);
+        $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CREATE);
         $coursemanager->cron($config);
         $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
         $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
         $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
 
-        $coursemanager = new course_sync_manager(SYNC_COURSE_BIND_COURSES);
+        $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_BIND_COURSES);
         $coursemanager->cron($config);
 
-        $coursemanager = new course_sync_manager(SYNC_COURSE_RESET);
+        $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_RESET);
         $coursemanager->cron($config);
 
         set_config('users_filelocation', 'user_create_sample.csv');
         $config->users_filelocation = 'user_create_sample.csv';
-        $usersmanager = new user_sync_manager();
+        $usersmanager = new \tool_sync\user_sync_manager();
         $usersmanager->cron($config);
 
         set_config('users_filelocation', 'user_update_sample.csv');
@@ -141,7 +141,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config->users_filelocation = 'user_delete_sample.csv';
         $usersmanager->cron($config);
 
-        $coursemanager = new course_sync_manager(SYNC_COURSE_DELETE);
+        $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $coursemanager->cron($config);
     }
 
