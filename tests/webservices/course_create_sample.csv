@@ -3,3 +3,10 @@ TESTCOURSE1;Miscellaneous/Tests;Test course for creation 1;topics;
 TESTCOURSE2;Miscellaneous/Tests;Test course for creation 2;weeks;
 TESTCOURSE3;Miscellaneous/Tests;Test course for creation 3;page;
 TESTCOURSE3;Miscellaneous/Tests;Test course for creation 4;page;TEMPLATE1
+TESTCOURSE4;Miscellaneous/Tests;Test course for creation on failed template;topics;FAILED1
+MASTER1;Miscellaneous/Tests;Test course for metacourse mastering 1;topics;
+MASTER2;Miscellaneous/Tests;Test course for metacourse mastering 1;topics;
+META10;Miscellaneous/Tests;Test metacourse 1-0;topics;
+META11;Miscellaneous/Tests;Test metacourse 1-1;topics;
+META20;Miscellaneous/Tests;Test metacourse 2-0;topics;
+META21;Miscellaneous/Tests;Test metacourse 2-1;topics;

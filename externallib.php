@@ -193,6 +193,7 @@ class tool_sync_external extends external_api {
                 'delete' => SYNC_COURSE_DELETE,
                 'create' => SYNC_COURSE_CREATE,
                 'reset' => SYNC_COURSE_RESET),
+                'bindmetas' => SYNC_COURSE_METAS),
             'users' => array('sync' => true),
             'cohorts' => array('sync' => true),
             'enrols' => array('sync' => true)

@@ -1157,6 +1157,7 @@ class course_sync_manager extends sync_manager {
                     return;
                 }
 
+                // TODO : rebind to the method check_headers.
                 $headers = tool_sync_validate_headers($text, $required, $this);
                 if (empty($headers)) {
                     return;

@@ -35,6 +35,9 @@ define('SYNC_COURSE_RESET', 0x008);
 define('SYNC_COURSE_METAS', 0x010);
 define('SYNC_COURSE_CREATE_DELETE', 0x006);
 
+define('SYNC_COHORT_CREATE_UPDATE', 0x1001);
+define('SYNC_COHORT_BIND_COURSES', 0x1002);
+
 /**
  * Tells wether a feature is supported or not. Gives back the
  * implementation path where to fetch resources.
