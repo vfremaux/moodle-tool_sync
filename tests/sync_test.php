@@ -73,6 +73,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         // Set component config for tests.
         set_config('csvseparator', ';', 'tool_sync');
+        set_config('encoding', ';', 'UTF-8');
         set_config('enrolcleanup', 1, 'tool_sync');
         set_config('storereport', 1, 'tool_sync');
         set_config('filearchive', 1, 'tool_sync');

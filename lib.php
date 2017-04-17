@@ -133,7 +133,7 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
         $textlib = new core_text();
     }
 
-    if ($first && $config->encoding == 'UTF-8') {
+    if ($first && @$config->encoding == 'UTF-8') {
         $text = $textlib->trim_utf8_bom($text);
         $first = false;
     }
