@@ -140,7 +140,7 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
 
     $text = preg_replace("/\n?\r?/", '', $text);
 
-    if ($config->encoding != 'UTF-8') {
+    if (@$config->encoding != 'UTF-8') {
         $text = utf8_encode($text);
     }
 
