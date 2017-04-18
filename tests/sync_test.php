@@ -128,7 +128,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         set_config('users_filelocation', 'user_create_sample.csv');
         $config->users_filelocation = 'user_create_sample.csv';
-        $usersmanager = new \tool_sync\user_sync_manager();
+        $usersmanager = new \tool_sync\users_sync_manager();
         $usersmanager->cron($config);
 
         set_config('users_filelocation', 'user_update_sample.csv');
@@ -139,10 +139,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config->users_filelocation = 'user_suspend_sample.csv';
         $usersmanager->cron($config);
 
-        $cohortmanager = new \tool_sync\cohort_sync_manager(SYNC_COHORT_CREATE_UPDATE);
+        $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE);
         $usersmanager->cron($config);
 
-        $cohortmanager = new \tool_sync\cohort_sync_manager(SYNC_COHORT_BIND_COURSES);
+        $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
         $usersmanager->cron($config);
 
         set_config('users_filelocation', 'user_delete_sample.csv');
