@@ -119,7 +119,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
         $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
 
-        $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_BIND_COURSES);
+        $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_METAS);
         $coursemanager->cron($config);
 
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_RESET);
