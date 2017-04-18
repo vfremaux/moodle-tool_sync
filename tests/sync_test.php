@@ -174,10 +174,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE);
         $usersmanager->cron($config);
 
-        $cohort1 = $DB->get_record('cohort', array('name' => 'COHORT1'))
-        $cohort2 = $DB->get_record('cohort', array('name' => 'COHORT2'))
-        $cohort3 = $DB->get_record('cohort', array('idnumber' => 'COH3')
-        $cohort4 = $DB->get_record('cohort', array('idnumber' => 'COH4')
+        $cohort1 = $DB->get_record('cohort', array('name' => 'COHORT1'));
+        $cohort2 = $DB->get_record('cohort', array('name' => 'COHORT2'));
+        $cohort3 = $DB->get_record('cohort', array('idnumber' => 'COH3'));
+        $cohort4 = $DB->get_record('cohort', array('idnumber' => 'COH4'));
 
         $this->assertNotEmpty($cohort1);
         $this->assertNotEmpty($cohort2);
