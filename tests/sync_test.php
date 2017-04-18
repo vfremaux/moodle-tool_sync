@@ -130,17 +130,58 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config->users_filelocation = 'user_create_sample.csv';
         $usersmanager = new \tool_sync\users_sync_manager();
         $usersmanager->cron($config);
+        $this->assertNotEmpty($user1 = $DB->get_record('user', array('username' => 'john.doe')));
+        $this->assertNotEmpty($user2 = $DB->get_record('user', array('username' => 'amelie.dupont')));
+        $this->assertNotEmpty($user3 = $DB->get_record('user', array('username' => 'jack.duf')));
+        $this->assertNotEmpty($user4 = $DB->get_record('user', array('username' => 'ggrass')));
+        $this->assertNotEmpty($user5 = $DB->get_record('user', array('username' => 'yyang')));
+
+        $this->assertNotEmpty($deleted1 = $DB->get_record('user', array('username' => 'todelete1')));
+        $this->assertNotEmpty($deleted2 = $DB->get_record('user', array('username' => 'todelete2')));
+        $this->assertNotEmpty($deleted3 = $DB->get_record('user', array('username' => 'todelete3')));
+
+        $this->assertNotEmpty($suspended1 = $DB->get_record('user', array('username' => 'tosuspend1')));
+        $this->assertNotEmpty($suspended2 = $DB->get_record('user', array('username' => 'tosuspend2')));
+        $this->assertNotEmpty($suspended3 = $DB->get_record('user', array('username' => 'tosuspend3')));
 
         set_config('users_filelocation', 'user_update_sample.csv');
         $config->users_filelocation = 'user_update_sample.csv';
         $usersmanager->cron($config);
+        $this->assertNotEmpty($uuser1 = $DB->get_record('user', array('idnumber' => 'U0001')));
+        $this->assertNotEmpty($uuser2 = $DB->get_record('user', array('idnumber' => 'U0002')));
+        $this->assertNotEmpty($uuser3 = $DB->get_record('user', array('idnumber' => 'U0003')));
+        $this->assertNotEmpty($uuser4 = $DB->get_record('user', array('idnumber' => 'U0004')));
+        $this->assertNotEmpty($uuser5 = $DB->get_record('user', array('idnumber' => 'U0005')));
+
+        $this->assertEquals($user1->username, $uuser1->username);
+        $this->assertEquals($user2->username, $uuser2->username);
+        $this->assertEquals($user3->username, $uuser3->username);
+        $this->assertEquals($user4->username, $uuser4->username);
+        $this->assertEquals($user5->username, $uuser5->username);
 
         set_config('users_filelocation', 'user_suspend_sample.csv');
         $config->users_filelocation = 'user_suspend_sample.csv';
         $usersmanager->cron($config);
 
+        $ususpended1 = $DB->get_record('user', array('username' => 'tosuspend1'));
+        $ususpended2 = $DB->get_record('user', array('username' => 'tosuspend2'));
+        $ususpended3 = $DB->get_record('user', array('username' => 'tosuspend3'));
+
+        $this->assertTrue($ususpended1->suspended);
+        $this->assertTrue($ususpended2->suspended);
+        $this->assertTrue($ususpended3->suspended);
+
         $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE);
         $usersmanager->cron($config);
+        $this->assertNotEmpty($cohort1 = $DB->get_record('cohort', array('shortname' => 'COHORT1')));
+        $this->assertNotEmpty($cohort2 = $DB->get_record('cohort', array('shortname' => 'COHORT2')));
+        $this->assertNotEmpty($cohort3 = $DB->get_record('cohort', array('idnumber' => 'COH3')));
+        $this->assertNotEmpty($cohort4 = $DB->get_record('cohort', array('idnumber' => 'COH4')));
+
+        $this->assertNotEmpty($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user1->id)));
+        $this->assertNotEmpty($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user2->id)));
+        $this->assertNotEmpty($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user3->id)));
+        $this->assertNotEmpty($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id)));
 
         $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
         $usersmanager->cron($config);
@@ -148,6 +189,14 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('users_filelocation', 'user_delete_sample.csv');
         $config->users_filelocation = 'user_delete_sample.csv';
         $usersmanager->cron($config);
+
+        $udeleted1 = $DB->get_record('user', array('username' => 'todelete1'));
+        $udeleted2 = $DB->get_record('user', array('username' => 'todelete2'));
+        $udeleted3 = $DB->get_record('user', array('username' => 'todelete3'));
+
+        $this->assertTrue($udeleted1->deleted);
+        $this->assertTrue($udeleted2->deleted);
+        $this->assertTrue($udeleted3->deleted);
 
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $coursemanager->cron($config);
