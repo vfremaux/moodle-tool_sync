@@ -61,6 +61,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         // Load sample files into filesystem.
 
         $this->load_file('webservices/cohort_create_sample.csv');
+        $this->load_file('webservices/cohort_bind_courses_sample.csv');
         $this->load_file('webservices/course_create_sample.csv');
         $this->load_file('webservices/course_delete_sample.csv');
         $this->load_file('webservices/course_reset_sample.csv');
@@ -103,7 +104,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('cohorts_useridentifier', 'username', 'tool_sync');
         set_config('cohorts_cohortidentifier', 'idnumber', 'tool_sync');
 
-        set_config('cohorts_coursebindingfilelocation', 'cohort_course_sample.csv', 'tool_sync');
+        set_config('cohorts_coursebindingfilelocation', 'cohort_bind_courses_sample.csv', 'tool_sync');
         set_config('cohorts_courseidentifier', 'shortname', 'tool_sync');
         set_config('cohorts_autocreate', 1, 'tool_sync');
         set_config('cohorts_syncdelete', 1, 'tool_sync');
@@ -136,6 +137,12 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         set_config('users_filelocation', 'user_suspend_sample.csv');
         $config->users_filelocation = 'user_suspend_sample.csv';
+        $usersmanager->cron($config);
+
+        $cohortmanager = new \tool_sync\cohort_sync_manager(SYNC_COHORT_CREATE_UPDATE);
+        $usersmanager->cron($config);
+
+        $cohortmanager = new \tool_sync\cohort_sync_manager(SYNC_COHORT_BIND_COURSES);
         $usersmanager->cron($config);
 
         set_config('users_filelocation', 'user_delete_sample.csv');

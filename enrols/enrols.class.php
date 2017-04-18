@@ -24,6 +24,8 @@
 
 namespace tool_sync;
 
+use \StdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
@@ -199,7 +201,7 @@ class enrol_sync_manager extends sync_manager {
                 $record['endtime'] = 0;
             }
 
-            $e = new \StdClass;
+            $e = new StdClass;
             $e->i = $i;
             $e->mycmd = $record['cmd'];
             $e->myrole = $record['rolename'];
@@ -457,7 +459,7 @@ class enrol_sync_manager extends sync_manager {
                                 $groupid[$i] = $gid;
                             } else {
                                 if ($record['gcmd'] == 'gaddcreate') {
-                                    $groupsettings = new \StdClass;
+                                    $groupsettings = new StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
                                     if (empty($syncconfig->simulate)) {
@@ -509,7 +511,7 @@ class enrol_sync_manager extends sync_manager {
                                 $groupid[$i] = $gid;
                             } else {
                                 if ($record['gcmd'] == 'greplacecreate') {
-                                    $groupsettings = new \StdClass;
+                                    $groupsettings = new StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
                                     if (empty($syncconfig->simulate)) {
