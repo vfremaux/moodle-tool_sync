@@ -1136,7 +1136,7 @@ class course_sync_manager extends sync_manager {
             $optional = array('cmd' => 'add');
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file(@$syncconfig->courses_filemetaslocation, 'metacourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->courses_filemetabindinglocation, 'metacourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
