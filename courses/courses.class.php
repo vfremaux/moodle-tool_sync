@@ -152,8 +152,10 @@ class course_sync_manager extends sync_manager {
     public function cron($syncconfig) {
         global $CFG, $DB;
 
-        define('TOPIC_FIELD', '/^(topic)([0-9]|[1-4][0-9]|5[0-2])$/');
-        define('TEACHER_FIELD', '/^(teacher)([1-9]+\d*)(_account|_role)$/');
+        if (!defined('TOPIC_FIELD')) {
+            define('TOPIC_FIELD', '/^(topic)([0-9]|[1-4][0-9]|5[0-2])$/');
+            define('TEACHER_FIELD', '/^(teacher)([1-9]+\d*)(_account|_role)$/');
+        }
 
         // Process files.
 
