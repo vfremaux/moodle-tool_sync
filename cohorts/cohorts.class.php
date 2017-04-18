@@ -130,9 +130,9 @@ class cohorts_sync_manager extends sync_manager {
 
         $systemcontext = \context_system::instance();
 
-        $this->report('Starting...'. $this->execute);
-
         if ($this->execute = SYNC_COHORT_CREATE_UPDATE) {
+
+            $this->report('Starting creating cohorts...');
 
             // Internal process controls.
             $autocreatecohorts = 0 + @$syncconfig->cohorts_autocreate;
@@ -248,7 +248,7 @@ class cohorts_sync_manager extends sync_manager {
                 $cid = $syncconfig->cohorts_cohortidentifier;
                 if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))) {
                     if (!$autocreatecohorts) {
-                        if (($syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohort'])) {
+                        if (($syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohortid'])) {
                             // TODO track in log, push in runback file.
                             $e = new \StdClass;
                             $e->cid = $cid;
@@ -314,9 +314,14 @@ class cohorts_sync_manager extends sync_manager {
                 }
             }
             fclose($filereader);
+
+            $this->report('... finished.');
         }
 
         if ($this->execute == SYNC_COHORT_BIND_COURSES) {
+
+            $this->report('Starting binding cohorts...');
+
             if (!get_admin()) {
                 return;
             }
@@ -463,6 +468,10 @@ class cohorts_sync_manager extends sync_manager {
                     default:
                 }
             }
+
+            fclose($filereader);
+
+            $this->report('... finished');
         }
 
         if (!empty($syncconfig->storereport)) {
