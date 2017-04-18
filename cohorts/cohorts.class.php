@@ -141,9 +141,11 @@ class cohorts_sync_manager extends sync_manager {
                 return;
             }
 
-            if (empty($this->manualfilerec)) {
+            $uploaded = $this->manualfilerec;
+            if (empty($uploaded)) {
                 $filerec = $this->get_input_file(@$syncconfig->cohorts_filelocation, 'cohorts.csv');
             } else {
+                echo "Taking uploaded";
                 $filerec = $this->manualfilerec;
             }
 
@@ -219,7 +221,7 @@ class cohorts_sync_manager extends sync_manager {
                     $i++;
                     continue;
                 }
-                $valueset = explode($csvdelimiter2, $text);
+                $valueset = explode($syncconfig->csvseparator, $text);
 
                 $record = array();
                 foreach ($valueset as $key => $value) {

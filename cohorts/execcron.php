@@ -42,7 +42,7 @@ set_time_limit(1800);
 raise_memory_limit('512M');
 
 $renderer = $PAGE->get_renderer('tool_sync');
-$cohortssmanager = new \tool_sync\cohorts_sync_manager();
+$cohortsmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE, null);
 $syncconfig = get_config('tool_sync');
 
 $url = new moodle_url('/admin/tool/sync/cohorts/execcron.php');
@@ -72,11 +72,11 @@ if ($data = $form->get_data()) {
     } else {
         // Use the just uploaded file.
 
-        if (!$manualfilerec = tool_sync_receive_file()) {
+        if (!$manualfilerec = tool_sync_receive_file($data)) {
             $errormes = "Failed loading a file";
         } else {
             $processedfile = $manualfilerec->filename;
-            $cohortsmanager = new \tool_sync\cohorts_sync_manager($manualfilerec);
+            $cohortsmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE, $manualfilerec);
             $canprocess = true;
         }
     }
@@ -89,17 +89,15 @@ $form->display();
 
 if ($canprocess) {
 
-    $address = @$syncconfig->cohorts_filelocation;
-
     $cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
-    $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $address);
+    $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
 
     echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";
     echo "<center>$taskrunmsg</center>";
 
     echo '<pre>';
     try {
-        $cohortssmanager->cron($syncconfig);
+        $cohortsmanager->cron($syncconfig);
     } catch (Exception $ex) {
         echo $OUTPUT->notification(get_string('processerror', 'tool_sync', $ex->getMessage()), 'notifyproblem');
         $returnurl = new moodle_url('/admin/tool/sync/index.php');
