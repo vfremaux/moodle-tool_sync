@@ -1,5 +1,5 @@
 username;firstname;lastname;email;country;lang
-john.doe;John;Doe;johndoe@foo.com;EN;en
+john.doe;John;Doe;johndoe@foo.com;GB;en
 amelie.dupont;Amélie;Dupont;adupont@foo.com;FR;en
 jack.duf;Jack;Duff;jack.duff@foo.com;US;en
 ggrass;Günter;Grass;ggrass@foo.com;DE;en
