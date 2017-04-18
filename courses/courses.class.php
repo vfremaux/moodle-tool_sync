@@ -1728,11 +1728,21 @@ class course_sync_manager extends sync_manager {
             }
 
         } else {
+            // Check course format. Use default if missing.
+
             // Create default course.
             if (empty($syncconfig->simulate)) {
+
+                if (empty($course['format'])) {
+                    $course['format'] = get_config('moodlecourse', 'format');
+                }
+                if (empty($course['format'])) {
+                    $course['format'] = 'topics';
+                }
+                $courserec->format = $course['format'];
+
                 $newcourse = create_course($courserec);
 
-                $format = (!isset($course['format'])) ? 'topics' : $course['format']; // May be useless.
                 if (isset($course['topics'])) {
                     // Any topic headings specified ?
                     $maxfilledtopics = 1;
@@ -1782,13 +1792,13 @@ class course_sync_manager extends sync_manager {
 
                     // Finally we can bind the course to have $maxfilledtopics topics.
                     $new = 0;
-                    $params = array('courseid' => $newcourse->id, 'name' => 'numsections', 'format' => $format);
+                    $params = array('courseid' => $newcourse->id, 'name' => 'numsections', 'format' => $course['format']);
                     if (!$formatoptions = $DB->get_record('course_format_options', $params)) {
                         $formatoptions = new \StdClass();
                         $new = 1;
                     }
                     $formatoptions->courseid = $newcourse->id;
-                    $formatoptions->format = $format;
+                    $formatoptions->format = $course['format'];
                     $formatoptions->name = 'numsections';
                     $formatoptions->section = 0;
                     $formatoptions->value = $maxfilledtopics;
