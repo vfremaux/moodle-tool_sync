@@ -381,7 +381,7 @@ class cohorts_sync_manager extends sync_manager {
                 $valueset = explode($csvdelimiter2, $text);
 
                 // Validate incoming values.
-                $valuearr = array_map($headers, $valueset);
+                $valuearr = array_combine($headers, $valueset);
 
                 if (!array_key_exists('cmd', $valuearr)) {
                     $valuearr['cmd'] = 'add';
