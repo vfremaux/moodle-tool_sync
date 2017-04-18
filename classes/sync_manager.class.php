@@ -73,11 +73,11 @@ class sync_manager {
 
     /**
      * Initiates tryback buffer and adds the first headline.
-     * @param array $headlines and array of headers that were in the original file.
+     * @param array $headlines and array of headers lines that were in the original file.
      */
     protected function init_tryback($headlines) {
         $this->trybackhead = $headlines;
-        $this->trybackarr = '';
+        $this->trybackarr = array();
     }
 
     /**

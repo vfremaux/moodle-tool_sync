@@ -819,7 +819,7 @@ class course_sync_manager extends sync_manager {
                 }
 
                 // Header is validated.
-                $this->init_tryback(implode($syncconfig->csvseparator, $headers));
+                $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
                 $fieldcount = count($headers);
 
@@ -1164,7 +1164,7 @@ class course_sync_manager extends sync_manager {
                 }
 
                 // Header is validated for metas.
-                $this->init_tryback(implode($syncconfig->csvseparator, $headers));
+                $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
                 $fieldcount = count($headers);
 

@@ -219,7 +219,7 @@ class users_sync_manager extends sync_manager {
         $linenum = 2; // Since header is line 1.
 
         // Header is validated.
-        $this->init_tryback($headers);
+        $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
         $usersnew     = 0;
         $usersupdated = 0;

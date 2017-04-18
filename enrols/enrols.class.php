@@ -155,7 +155,7 @@ class enrol_sync_manager extends sync_manager {
         }
 
         // Header is validated.
-        $this->init_tryback($headers);
+        $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
         // Starting processing lines.
         $i = 2;
