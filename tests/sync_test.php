@@ -167,9 +167,9 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $ususpended2 = $DB->get_record('user', array('username' => 'tosuspend2'));
         $ususpended3 = $DB->get_record('user', array('username' => 'tosuspend3'));
 
-        $this->assertTrue($ususpended1->suspended);
-        $this->assertTrue($ususpended2->suspended);
-        $this->assertTrue($ususpended3->suspended);
+        $this->assertTrue($ususpended1->suspended == 1);
+        $this->assertTrue($ususpended2->suspended == 1);
+        $this->assertTrue($ususpended3->suspended == 1);
 
         $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE);
         $usersmanager->cron($config);
@@ -194,9 +194,9 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $udeleted2 = $DB->get_record('user', array('username' => 'todelete2'));
         $udeleted3 = $DB->get_record('user', array('username' => 'todelete3'));
 
-        $this->assertTrue($udeleted1->deleted);
-        $this->assertTrue($udeleted2->deleted);
-        $this->assertTrue($udeleted3->deleted);
+        $this->assertTrue($udeleted1->deleted == 1);
+        $this->assertTrue($udeleted2->deleted == 1);
+        $this->assertTrue($udeleted3->deleted == 1);
 
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $coursemanager->cron($config);
