@@ -260,7 +260,6 @@ class cohorts_sync_manager extends sync_manager {
                     }
 
                     // Create cohort if missing.
-
                     if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))) {
                         if (!$autocreatecohorts) {
                             if (($syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohortid'])) {
@@ -286,9 +285,26 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->contextid = $systemcontext->id;
                             $cohort->timecreated = $t;
                             $cohort->timemodified = $t;
-                            $cohort->id = $DB->insert_record('cohort', $cohort);
-                            $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
+                            if (!$DB->get_record('cohort', array('name' => $cohort->name, 'idnumber' => $cohort->idnumber))) {
+                                $cohort->id = $DB->insert_record('cohort', $cohort);
+                                $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
+                            } else {
+                                $this->report(get_string('cohortcreationskipped', 'tool_sync', $cohort));
+                                continue;
+                            }
                         }
+                    } else {
+                        if (!empty($record['cdescription'])) {
+                            $cohort->description = $record['cdescription'];
+                        }
+                        if (!empty($record['idnumber'])) {
+                            $cohort->idnumber = @$record['cidnumber'];
+                        }
+                        if (!empty($record['name'])) {
+                            $cohort->idnumber = @$record['name'];
+                        }
+                        $DB->update_record('cohort', $cohort);
+                        $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
                     }
 
                     $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
@@ -296,7 +312,7 @@ class cohorts_sync_manager extends sync_manager {
                         $cohortmembership = new StdClass();
                         $cohortmembership->userid = $user->id;
                         $cohortmembership->cohortid = ''.@$cohort->id;
-                        $cohortmembership->timeadded = $t;
+                        $cohortmembership->timeadded = time();
                         $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
                         $userscohortassign++;
 
@@ -315,7 +331,11 @@ class cohorts_sync_manager extends sync_manager {
                 } else if ($record['cmd'] == 'del') {
 
                     $cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ));
-                    $user = $DB->get_record('user', array($uid => $record['userid']));
+                    if (!empty($record['userid'])) {
+                        $user = $DB->get_record('user', array($uid => $record['userid']));
+                    } else {
+                        $user = false;
+                    }
 
                     if ($user) {
                         if ($cohort) {
@@ -434,6 +454,10 @@ class cohorts_sync_manager extends sync_manager {
                         if ($valuearr['role'] != '*') {
                             $source = $syncconfig->cohorts_roleidentifier;
                             $roleid = tool_sync_get_internal_id('role', $source, $valuearr['role']);
+                            if (!$roleid) {
+                                $this->report(get_string('cohortbindingbadroleid', 'tool_sync', $valuearr['role']));
+                                continue;
+                            }
                         } else {
                             // Only for deletion. Means delete enrols for all roles).
                             $roleid = '*';
@@ -445,15 +469,23 @@ class cohorts_sync_manager extends sync_manager {
 
                 $source = $syncconfig->cohorts_courseidentifier;
                 $courseid = tool_sync_get_internal_id('course', $source, $valuearr['course']);
+                if (!$courseid) {
+                    $this->report(get_string('cohortbindingbadcourseid', 'tool_sync', $valuearr['course']));
+                    continue;
+                }
                 $source = $syncconfig->cohorts_cohortidentifier;
                 $cohortid = tool_sync_get_internal_id('cohort', $source, $valuearr['cohort']);
+                if (!$cohortid) {
+                    $this->report(get_string('cohortbindingbadcohortid', 'tool_sync', $valuearr['cohort']));
+                    continue;
+                }
 
                 switch ($valuearr['cmd']) {
                     case 'add': {
                         $params = array('enrol' => 'cohort', 'courseid' => $courseid, 'customint1' => $cohortid, 'roleid' => $roleid);
                         if (!$oldrec = $DB->get_record('enrol', $params)) {
                             $enrol = new StdClass;
-                            $enrol->enrol = 'enrol';
+                            $enrol->enrol = 'cohort';
                             $enrol->status = 0;
                             $enrol->courseid = $courseid;
                             $enrol->enrolstartdate = time();
