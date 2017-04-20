@@ -685,11 +685,11 @@ class tool_sync_core_ext_external extends external_api {
         if ($users) {
             foreach ($users as $user) {
                 $lightuser = new StdClass;
-                $lightuser->id = $user->id;
-                $lightuser->username = $user->username;
-                $lightuser->firstname = $user->firstname;
-                $lightuser->lastname = $user->lastname;
-                $lightuser->idnumber = $user->idnumber;
+                $lightuser->id = $user['id'];
+                $lightuser->username = $user['username'];
+                $lightuser->firstname = $user['firstname'];
+                $lightuser->lastname = $user['lastname'];
+                $lightuser->idnumber = $user['idnumber'];
                 $lightusers[] = $lightuser;
             }
         }
