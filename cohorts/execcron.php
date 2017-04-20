@@ -42,7 +42,8 @@ set_time_limit(1800);
 raise_memory_limit('512M');
 
 $renderer = $PAGE->get_renderer('tool_sync');
-$cohortsmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE, null);
+$action = optional_param('action', SYNC_COHORT_CREATE_UPDATE, PARAM_INT);
+$cohortsmanager = new \tool_sync\cohorts_sync_manager($action, null);
 $syncconfig = get_config('tool_sync');
 
 $url = new moodle_url('/admin/tool/sync/cohorts/execcron.php');
@@ -52,7 +53,11 @@ $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
-$form = new InputfileLoadform($url, array('localfile' => @$syncconfig->cohorts_filelocation));
+if ($action == SYNC_COHORT_CREATE_UPDATE) {
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->cohorts_filelocation));
+} else {
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->cohorts_coursebindingfilelocation));
+}
 
 $canprocess = false;
 
@@ -76,12 +81,18 @@ if ($data = $form->get_data()) {
             $errormes = "Failed loading a file";
         } else {
             $processedfile = $manualfilerec->filename;
-            $cohortsmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE, $manualfilerec);
+            $cohortsmanager = new \tool_sync\cohorts_sync_manager($action, $manualfilerec);
             $canprocess = true;
         }
     }
 }
 echo $OUTPUT->header();
+
+if ($action == SYNC_COHORT_CREATE_UPDATE) {
+    $cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
+} else {
+    $cohortmgtmanual = get_string('cohortbindingmanual', 'tool_sync');
+}
 
 echo $OUTPUT->heading_with_help(get_string('cohortmgtmanual', 'tool_sync'), 'cohortsync', 'tool_sync');
 
@@ -89,7 +100,6 @@ $form->display();
 
 if ($canprocess) {
 
-    $cohortmgtmanual = get_string('cohortmgtmanual', 'tool_sync');
     $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
 
     echo "<br/><fieldset><legend><strong>$cohortmgtmanual</strong></legend>";

@@ -1,0 +1,9 @@
+cmd;cohortid;userid;cdescription;cidnumber
+del;COHORT1;U0001;Teacher Cohort 1;COH001
+del;COHORT1;U0002;Teacher Cohort 1;
+del;COHORT2;U0003;Generated Cohort 2;COH002
+del;COHORT2;U0004;;
+del;COHORT3;U0004;Generated Cohort 3;COH003
+del;COHORT3;U0005;Generated Cohort 3;COH003
+del;COHORT4;U0001;;
+del;COHORT4;U0004;;

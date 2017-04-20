@@ -80,9 +80,13 @@ class cohorts_sync_manager extends sync_manager {
 
         $frm->addElement('static', 'usersst1', '<hr>');
 
-        $execurl = new \moodle_url('/admin/tool/sync/cohorts/execcron.php');
+        $execurl = new \moodle_url('/admin/tool/sync/cohorts/execcron.php', array('action' => SYNC_COHORT_CREATE_UPDATE));
         $params = array('onclick' => 'document.location.href= \''.$execurl.'\'');
         $frm->addElement('button', 'manualcohorts', get_string('manualcohortrun', 'tool_sync'), $params);
+
+        $execurl = new \moodle_url('/admin/tool/sync/cohorts/execcron.php', array('action' => SYNC_COHORT_BIND_COURSES));
+        $params = array('onclick' => 'document.location.href= \''.$execurl.'\'');
+        $frm->addElement('button', 'manualcohorts', get_string('manualcohortbindingrun', 'tool_sync'), $params);
 
     }
 

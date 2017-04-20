@@ -737,7 +737,7 @@ class course_sync_manager extends sync_manager {
             // TODO : change default format from weeks to course default options.
             global $validate;
             $validate = array(  'fullname' => array(1, 254, 1), // Validation information - see validate_as function.
-                                'shortname' => array(1, 15, 1),
+                                'shortname' => array(1, 150, 1),
                                 'category' => array(5),
                                 'sortorder' => array(2, 4294967295, 0),
                                 'summary' => array(1, 0, 0),
