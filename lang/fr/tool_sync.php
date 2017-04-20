@@ -199,6 +199,7 @@ $string['errorvalidationsearchmisses'] = 'Erreur ligne {$a->i} : Valeur du champ
 $string['errorvalidationstringlength'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (longueur &gt; {$a->length}).';
 $string['errorvalidationtimecheck'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (n\'est pas un temps valide).';
 $string['errorvalidationvalueset'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (doit être dans l\'ensemble {$a->set}).';
+$string['errornoenrolmethod'] = 'La méthode d\'inscription invoquée n\'est pas active dans ce cours';
 $string['eventscleanup'] = 'Nettoyage des événéments générés (conseillé)';
 $string['execstartsat'] = 'Exécution démarrée à {$a} ';
 $string['executecoursecronmanually'] = 'Exécuter toutes les opérations de cours';
