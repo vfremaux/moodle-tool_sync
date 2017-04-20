@@ -485,6 +485,7 @@ class enrol_sync_manager extends sync_manager {
 
                             $e = new StdClass;
                             $e->group = $record['g'.$i];
+                            $e->myuser = $user->username.' ('.$record['userid'].')';
 
                             if (count(get_user_roles($context, $user->id))) {
                                 if (empty($syncconfig->simulate)) {
@@ -494,7 +495,7 @@ class enrol_sync_manager extends sync_manager {
                                         $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
                                     }
                                 } else {
-                                    $this->report('SIMULTION : '.get_string('addedtogroup', 'tool_sync', $e));
+                                    $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
                                 }
                             } else {
                                 $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$i]));
@@ -538,6 +539,7 @@ class enrol_sync_manager extends sync_manager {
                                 if (empty($syncconfig->simulate)) {
                                     $e = new StdClass();
                                     $e->group = $groupid[$i];
+                                    $e->myuser = $user->username.' ('.$record['userid'].')';
                                     if (groups_add_member($groupid[$i], $user->id)) {
                                         $this->report(get_string('addedtogroup', 'tool_sync', $e));
                                     } else {
@@ -585,51 +587,51 @@ class enrol_sync_manager extends sync_manager {
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%user_enrolment_updated'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%user_enrolment_updated'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%user_enrolment_created'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%user_enrolment_created'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%user_enrolment_deleted'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%user_enrolment_deleted'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%role_assigned'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%role_assigned'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%role_unassigned'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%role_unassigned'
                 ";
                 $DB->execute($sql, array($admin->id));
             }
