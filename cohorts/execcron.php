@@ -43,6 +43,7 @@ raise_memory_limit('512M');
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $action = optional_param('action', SYNC_COHORT_CREATE_UPDATE, PARAM_INT);
+
 $cohortsmanager = new \tool_sync\cohorts_sync_manager($action, null);
 $syncconfig = get_config('tool_sync');
 
@@ -71,8 +72,11 @@ if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $cohortsmanager = new \tool_sync\cohorts_sync_manager();
-        $processedfile = $syncconfig->cohorts_filelocation;
+        if ($action == SYNC_COHORT_CREATE_UPDATE) {
+            $processedfile = $syncconfig->cohorts_filelocation;
+        } else {
+            $processedfile = $syncconfig->cohorts_coursebindingfilelocation;
+        }
         $canprocess = true;
     } else {
         // Use the just uploaded file.
@@ -96,6 +100,8 @@ if ($action == SYNC_COHORT_CREATE_UPDATE) {
 
 echo $OUTPUT->heading_with_help(get_string('cohortmgtmanual', 'tool_sync'), 'cohortsync', 'tool_sync');
 
+$formdata['action'] = $action;
+$form->set_data($formdata);
 $form->display();
 
 if ($canprocess) {

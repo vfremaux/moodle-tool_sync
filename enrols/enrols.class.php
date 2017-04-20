@@ -58,7 +58,7 @@ class enrol_sync_manager extends sync_manager {
 
         $frm->addElement('static', 'enrolsst1', '<hr>');
 
-        $cronurl = new \moodle_url('/admin/tool/sync/enrol/execcron.php');
+        $cronurl = new \moodle_url('/admin/tool/sync/enrols/execcron.php');
         $attribs = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualenrols', get_string('manualenrolrun', 'tool_sync'), $attribs);
 
@@ -261,7 +261,7 @@ class enrol_sync_manager extends sync_manager {
 
             $params = array('enrol' => $record['enrol'], 'courseid' => $course->id, 'status' => ENROL_INSTANCE_ENABLED);
             if (!$enrols = $DB->get_records('enrol', $params, 'sortorder ASC')) {
-                $this->report(get_string('errornomanualenrol', 'tool_sync'));
+                $this->report(get_string('errornoenrolmethod', 'tool_sync'));
                 $record['enrol'] = '';
             } else {
                 $enrol = reset($enrols);
@@ -483,6 +483,9 @@ class enrol_sync_manager extends sync_manager {
                                 }
                             }
 
+                            $e = new StdClass;
+                            $e->group = $record['g'.$i];
+
                             if (count(get_user_roles($context, $user->id))) {
                                 if (empty($syncconfig->simulate)) {
                                     if (groups_add_member($groupid[$i], $user->id)) {
@@ -507,6 +510,8 @@ class enrol_sync_manager extends sync_manager {
                     }
                     for ($i = 1; $i < 10; $i++) {
                         if (!empty($record['g'.$i])) {
+                            $e = new StdClass();
+                            $e->group = $record['g'.$i];
                             if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
                                 $groupid[$i] = $gid;
                             } else {
@@ -517,23 +522,22 @@ class enrol_sync_manager extends sync_manager {
                                     if (empty($syncconfig->simulate)) {
                                         if ($gid = groups_create_group($groupsettings)) {
                                             $groupid[$i] = $gid;
-                                            $e->group = $record['g'.$i];
                                             $this->report(get_string('groupcreated', 'tool_sync', $e));
                                         } else {
-                                            $e->group = $record['g'.$i];
                                             $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
                                         }
                                     } else {
                                         $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
                                     }
                                 } else {
-                                    $e->group = $record['g'.$i];
                                     $this->report(get_string('groupunknown', 'tool_sync', $e));
                                 }
                             }
 
                             if (count(get_user_roles($context, $user->id))) {
                                 if (empty($syncconfig->simulate)) {
+                                    $e = new StdClass();
+                                    $e->group = $groupid[$i];
                                     if (groups_add_member($groupid[$i], $user->id)) {
                                         $this->report(get_string('addedtogroup', 'tool_sync', $e));
                                     } else {
