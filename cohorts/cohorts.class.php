@@ -287,22 +287,20 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->contextid = $systemcontext->id;
                             $cohort->timecreated = $t;
                             $cohort->timemodified = $t;
-                            $select = "
-                                name = :name AND
-                                idnumber != idnumer:
-                            ";
-                            if ($conflict = $DB->get_record('cohort', $select, array('name' => $cohort->name, 'idnumber' => $cohort->idnumber))) {
-                                $this->report(get_string('cohortcreationskipped', 'tool_sync', $cohort));
-                                continue;
-                            }
 
-                            $select = "
-                                name != :name AND
-                                idnumber = idnumer:
-                            ";
-                            if ($conflict = $DB->get_record('cohort', array('name' => $cohort->name, 'idnumber' => $cohort->idnumber))) {
-                                $this->report(get_string('cohortcreationskipped', 'tool_sync', $cohort));
-                                continue;
+                            $e = new StdClass;
+                            if ($cid == 'name') {
+                                $e->by = 'idnumber';
+                                if ($conflict = $DB->get_record('cohort', array('idnumber' => $cohort->idnumber))) {
+                                    $this->report(get_string('cohortconflict', 'tool_sync', $e));
+                                    continue;
+                                }
+                            } else {
+                                $e->by = 'name';
+                                if ($conflict = $DB->get_record('cohort', array('name' => $cohort->name))) {
+                                    $this->report(get_string('cohortconflict', 'tool_sync', $e));
+                                    continue;
+                                }
                             }
 
                             $cohort->id = $DB->insert_record('cohort', $cohort);
