@@ -213,6 +213,8 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
+        echo $cohortmanager->log;
+
         $cohorts = $DB->get_records('cohort');
         print_object($cohorts);
 
