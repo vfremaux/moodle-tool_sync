@@ -185,10 +185,17 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
+        $this->assertTrue(is_object($DB->get_record('cohort', array('name' => 'COHORT1'))));
+        $this->assertTrue(is_object($DB->get_record('cohort', array('name' => 'COHORT2'))));
+        $this->assertTrue(is_object($DB->get_record('cohort', array('idnumber' => 'COH3'))));
+        $this->assertTrue(is_object($DB->get_record('cohort', array('idnumber' => 'COH4'))));
+
         set_config('cohorts_filelocation', 'cohort_delete_only_by_name.csv', 'tool_sync');
         set_config('cohorts_cohortidentifier', 'name', 'tool_sync');
         $config = get_config('tool_sync');
         $cohortmanager->cron($config);
+
+        $this->assertTrue($DB->count_records('cohort') == 0);
 
         set_config('cohorts_filelocation', 'cohort_create_only.csv', 'tool_sync');
         $config = get_config('tool_sync');
@@ -198,6 +205,8 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('cohorts_cohortidentifier', 'idnumber', 'tool_sync');
         $config = get_config('tool_sync');
         $cohortmanager->cron($config);
+
+        $this->assertTrue($DB->count_records('cohort') == 0);
 
         // Combined creation / feeding.
         set_config('cohorts_filelocation', 'cohort_create_sample.csv', 'tool_sync');
