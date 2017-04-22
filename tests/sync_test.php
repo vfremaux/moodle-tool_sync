@@ -68,7 +68,6 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->load_file('webservices/cohort_add_members_by_idnumber.csv');
         $this->load_file('webservices/cohort_free_cohorts_by_idnumber.csv');
         $this->load_file('webservices/cohort_delete_members_by_idnumber.csv');
-        $this->load_file('webservices/cohort_delete_sample.csv');
         $this->load_file('webservices/cohort_bind_courses_sample.csv');
         $this->load_file('webservices/course_create_sample.csv');
         $this->load_file('webservices/course_delete_sample.csv');
