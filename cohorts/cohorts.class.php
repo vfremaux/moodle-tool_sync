@@ -243,33 +243,35 @@ class cohorts_sync_manager extends sync_manager {
                     $syncconfig->cohorts_cohortidentifier = 'idnumber';
                 }
 
+
+                if (empty($record['cmd'])) {
+                    $record['cmd'] = 'add';
+                }
+
                 $cid = $syncconfig->cohorts_cohortidentifier;
                 $uid = $syncconfig->cohorts_useridentifier;
 
                 // Bind user to cohort.
-                if (!array_key_exists('cmd', $record) || $record['cmd'] == 'add') {
+                if ($record['cmd'] == 'add') {
 
-                    if (!$user = $DB->get_record('user', array($uid => $record['userid']))) {
-                        // TODO track in log, push in runback file.
-                        $e = new StdClass();
-                        $e->uid = $uid;
-                        $e->identifier = $record['userid'];
-                        $this->report(get_string('cohortusernotfound', 'tool_sync', $e));
-                        $userserrors++;
-                        continue;
+                    // $cid can be name, id or idnumber
+                    $cohort = $DB->get_record('cohort', array( $cid => $record['c'.$cid] ));
+                    if (!empty($record['userid'])) {
+                        $user = $DB->get_record('user', array($uid => $record['userid']));
+                    } else {
+                        $user = false;
                     }
 
                     // Create cohort if missing.
-                    if (!$cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ))) {
+                    if (!$cohort) {
                         if (!$autocreatecohorts) {
-                            if (($syncconfig->cohorts_cohortidentifier != 1) && empty($record['cohortid'])) {
-                                // TODO track in log, push in runback file.
-                                $e = new StdClass;
-                                $e->cid = $cid;
-                                $e->identifier = $record['cohortid'];
-                                $this->report(get_string('cohortnotfound', 'tool_sync', $e));
-                                continue;
-                            }
+                            // Creation is forbidden. Nust report the case.
+                            // TODO track in log, push in runback file.
+                            $e = new StdClass;
+                            $e->cid = $cid;
+                            $e->identifier = $record['c'.$cid];
+                            $this->report(get_string('cohortnotfound', 'tool_sync', $e));
+                            continue;
                         } else {
                             // Make cohort if cohort info explicit and not existing.
                             $t = time();
@@ -285,13 +287,26 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->contextid = $systemcontext->id;
                             $cohort->timecreated = $t;
                             $cohort->timemodified = $t;
-                            if (!$DB->get_record('cohort', array('name' => $cohort->name, 'idnumber' => $cohort->idnumber))) {
-                                $cohort->id = $DB->insert_record('cohort', $cohort);
-                                $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
-                            } else {
+                            $select = "
+                                name = :name AND
+                                idnumber != idnumer:
+                            ";
+                            if ($conflict = $DB->get_record('cohort', $select, array('name' => $cohort->name, 'idnumber' => $cohort->idnumber))) {
                                 $this->report(get_string('cohortcreationskipped', 'tool_sync', $cohort));
                                 continue;
                             }
+
+                            $select = "
+                                name != :name AND
+                                idnumber = idnumer:
+                            ";
+                            if ($conflict = $DB->get_record('cohort', array('name' => $cohort->name, 'idnumber' => $cohort->idnumber))) {
+                                $this->report(get_string('cohortcreationskipped', 'tool_sync', $cohort));
+                                continue;
+                            }
+
+                            $cohort->id = $DB->insert_record('cohort', $cohort);
+                            $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
                         }
                     } else {
                         if (!empty($record['cdescription'])) {
@@ -307,30 +322,34 @@ class cohorts_sync_manager extends sync_manager {
                         $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
                     }
 
-                    $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
-                    if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
-                        $cohortmembership = new StdClass();
-                        $cohortmembership->userid = $user->id;
-                        $cohortmembership->cohortid = ''.@$cohort->id;
-                        $cohortmembership->timeadded = time();
-                        $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
-                        $userscohortassign++;
-
-                        $e = new StdClass;
-                        $e->username = $user->username;
-                        $e->idnumber = $user->idnumber;
-                        $e->cname = $cohort->name;
-                        $this->report(get_string('cohortmemberadded', 'tool_sync', $e));
-                    } else {
-                        $e = new StdClass;
-                        $e->username = $user->username;
-                        $e->idnumber = $user->idnumber;
-                        $e->cname = $cohort->name;
-                        $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
+                    if ($user) {
+                        $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
+                        if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
+                            $cohortmembership = new StdClass();
+                            $cohortmembership->userid = $user->id;
+                            $cohortmembership->cohortid = ''.@$cohort->id;
+                            $cohortmembership->timeadded = time();
+                            $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
+                            $userscohortassign++;
+    
+                            $e = new StdClass;
+                            $e->username = $user->username;
+                            $e->idnumber = $user->idnumber;
+                            $e->cname = $cohort->name;
+                            $this->report(get_string('cohortmemberadded', 'tool_sync', $e));
+                        } else {
+                            $e = new StdClass;
+                            $e->username = $user->username;
+                            $e->idnumber = $user->idnumber;
+                            $e->cname = $cohort->name;
+                            $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
+                        }
                     }
+
                 } else if ($record['cmd'] == 'del') {
 
-                    $cohort = $DB->get_record('cohort', array( $cid => $record['cid'] ));
+                    // $cid can be name, id or idnumber
+                    $cohort = $DB->get_record('cohort', array( $cid => $record['c'.$cid] ));
                     if (!empty($record['userid'])) {
                         $user = $DB->get_record('user', array($uid => $record['userid']));
                     } else {
@@ -367,7 +386,9 @@ class cohorts_sync_manager extends sync_manager {
                             $this->report(get_string('cohortnotexists', 'tool_sync', $e));
                         }
                     }
+
                 } else if ($record['cmd'] == 'free') {
+
                     $cohort = $DB->get_record('cohort', array( $cid => $record['cid'] ));
                     if (empty($cohort)) {
                         $e = new StdClass;
@@ -376,7 +397,7 @@ class cohorts_sync_manager extends sync_manager {
                         $this->report(get_string('cohortnotexists', 'tool_sync', $e));
                         continue;
                     }
-                    $members = $DB->get_records('cohort_members', array('cohortid' => $cohort->id);
+                    $members = $DB->get_records('cohort_members', array('cohortid' => $cohort->id));
                     if ($members) {
                         foreach($members as $member) {
                             cohort_remove_member($cohort->id, $member->userid);
