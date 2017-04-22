@@ -156,12 +156,12 @@ class cohorts_sync_manager extends sync_manager {
 
             // Make arrays of valid fields for error checking.
             $required = array(
-                'userid' => 1,
-                'cohortid' => 1
             );
             $optionaldefaults = array();
             $optional = array(
                 'cmd',
+                'userid' => 1,
+                'cid' => 1
                 'cname',
                 'cdescription',
                 'cidnumber'
