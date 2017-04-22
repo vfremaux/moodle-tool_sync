@@ -60,6 +60,9 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         // Load sample files into filesystem.
 
+        $this->load_file('webservices/cohort_create_only.csv');
+        $this->load_file('webservices/cohort_delete_only_by_name.csv');
+        $this->load_file('webservices/cohort_delete_only_by_idnumber.csv');
         $this->load_file('webservices/cohort_create_sample.csv');
         $this->load_file('webservices/cohort_delete_sample.csv');
         $this->load_file('webservices/cohort_add_members_by_idnumber.csv');
@@ -105,7 +108,6 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('users_primaryidentity', 'username', 'tool_sync');
 
         // Configure cohort tool.
-        set_config('cohorts_filelocation', 'cohort_create_sample.csv', 'tool_sync');
         set_config('cohorts_useridentifier', 'username', 'tool_sync');
         set_config('cohorts_cohortidentifier', 'idnumber', 'tool_sync');
 
@@ -179,6 +181,28 @@ class admin_tool_sync_testcase extends advanced_testcase {
         // Cohort operations.
 
         $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE);
+
+        set_config('cohorts_filelocation', 'cohort_create_only.csv', 'tool_sync');
+        $config = get_config('tool_sync');
+        $cohortmanager->cron($config);
+
+        set_config('cohorts_filelocation', 'cohort_delete_only_by_name.csv', 'tool_sync');
+        set_config('cohorts_cohortidentifier', 'name', 'tool_sync');
+        $config = get_config('tool_sync');
+        $cohortmanager->cron($config);
+
+        set_config('cohorts_filelocation', 'cohort_create_only.csv', 'tool_sync');
+        $config = get_config('tool_sync');
+        $cohortmanager->cron($config);
+
+        set_config('cohorts_filelocation', 'cohort_delete_only_by_idnumber.csv', 'tool_sync');
+        set_config('cohorts_cohortidentifier', 'idnumber', 'tool_sync');
+        $config = get_config('tool_sync');
+        $cohortmanager->cron($config);
+
+        // Combined creation / feeding.
+        set_config('cohorts_filelocation', 'cohort_create_sample.csv', 'tool_sync');
+        $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
         $cohorts = $DB->get_records('cohort');
@@ -200,6 +224,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id))));
 
         set_config('cohorts_filelocation', 'cohort_free_cohorts_by_idnumber.csv', 'tool_sync');
+        $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
         // Assert cohorts are empty.
@@ -209,6 +234,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort2->id)), 0);
 
         set_config('cohorts_filelocation', 'cohort_add_members_by_idnumber.csv', 'tool_sync');
+        $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
         $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user1->id)));
@@ -217,6 +243,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id)));
 
         set_config('cohorts_filelocation', 'cohort_delete_members_by_idnumber.csv', 'tool_sync');
+        $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user1->id)), 0);
