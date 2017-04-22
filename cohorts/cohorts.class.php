@@ -161,10 +161,10 @@ class cohorts_sync_manager extends sync_manager {
             $optional = array(
                 'cmd',
                 'userid' => 1,
-                'cid' => 1
+                'cid' => 1,
                 'cname',
                 'cdescription',
-                'cidnumber'
+                'cidnumber',
             );
             $patterns = array();
             $metas = array();
