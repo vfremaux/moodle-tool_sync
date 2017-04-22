@@ -330,7 +330,7 @@ class cohorts_sync_manager extends sync_manager {
                     }
                 } else if ($record['cmd'] == 'del') {
 
-                    $cohort = $DB->get_record('cohort', array( $cid => $record['cohortid'] ));
+                    $cohort = $DB->get_record('cohort', array( $cid => $record['cid'] ));
                     if (!empty($record['userid'])) {
                         $user = $DB->get_record('user', array($uid => $record['userid']));
                     } else {
@@ -360,7 +360,31 @@ class cohorts_sync_manager extends sync_manager {
                             }
 
                             $this->report(get_string('cohortdeleted', 'tool_sync', $cohort));
+                        } else {
+                            $e = new StdClass;
+                            $e->idnumber = $cohort->idnumber;
+                            $e->cname = $cohort->name;
+                            $this->report(get_string('cohortnotexists', 'tool_sync', $e));
                         }
+                    }
+                } else if ($record['cmd'] == 'free') {
+                    $cohort = $DB->get_record('cohort', array( $cid => $record['cid'] ));
+                    if (empty($cohort)) {
+                        $e = new StdClass;
+                        $e->idnumber = $cohort->idnumber;
+                        $e->cname = $cohort->name;
+                        $this->report(get_string('cohortnotexists', 'tool_sync', $e));
+                        continue;
+                    }
+                    $members = $DB->get_records('cohort_members', array('cohortid' => $cohort->id);
+                    if ($members) {
+                        foreach($members as $member) {
+                            cohort_remove_member($cohort->id, $member->userid);
+                        }
+                        $e = new StdClass;
+                        $e->idnumber = $cohort->idnumber;
+                        $e->cname = $cohort->name;
+                        $this->report(get_string('cohortfreed', 'tool_sync', $e));
                     }
                 }
             }
