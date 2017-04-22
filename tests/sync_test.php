@@ -200,7 +200,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id))));
 
         set_config('cohorts_filelocation', 'cohort_free_cohorts_by_idnumber.csv', 'tool_sync');
-        $cohortsmanager->cron($config);
+        $cohortmanager->cron($config);
 
         // Assert cohorts are empty.
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort1->id)), 0);
@@ -208,11 +208,8 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort2->id)), 0);
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort2->id)), 0);
 
-        $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
-        $cohortmanager->cron($config);
-
         set_config('cohorts_filelocation', 'cohort_add_members_by_idnumber.csv', 'tool_sync');
-        $cohortsmanager->cron($config);
+        $cohortmanager->cron($config);
 
         $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user1->id)));
         $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user2->id)));
@@ -220,15 +217,17 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id)));
 
         set_config('cohorts_filelocation', 'cohort_delete_members_by_idnumber.csv', 'tool_sync');
-        $cohortsmanager->cron($config);
-
-        $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
         $cohortmanager->cron($config);
 
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user1->id)), 0);
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user2->id)), 0);
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user3->id)), 0);
         $this->assertTrue($DB->count_records('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id)), 0);
+
+        // Binding courses.
+
+        $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
+        $cohortmanager->cron($config);
 
         // Users deletion.
 
