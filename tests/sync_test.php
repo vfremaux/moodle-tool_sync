@@ -187,8 +187,8 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $this->assertTrue(is_object($DB->get_record('cohort', array('name' => 'COHORT1'))));
         $this->assertTrue(is_object($DB->get_record('cohort', array('name' => 'COHORT2'))));
-        $this->assertTrue(is_object($DB->get_record('cohort', array('idnumber' => 'COH3'))));
-        $this->assertTrue(is_object($DB->get_record('cohort', array('idnumber' => 'COH4'))));
+        $this->assertTrue(is_object($DB->get_record('cohort', array('idnumber' => 'COH003'))));
+        $this->assertTrue(is_object($DB->get_record('cohort', array('idnumber' => 'COH004'))));
 
         set_config('cohorts_filelocation', 'cohort_delete_only_by_name.csv', 'tool_sync');
         set_config('cohorts_cohortidentifier', 'name', 'tool_sync');
@@ -215,13 +215,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         echo $cohortmanager->log;
 
-        $cohorts = $DB->get_records('cohort');
-        print_object($cohorts);
-
         $cohort1 = $DB->get_record('cohort', array('name' => 'COHORT1'));
         $cohort2 = $DB->get_record('cohort', array('name' => 'COHORT2'));
-        $cohort3 = $DB->get_record('cohort', array('idnumber' => 'COH3'));
-        $cohort4 = $DB->get_record('cohort', array('idnumber' => 'COH4'));
+        $cohort3 = $DB->get_record('cohort', array('idnumber' => 'COH003'));
+        $cohort4 = $DB->get_record('cohort', array('idnumber' => 'COH004'));
 
         $this->assertNotEmpty($cohort1);
         $this->assertNotEmpty($cohort2);
