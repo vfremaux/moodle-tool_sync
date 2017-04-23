@@ -268,6 +268,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         // Users deletion.
 
         $users = $DB->get_records('user');
+        echo "Users\n";
         print_object($users);
 
         set_config('users_filelocation', 'user_delete_sample.csv');
