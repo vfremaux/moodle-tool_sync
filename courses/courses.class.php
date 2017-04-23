@@ -1188,10 +1188,12 @@ class course_sync_manager extends sync_manager {
 
                     // Check we have a meta binding master to meta.
 
-                    $masterid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['master']);
-                    $metaid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['meta']);
+                    $source = $syncconfig->courses_filemetabindingidentifier;
+                    $masterid = tool_sync_get_internal_id('course', $source, $valuearr['master']);
+                    $metaid = tool_sync_get_internal_id('course', $source, $valuearr['meta']);
 
-                    $previous = $DB->get_record('enrol', array('enrol' => 'meta', 'courseid' => $meta->id, 'customint1' => $master->id));
+                    $params = array('enrol' => 'meta', 'courseid' => $meta->id, 'customint1' => $master->id);
+                    $previous = $DB->get_record('enrol', $params);
 
                     // Process command.
                     switch ($valuearr['cmd']) {
@@ -1222,6 +1224,7 @@ class course_sync_manager extends sync_manager {
                                 $e->from = $valuearr['master'];
                                 $this->report(get_string('metalinkcreated', 'tool_sync', $e));
                             }
+                            break;
                         }
 
                         case 'del': {
@@ -1235,7 +1238,10 @@ class course_sync_manager extends sync_manager {
                                     $this->report(get_string('metalinkdisabled', 'tool_sync', $e));
                                 }
                             }
+                            break;
                         }
+
+                        default:
                     }
                 }
             }
