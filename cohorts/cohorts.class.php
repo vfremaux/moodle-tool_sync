@@ -356,7 +356,7 @@ class cohorts_sync_manager extends sync_manager {
                 } else if ($record['cmd'] == 'del') {
 
                     // $cid can be name, id or idnumber
-                    $cohort = $DB->get_record('cohort', array( $cid => $record['c'.$cid] ));
+                    $cohort = $DB->get_record('cohort', array($cid => $record['c'.$cid]));
                     if (!empty($record['userid'])) {
                         $user = $DB->get_record('user', array($uid => $record['userid']));
                     } else {
@@ -388,19 +388,19 @@ class cohorts_sync_manager extends sync_manager {
                             $this->report(get_string('cohortdeleted', 'tool_sync', $cohort));
                         } else {
                             $e = new StdClass;
-                            $e->idnumber = $cohort->idnumber;
-                            $e->cname = $cohort->name;
+                            $e->cid = $cid;
+                            $e->cohortid = $record['c'.$cid];
                             $this->report(get_string('cohortnotexists', 'tool_sync', $e));
                         }
                     }
 
                 } else if ($record['cmd'] == 'free') {
 
-                    $cohort = $DB->get_record('cohort', array( $cid => $record['cid'] ));
+                    $cohort = $DB->get_record('cohort', array($cid => $record['c'.$cid]));
                     if (empty($cohort)) {
                         $e = new StdClass;
-                        $e->idnumber = $cohort->idnumber;
-                        $e->cname = $cohort->name;
+                        $e->cid = $cid;
+                        $e->cohortid = $record['c'.$cid];
                         $this->report(get_string('cohortnotexists', 'tool_sync', $e));
                         continue;
                     }
