@@ -406,7 +406,7 @@ class cohorts_sync_manager extends sync_manager {
                     }
                     $members = $DB->get_records('cohort_members', array('cohortid' => $cohort->id));
                     if ($members) {
-                        foreach($members as $member) {
+                        foreach ($members as $member) {
                             cohort_remove_member($cohort->id, $member->userid);
                         }
                         $e = new StdClass;
