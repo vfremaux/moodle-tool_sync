@@ -271,6 +271,12 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config->users_filelocation = 'user_delete_sample.csv';
         $usersmanager->cron($config);
 
+        $deleted = $DB->get_records('user', array('deleted' => 1));
+        echo "\nDeleted users\n";
+        foreach ($deleted as $d) {
+            echo "$d->username $d->deleted $d->email\n";
+        }
+
         // We cannot rely on username as usernames are tagged on deletion.
         $udeleted1 = $DB->get_record('user', array('email' => 'todelete1@foo.com'));
         $udeleted2 = $DB->get_record('user', array('email' => 'todelete2@foo.com'));
@@ -282,6 +288,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $coursemanager->cron($config);
+
+        $this->assertEquals(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
+        $this->assertEquals(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
+        $this->assertEquals(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
     }
 
     protected function load_file($filepath) {
