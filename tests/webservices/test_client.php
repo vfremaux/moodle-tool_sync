@@ -61,6 +61,27 @@ class test_client {
         return $this->send($serviceurl, $params);
     }
 
+    public function test_bind_metacourses() {
+
+        $serviceurl = $this->t->baseurl.$this->t->service;
+
+        // Add a file and commit it.
+        $dir = getcwd();
+        $path = $dir.'/course_metabindings_sample.csv';
+
+        $this->load_file($path);
+
+        $this->test_set_config('courses', 'filefilemetabindinglocationlocation', 'course_metabindings_sample.csv');
+
+        $params = array('wstoken' => $this->t->wstoken,
+                        'wsfunction' => 'tool_sync_process',
+                        'moodlewsrestformat' => 'json',
+                        'service' => 'courses',
+                        'action' => 'bindmetas');
+
+        return $this->send($serviceurl, $params);
+    }
+
     public function test_create_users() {
 
         $serviceurl = $this->t->baseurl.$this->t->service;
@@ -155,7 +176,7 @@ class test_client {
 
         // Add a file and commit it.
         $dir = getcwd();
-        $path = $dir.'/user_deleted_sample.csv';
+        $path = $dir.'/user_delete_sample.csv';
 
         $this->load_file($path);
 
@@ -332,21 +353,34 @@ class test_client {
 
 // Effective test scenario.
 
+echo "STARTING:\n";
 $client = new test_client();
 
+echo "COURSE CREATE:\n";
 $client->test_create_courses();
+echo "COURSE BIND METAS:\n";
+$client->test_bind_metacourses();
+
+echo "COURSE RESET:\n";
 $client->test_reset_courses();
 
+echo "USER CREATE:\n";
 $client->test_create_users();
 
+echo "USER UPDATE:\n";
 $client->test_update_users();
 
+echo "ENROL:\n";
 $client->test_enrol_users();
-$client->test_rolechange_users();
+// $client->test_rolechange_users();
 
+echo "USER SUSPEND:\n";
 $client->test_suspend_users();
+echo "USER DELETE:\n";
 $client->test_delete_users();
 
+echo "COHORT CREATE:\n";
 $client->test_create_cohorts();
 
+echo "COURSE DELETE:\n";
 $client->test_delete_courses();
