@@ -243,7 +243,6 @@ class cohorts_sync_manager extends sync_manager {
                     $syncconfig->cohorts_cohortidentifier = 'idnumber';
                 }
 
-
                 if (empty($record['cmd'])) {
                     $record['cmd'] = 'add';
                 }
@@ -338,7 +337,7 @@ class cohorts_sync_manager extends sync_manager {
                             $cohortmembership->timeadded = time();
                             $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
                             $userscohortassign++;
-    
+
                             $e = new StdClass;
                             $e->username = $user->username;
                             $e->idnumber = $user->idnumber;
