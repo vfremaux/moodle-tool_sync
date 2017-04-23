@@ -186,7 +186,7 @@ class users_sync_manager extends sync_manager {
                 'start1' => 1,
                 'end1' => 1,
                 'wwwroot1' => 1, // Allows MNET propagation to remote node.
-                'password' => $createpassword,
+                'password' => !$createpassword,
                 'suspended' => 1,
                 'deleted' => 1,
                 'oldusername' => $allowrenames);
