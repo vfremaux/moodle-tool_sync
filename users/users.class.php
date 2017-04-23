@@ -186,7 +186,7 @@ class users_sync_manager extends sync_manager {
                 'start1' => 1,
                 'end1' => 1,
                 'wwwroot1' => 1, // Allows MNET propagation to remote node.
-                'password' => $createpassword,
+                'password' => !$createpassword,
                 'suspended' => 1,
                 'deleted' => 1,
                 'oldusername' => $allowrenames);
@@ -219,7 +219,7 @@ class users_sync_manager extends sync_manager {
         $linenum = 2; // Since header is line 1.
 
         // Header is validated.
-        $this->init_tryback($headers);
+        $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
         $usersnew     = 0;
         $usersupdated = 0;
