@@ -289,9 +289,9 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $coursemanager->cron($config);
 
-        $this->assertEquals(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
-        $this->assertEquals(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
-        $this->assertEquals(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
+        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
+        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
+        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
     }
 
     protected function load_file($filepath) {
