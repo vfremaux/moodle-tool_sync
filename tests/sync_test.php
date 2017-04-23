@@ -245,10 +245,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
-        $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user1->id)));
-        $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user2->id)));
-        $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user3->id)));
-        $this->assertTrue($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id)));
+        $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user1->id))));
+        $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user2->id))));
+        $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user3->id))));
+        $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id))));
 
         set_config('cohorts_filelocation', 'cohort_delete_members_by_idnumber.csv', 'tool_sync');
         $config = get_config('tool_sync');
