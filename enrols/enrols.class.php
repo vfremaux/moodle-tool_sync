@@ -24,6 +24,8 @@
 
 namespace tool_sync;
 
+use \StdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
@@ -56,7 +58,7 @@ class enrol_sync_manager extends sync_manager {
 
         $frm->addElement('static', 'enrolsst1', '<hr>');
 
-        $cronurl = new \moodle_url('/admin/tool/sync/enrol/execcron.php');
+        $cronurl = new \moodle_url('/admin/tool/sync/enrols/execcron.php');
         $attribs = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualenrols', get_string('manualenrolrun', 'tool_sync'), $attribs);
 
@@ -155,7 +157,7 @@ class enrol_sync_manager extends sync_manager {
         }
 
         // Header is validated.
-        $this->init_tryback($headers);
+        $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
         // Starting processing lines.
         $i = 2;
@@ -199,7 +201,7 @@ class enrol_sync_manager extends sync_manager {
                 $record['endtime'] = 0;
             }
 
-            $e = new \StdClass;
+            $e = new StdClass;
             $e->i = $i;
             $e->mycmd = $record['cmd'];
             $e->myrole = $record['rolename'];
@@ -259,7 +261,7 @@ class enrol_sync_manager extends sync_manager {
 
             $params = array('enrol' => $record['enrol'], 'courseid' => $course->id, 'status' => ENROL_INSTANCE_ENABLED);
             if (!$enrols = $DB->get_records('enrol', $params, 'sortorder ASC')) {
-                $this->report(get_string('errornomanualenrol', 'tool_sync'));
+                $this->report(get_string('errornoenrolmethod', 'tool_sync'));
                 $record['enrol'] = '';
             } else {
                 $enrol = reset($enrols);
@@ -457,7 +459,7 @@ class enrol_sync_manager extends sync_manager {
                                 $groupid[$i] = $gid;
                             } else {
                                 if ($record['gcmd'] == 'gaddcreate') {
-                                    $groupsettings = new \StdClass;
+                                    $groupsettings = new StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
                                     if (empty($syncconfig->simulate)) {
@@ -481,6 +483,10 @@ class enrol_sync_manager extends sync_manager {
                                 }
                             }
 
+                            $e = new StdClass;
+                            $e->group = $record['g'.$i];
+                            $e->myuser = $user->username.' ('.$record['userid'].')';
+
                             if (count(get_user_roles($context, $user->id))) {
                                 if (empty($syncconfig->simulate)) {
                                     if (groups_add_member($groupid[$i], $user->id)) {
@@ -489,7 +495,7 @@ class enrol_sync_manager extends sync_manager {
                                         $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
                                     }
                                 } else {
-                                    $this->report('SIMULTION : '.get_string('addedtogroup', 'tool_sync', $e));
+                                    $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
                                 }
                             } else {
                                 $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$i]));
@@ -505,33 +511,35 @@ class enrol_sync_manager extends sync_manager {
                     }
                     for ($i = 1; $i < 10; $i++) {
                         if (!empty($record['g'.$i])) {
+                            $e = new StdClass();
+                            $e->group = $record['g'.$i];
                             if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
                                 $groupid[$i] = $gid;
                             } else {
                                 if ($record['gcmd'] == 'greplacecreate') {
-                                    $groupsettings = new \StdClass;
+                                    $groupsettings = new StdClass;
                                     $groupsettings->name = $record['g'.$i];
                                     $groupsettings->courseid = $course->id;
                                     if (empty($syncconfig->simulate)) {
                                         if ($gid = groups_create_group($groupsettings)) {
                                             $groupid[$i] = $gid;
-                                            $e->group = $record['g'.$i];
                                             $this->report(get_string('groupcreated', 'tool_sync', $e));
                                         } else {
-                                            $e->group = $record['g'.$i];
                                             $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
                                         }
                                     } else {
                                         $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
                                     }
                                 } else {
-                                    $e->group = $record['g'.$i];
                                     $this->report(get_string('groupunknown', 'tool_sync', $e));
                                 }
                             }
 
                             if (count(get_user_roles($context, $user->id))) {
                                 if (empty($syncconfig->simulate)) {
+                                    $e = new StdClass();
+                                    $e->group = $groupid[$i];
+                                    $e->myuser = $user->username.' ('.$record['userid'].')';
                                     if (groups_add_member($groupid[$i], $user->id)) {
                                         $this->report(get_string('addedtogroup', 'tool_sync', $e));
                                     } else {
@@ -579,51 +587,51 @@ class enrol_sync_manager extends sync_manager {
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%user_enrolment_updated'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%user_enrolment_updated'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%user_enrolment_created'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%user_enrolment_created'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%user_enrolment_deleted'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%user_enrolment_deleted'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%role_assigned'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%role_assigned'
                 ";
                 $DB->execute($sql, array($admin->id));
 
                 $sql = "
                     DELETE FROM
-                    {logstore_standard_log}
+                        {logstore_standard_log}
                     WHERE
-                    origin = 'cli' AND
-                    userid = ? AND
-                    eventname LIKE '%role_unassigned'
+                        origin = 'cli' AND
+                        userid = ? AND
+                        eventname LIKE '%role_unassigned'
                 ";
                 $DB->execute($sql, array($admin->id));
             }

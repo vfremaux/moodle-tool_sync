@@ -545,7 +545,7 @@ class tool_sync_core_ext_external extends external_api {
         $validkeys = array('idnumber', 'shortname', 'id');
         $params['courseid'] = self::validate_course_param($params, $validkeys);
 
-        return \core_enrol_external::get_enrolled_users($courseid, $options);
+        return \core_enrol_external::get_enrolled_users($params['courseid'], $options);
     }
 
     /**
@@ -677,9 +677,24 @@ class tool_sync_core_ext_external extends external_api {
         $params = self::validate_parameters(self::get_enrolled_users_parameters(), $parameters);
 
         $validkeys = array('idnumber', 'shortname', 'id');
-        $courseid = self::validate_course_param($params, $validkeys);
+        $params['courseid'] = self::validate_course_param($params, $validkeys);
 
-        return \core_enrol_external::get_enrolled_users($courseid, $options);
+        $users = \core_enrol_external::get_enrolled_users($params['courseid'], $options);
+
+        $lightusers = array();
+        if ($users) {
+            foreach ($users as $user) {
+                $lightuser = new StdClass;
+                $lightuser->id = $user['id'];
+                $lightuser->username = $user['username'];
+                $lightuser->firstname = $user['firstname'];
+                $lightuser->lastname = $user['lastname'];
+                $lightuser->idnumber = $user['idnumber'];
+                $lightusers[] = $lightuser;
+            }
+        }
+
+        return $lightusers;
     }
 
     /**
@@ -784,7 +799,7 @@ class tool_sync_core_ext_external extends external_api {
 
             case 'shortname': {
                 if (!$course = $DB->get_record('course', array('shortname' => $inputs['courseid']))) {
-                    throw new invalid_parameter_exception('Course not found by shortname');
+                    throw new invalid_parameter_exception('Course not found by shortname for '.$inputs['courseid']);
                 }
                 return $course->id;
                 break;
