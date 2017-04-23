@@ -138,7 +138,7 @@ class cohorts_sync_manager extends sync_manager {
 
         if ($this->execute == SYNC_COHORT_CREATE_UPDATE) {
 
-            $this->report('Starting creating cohorts...');
+            $this->report('Starting cohorts operations...');
 
             // Internal process controls.
             $autocreatecohorts = 0 + @$syncconfig->cohorts_autocreate;
@@ -255,7 +255,16 @@ class cohorts_sync_manager extends sync_manager {
                 if ($record['cmd'] == 'add') {
 
                     // $cid can be name, id or idnumber
-                    $cohort = $DB->get_record('cohort', array( $cid => $record['c'.$cid] ));
+
+                    if (empty($record['c'.$cid])) {
+                        $e = new StdClass;
+                        $e->cid = $cid;
+                        $e->line = $i;
+                        $this->report(get_string('cohortprimaryidentifiermissing', 'tool_sync', $e));
+                        continue;
+                    }
+
+                    $cohort = $DB->get_record('cohort', array( $cid => $record['c'.$cid]));
                     if (!empty($record['userid'])) {
                         $user = $DB->get_record('user', array($uid => $record['userid']));
                     } else {

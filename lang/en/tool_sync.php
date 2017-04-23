@@ -53,6 +53,7 @@ $string['cohortcoursebindingfilelocation'] = 'Cohorts to course file location';
 $string['cohortcourseidentifier'] = 'Course identifier';
 $string['cohortcreated'] = 'Cohort {$a->name} created';
 $string['cohortconflict'] = 'The cohort creation has been skeeped because conflicting by {$a->by}.';
+$string['cohortprimaryidentifiermissing'] = 'Primary identifier ({$a->cid}) for cohort was not given on line {$a->line}. Cannot perform. Skipping.';
 $string['cohortdeleted'] = 'Cohort {$a->name} deleted';
 $string['cohortfilelocation'] = 'Cohorts file location';
 $string['cohortfreed'] = 'Cohort [{$a->idnumber}] {$a->name} emptied';

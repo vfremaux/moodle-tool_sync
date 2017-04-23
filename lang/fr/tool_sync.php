@@ -52,6 +52,7 @@ $string['cohortcoursebindingfilelocation'] = 'Fichier des liaisons des cohortes 
 $string['cohortcourseidentifier'] = 'Identifiant de cours';
 $string['cohortcreated'] = 'Cohorte {$a->name} ajoutée';
 $string['cohortconflict'] = 'La cohorte n\'a pas été créée à cause d\'un conflit sur le {$a->by}.';
+$string['cohortprimaryidentifiermissing'] = 'L\'identifiant primaire ({$a->cid}) de cohorte est absent en ligne {$a->line}. Abandon.';
 $string['cohortfilelocation'] = 'Emplacement du fichier de cohortes';
 $string['cohortfreed'] = 'Cohorte [{$a->idnumber}] {$a->name} réinitialisée';
 $string['cohortmanualsync'] = 'Exécution de la synchronisation des cohortes';
