@@ -24,6 +24,8 @@
 
 namespace tool_sync;
 
+use \StdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
@@ -152,8 +154,10 @@ class course_sync_manager extends sync_manager {
     public function cron($syncconfig) {
         global $CFG, $DB;
 
-        define('TOPIC_FIELD', '/^(topic)([0-9]|[1-4][0-9]|5[0-2])$/');
-        define('TEACHER_FIELD', '/^(teacher)([1-9]+\d*)(_account|_role)$/');
+        if (!defined('TOPIC_FIELD')) {
+            define('TOPIC_FIELD', '/^(topic)([0-9]|[1-4][0-9]|5[0-2])$/');
+            define('TEACHER_FIELD', '/^(teacher)([1-9]+\d*)(_account|_role)$/');
+        }
 
         // Process files.
 
@@ -593,7 +597,7 @@ class course_sync_manager extends sync_manager {
 
                     $size = count($valueset);
 
-                    $c = new \StdClass();
+                    $c = new StdClass();
                     $c->$identifiername = $valueset[0];
                     if ($size == 2) {
                         $c->description = $valueset[1];
@@ -733,7 +737,7 @@ class course_sync_manager extends sync_manager {
             // TODO : change default format from weeks to course default options.
             global $validate;
             $validate = array(  'fullname' => array(1, 254, 1), // Validation information - see validate_as function.
-                                'shortname' => array(1, 15, 1),
+                                'shortname' => array(1, 150, 1),
                                 'category' => array(5),
                                 'sortorder' => array(2, 4294967295, 0),
                                 'summary' => array(1, 0, 0),
@@ -819,7 +823,7 @@ class course_sync_manager extends sync_manager {
                 }
 
                 // Header is validated.
-                $this->init_tryback(implode($syncconfig->csvseparator, $headers));
+                $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
                 $fieldcount = count($headers);
 
@@ -839,7 +843,7 @@ class course_sync_manager extends sync_manager {
                     $valueset = explode($syncconfig->csvseparator, $text);
 
                     if (count($valueset) != $fieldcount) {
-                        $e = new \StdClass();
+                        $e = new StdClass();
                         $e->i = $i;
                         $e->count = count($valueset);
                         $e->expected = $fieldcount;
@@ -889,7 +893,7 @@ class course_sync_manager extends sync_manager {
                         foreach ($courseteachers as $key => $value) { // Deep validate course teacher info on second pass.
                             if (isset($value) && (count($value) > 0)) {
                                 if (!(isset($value['_account']) && $this->check_is_in($value['_account']))) {
-                                    $e = new \StdClass();
+                                    $e = new StdClass();
                                     $e->i = $i;
                                     $e->key = $key;
                                     $this->report(get_string('errornoteacheraccountkey', 'tool_sync', $e));
@@ -934,7 +938,7 @@ class course_sync_manager extends sync_manager {
             $catcreated = 0; // Created categories.
 
             foreach ($bulkcourses as $i => $bulkcourse) {
-                $a = new \StdClass;
+                $a = new StdClass();
                 $a->shortname = $bulkcourse['shortname'];
                 $a->fullname = $bulkcourse['fullname'];
 
@@ -956,7 +960,7 @@ class course_sync_manager extends sync_manager {
                     }
 
                     if ($coursetocategory == -1) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $i;
                         $e->coursename = $bulkcourse['shortname'];
                         if (!empty($syncconfig->filefailed)) {
@@ -966,7 +970,7 @@ class course_sync_manager extends sync_manager {
                         continue;
                     } else {
                         $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $syncconfig);
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->coursename = $bulkcourse['shortname'];
                         $e->shortname = $bulkcourse['shortname'];
                         $e->fullname = $bulkcourse['fullname'];
@@ -1063,7 +1067,7 @@ class course_sync_manager extends sync_manager {
                         }
 
                         if ($coursetocategory == -1) {
-                            $e = new \StdClass;
+                            $e = new StdClass;
                             $e->i = $i;
                             $e->coursename = $oldcourse->shortname;
                             if (!empty($syncconfig->filefailed)) {
@@ -1081,12 +1085,12 @@ class course_sync_manager extends sync_manager {
                             }
                         }
                         if ($DB->update_record('course', $oldcourse)) {
-                            $e = new \StdClass;
+                            $e = new StdClass;
                             $e->i = $i;
                             $e->shortname = $oldcourse->shortname;
                             $this->report(get_string('courseupdated', 'tool_sync', $e));
                         } else {
-                            $e = new \StdClass;
+                            $e = new StdClass;
                             $e->i = $i;
                             $e->shortname = $oldcourse->shortname;
                             $this->report(get_string('errorcourseupdated', 'tool_sync', $e));
@@ -1134,7 +1138,7 @@ class course_sync_manager extends sync_manager {
             $optional = array('cmd' => 'add');
 
             if (empty($this->manualfilerec)) {
-                $filerec = $this->get_input_file(@$syncconfig->courses_filemetaslocation, 'metacourses.csv');
+                $filerec = $this->get_input_file(@$syncconfig->courses_filemetabindinglocation, 'metacourses.csv');
             } else {
                 $filerec = $this->manualfilerec;
             }
@@ -1157,13 +1161,14 @@ class course_sync_manager extends sync_manager {
                     return;
                 }
 
+                // TODO : rebind to the method check_headers.
                 $headers = tool_sync_validate_headers($text, $required, $this);
                 if (empty($headers)) {
                     return;
                 }
 
                 // Header is validated for metas.
-                $this->init_tryback(implode($syncconfig->csvseparator, $headers));
+                $this->init_tryback(array(implode($syncconfig->csvseparator, $headers)));
 
                 $fieldcount = count($headers);
 
@@ -1180,7 +1185,7 @@ class course_sync_manager extends sync_manager {
                     $valueset = explode($syncconfig->csvseparator, $text);
 
                     // Validate incoming values.
-                    $valuearr = array_map($headers, $valueset);
+                    $valuearr = array_combine($headers, $valueset);
 
                     if (!array_key_exists('cmd', $valuearr)) {
                         $valuearr['cmd'] = 'add';
@@ -1188,10 +1193,12 @@ class course_sync_manager extends sync_manager {
 
                     // Check we have a meta binding master to meta.
 
-                    $masterid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['master']);
-                    $metaid = tool_sync_get_internal_id('course', $syncconfig->courses_filemetabindingidentifier, $valuearr['meta']);
+                    $source = $syncconfig->courses_filemetabindingidentifier;
+                    $masterid = tool_sync_get_internal_id('course', $source, $valuearr['master']);
+                    $metaid = tool_sync_get_internal_id('course', $source, $valuearr['meta']);
 
-                    $previous = $DB->get_record('enrol', array('enrol' => 'meta', 'courseid' => $meta->id, 'customint1' => $master->id));
+                    $params = array('enrol' => 'meta', 'courseid' => $metaid, 'customint1' => $masterid);
+                    $previous = $DB->get_record('enrol', $params);
 
                     // Process command.
                     switch ($valuearr['cmd']) {
@@ -1204,24 +1211,25 @@ class course_sync_manager extends sync_manager {
                                 $previous->status = 0;
                                 $DB->update('enrol', $previous);
                                 $e = new StdClass();
-                                $e->for = $valuearr['meta'];
-                                $e->from = $valuearr['master'];
+                                $e->for = $valuearr['meta']; // Real imput value for report.
+                                $e->from = $valuearr['master']; // Real imput value for report.
                                 $this->report(get_string('metalinkrevived', 'tool_sync', $e));
                             } else {
                                 $enrol = new StdClass;
                                 $enrol->enrol = 'meta';
-                                $enrol->courseid = $meta->id;
+                                $enrol->courseid = $metaid;
                                 $enrol->status = 0;
                                 $enrol->enrolstartdate = time();
                                 $enrol->enrolenddate = 0;
-                                $enrol->customint1 = $master->id;
+                                $enrol->customint1 = $masterid;
 
                                 $DB->insert_record('enrol', $enrol);
                                 $e = new StdClass();
-                                $e->for = $valuearr['meta'];
-                                $e->from = $valuearr['master'];
+                                $e->for = $valuearr['meta']; // Real imput value for report.
+                                $e->from = $valuearr['master']; // Real imput value for report.
                                 $this->report(get_string('metalinkcreated', 'tool_sync', $e));
                             }
+                            break;
                         }
 
                         case 'del': {
@@ -1230,12 +1238,15 @@ class course_sync_manager extends sync_manager {
                                     $previous->status = 1;
                                     $DB->update('enrol', $previous);
                                     $e = new StdClass();
-                                    $e->for = $valuearr['meta'];
-                                    $e->from = $valuearr['master'];
+                                    $e->for = $valuearr['meta']; // Real imput value for report.
+                                    $e->from = $valuearr['master']; // Real imput value for report.
                                     $this->report(get_string('metalinkdisabled', 'tool_sync', $e));
                                 }
                             }
+                            break;
                         }
+
+                        default:
                     }
                 }
             }
@@ -1268,7 +1279,7 @@ class course_sync_manager extends sync_manager {
                 default:
                     $caterrors += 1;
                     $coursetocategory = -1;
-                    $e = new \StdClass;
+                    $e = new StdClass;
                     $e->catname = $catname;
                     $e->failed = $caterrors;
                     $e->i = $line;
@@ -1380,7 +1391,7 @@ class course_sync_manager extends sync_manager {
                 if (($format[1]) != 0) {
                     // Max length?
                     if (strlen($value) > $format[1]) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $e->length = $format[1];
@@ -1392,7 +1403,7 @@ class course_sync_manager extends sync_manager {
                 if ($format[2] == 1) {
                     // Not null?
                     if (!$this->check_is_string($value)) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $this->report(get_string('errorvalidationempty', 'tool_sync', $e));
@@ -1404,7 +1415,7 @@ class course_sync_manager extends sync_manager {
             case 2:
                 // Integer.
                 if (!$this->check_is_in($value)) {
-                    $e = new \StdClass;
+                    $e = new StdClass;
                     $e->i = $lineno;
                     $e->fieldname = $fieldname;
                     $this->report(get_string('errorvalidationintegercheck', 'tool_sync', $e));
@@ -1414,7 +1425,7 @@ class course_sync_manager extends sync_manager {
                 if (($max = $format[1]) != 0) {
                     // Max value?
                     if ($value > $max) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $e->max = $max;
@@ -1427,7 +1438,7 @@ class course_sync_manager extends sync_manager {
                     // Min value.
                     $min = $format[2];
                     if ($value < $min) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $e->min = $min;
@@ -1442,7 +1453,7 @@ class course_sync_manager extends sync_manager {
                 $value = strtotime($value);
                 if ($value == -1) {
                     // Failure.
-                    $e = new \StdClass;
+                    $e = new StdClass;
                     $e->i = $lineno;
                     $e->fieldname = $fieldname;
                     $this->report(get_string('errorvalidationtimecheck', 'tool_sync', $e));
@@ -1454,7 +1465,7 @@ class course_sync_manager extends sync_manager {
                 // Domain.
                 $validvalues = explode(',', $format[1]);
                 if (array_search($value, $validvalues) === false) {
-                    $e = new \StdClass;
+                    $e = new StdClass;
                     $e->i = $lineno;
                     $e->fieldname = $fieldname;
                     $e->set = $format[1];
@@ -1468,7 +1479,7 @@ class course_sync_manager extends sync_manager {
                 if ($this->check_is_in($value)) {
                     // It's a Category ID Number.
                     if (!$DB->record_exists('course_categories', array('id' => $value))) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $e->category = $value;
@@ -1480,7 +1491,7 @@ class course_sync_manager extends sync_manager {
                     $value = trim(str_replace('\\', '/', $value), " \t\n\r\0\x0B/");
                     // Clean path, ensuring all slashes are forward ones.
                     if (strlen($value) <= 0) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $this->report(get_string('errorvalidationcategoryunpathed', 'tool_sync', $e));
@@ -1491,7 +1502,7 @@ class course_sync_manager extends sync_manager {
                     $cats = explode('/', $value); // Break up path into array.
 
                     if (count($cats) <= 0) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $e->path = $value;
@@ -1504,7 +1515,7 @@ class course_sync_manager extends sync_manager {
                         $item = trim($item); // Remove outside whitespace.
 
                         if (strlen($item) > 100) {
-                            $e = new \StdClass;
+                            $e = new StdClass;
                             $e->i = $lineno;
                             $e->fieldname = $fieldname;
                             $e->item = $item;
@@ -1512,7 +1523,7 @@ class course_sync_manager extends sync_manager {
                             return;
                         }
                         if (!$this->check_is_string($item)) {
-                            $e = new \StdClass;
+                            $e = new StdClass;
                             $e->i = $lineno;
                             $e->fieldname = $fieldname;
                             $e->value = $value;
@@ -1525,7 +1536,7 @@ class course_sync_manager extends sync_manager {
                     $value = $cats; // Return the array.
                     unset ($cats);
                 } else {
-                    $e = new \StdClass;
+                    $e = new StdClass;
                     $e->i = $lineno;
                     $e->fieldname = $fieldname;
                     $this->report(get_string('errorvalidationbadtype', 'tool_sync', $e));
@@ -1538,7 +1549,7 @@ class course_sync_manager extends sync_manager {
                 $value = trim($value);
                 if ($this->check_is_in($value)) { // User ID.
                     if (!$DB->record_exists('user', array('id' => $value))) {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $e->value = $value;
@@ -1554,7 +1565,7 @@ class course_sync_manager extends sync_manager {
                                         is_array($usersearch) &&
                                                 (($ucountc = count($usersearch)) > 0)) {
                         if ($ucountc > 1) {
-                            $e = new \StdClass;
+                            $e = new StdClass;
                             $e->i = $lineno;
                             $e->fieldname = $fieldname;
                             $e->ucount = $ucountc;
@@ -1567,7 +1578,7 @@ class course_sync_manager extends sync_manager {
                         $uid = key($usersearch);
 
                         if (!$this->check_is_in($uid) || !$DB->record_exists('user', array('id' => $uid))) {
-                            $e = new \StdClass;
+                            $e = new StdClass;
                             $e->i = $lineno;
                             $e->fieldname = $fieldname;
                             $this->report(get_string('errorvalidationsearchmisses', 'tool_sync', $e));
@@ -1577,7 +1588,7 @@ class course_sync_manager extends sync_manager {
                         $value = $uid; // Return found user id.
 
                     } else {
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $this->report(get_string('errorvalidationsearchfails', 'tool_sync', $e));
@@ -1586,7 +1597,7 @@ class course_sync_manager extends sync_manager {
                 } else {
                     if ($format[1] == 1) {
                         // Not null?
-                        $e = new \StdClass;
+                        $e = new StdClass;
                         $e->i = $lineno;
                         $e->fieldname = $fieldname;
                         $this->report(get_string('errorvalidationempty', 'tool_sync', $e));
@@ -1629,13 +1640,13 @@ class course_sync_manager extends sync_manager {
             return $cat;
         } else {
             if (!$parent = $DB->get_record('course_categories', array('id' => $parentid))) {
-                $parent = new \StdClass;
+                $parent = new StdClass;
                 $parent->path = '';
                 $parent->depth = 0;
                 $parentid = 0;
             }
 
-            $cat = new \StdClass;
+            $cat = new StdClass;
             $cat->name = $hname;
             $cat->description = '';
             $cat->parent = $parentid;
@@ -1668,7 +1679,7 @@ class course_sync_manager extends sync_manager {
      * create a course.
      */
     protected function fast_create_course_ex($hcategoryid, $course, $headers, $syncconfig) {
-        global $CFG, $DB, $USER;
+        global $DB;
 
         if (!is_array($course) || !is_array($headers)) {
             return -1;
@@ -1676,7 +1687,7 @@ class course_sync_manager extends sync_manager {
 
         // Trap when template not found.
         if (!empty($course['template'])) {
-            if (!($tempcourse = $DB->get_record('course', array('shortname' => $course['template'])))) {
+            if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
                 return -7;
             }
         }
@@ -1721,11 +1732,21 @@ class course_sync_manager extends sync_manager {
             }
 
         } else {
+            // Check course format. Use default if missing.
+
             // Create default course.
             if (empty($syncconfig->simulate)) {
+
+                if (empty($course['format'])) {
+                    $course['format'] = get_config('moodlecourse', 'format');
+                }
+                if (empty($course['format'])) {
+                    $course['format'] = 'topics';
+                }
+                $courserec->format = $course['format'];
+
                 $newcourse = create_course($courserec);
 
-                $format = (!isset($course['format'])) ? 'topics' : $course['format']; // May be useless.
                 if (isset($course['topics'])) {
                     // Any topic headings specified ?
                     $maxfilledtopics = 1;
@@ -1744,7 +1765,7 @@ class course_sync_manager extends sync_manager {
                         $params = array('section' => $dtopicno, 'course' => $newcourse->id);
                         if (!$sectiondata = $DB->get_record('course_sections', $params)) {
                             // Avoid overflowing topic headings.
-                            $csection = new \StdClass;
+                            $csection = new StdClass;
                             $csection->course = $newcourse->id;
                             $csection->section = $dtopicno;
                             $csection->name = $sectionname;
@@ -1760,7 +1781,7 @@ class course_sync_manager extends sync_manager {
                     }
                     if (!isset($course['topics'][0])) {
                         if (!$DB->get_record('course_sections', array('section' => 0, 'course' => $newcourse->id))) {
-                            $csection = new \StdClass;
+                            $csection = new StdClass;
                             $csection->course = $newcourse->id;
                             $csection->section = 0;
                             $csection->name = '';
@@ -1775,13 +1796,13 @@ class course_sync_manager extends sync_manager {
 
                     // Finally we can bind the course to have $maxfilledtopics topics.
                     $new = 0;
-                    $params = array('courseid' => $newcourse->id, 'name' => 'numsections', 'format' => $format);
+                    $params = array('courseid' => $newcourse->id, 'name' => 'numsections', 'format' => $course['format']);
                     if (!$formatoptions = $DB->get_record('course_format_options', $params)) {
-                        $formatoptions = new \StdClass();
+                        $formatoptions = new StdClass();
                         $new = 1;
                     }
                     $formatoptions->courseid = $newcourse->id;
-                    $formatoptions->format = $format;
+                    $formatoptions->format = $course['format'];
                     $formatoptions->name = 'numsections';
                     $formatoptions->section = 0;
                     $formatoptions->value = $maxfilledtopics;
@@ -1794,7 +1815,7 @@ class course_sync_manager extends sync_manager {
                     $numsections = get_config('numsections', 'moodlecourse');
                     for ($i = 1; $i < $numsections; $i++) {
                         // Use course default to reshape the course creation.
-                        $csection = new \StdClass;
+                        $csection = new StdClass;
                         $csection->course = $newcourse->id;
                         $csection->section = $i;
                         $csection->name = '';
@@ -1813,7 +1834,7 @@ class course_sync_manager extends sync_manager {
                 $this->update_enrols($newcourse, $self, $guest);
 
             } else {
-                $newcourse = new \StdClass;
+                $newcourse = new StdClass;
                 $newcourse->shortname = 'SIMUL';
                 $newcourse->fullname = 'Simulation';
                 $newcourse->id = 999999;
@@ -1826,7 +1847,7 @@ class course_sync_manager extends sync_manager {
             foreach (array_values($course['teachers_enrol']) as $dteacherdata) {
                 if (isset($dteacherdata['_account'])) {
                     $roleid = $DB->get_field('role', 'id', array('shortname' => 'teacher'));
-                    $roleassignrec = new \StdClass;
+                    $roleassignrec = new StdClass;
                     $roleassignrec->roleid = $roleid;
                     $roleassignrec->contextid = $context->id;
                     $roleassignrec->userid = $dteacherdata['_account'];
@@ -1929,7 +1950,7 @@ class course_sync_manager extends sync_manager {
         }
         $content = implode("\n", $rows); // We have at least one.
 
-        $filerec = new \StdClass();
+        $filerec = new StdClass();
         $filerec->contextid = \context_system::instance()->id;
         $filerec->component = 'tool_sync';
         $filerec->filearea = 'syncfiles';
@@ -2034,7 +2055,7 @@ class course_sync_manager extends sync_manager {
 
             $fs->delete_area_files($contextid, 'user', 'draft', 0);
 
-            $filerec = new \StdClass;
+            $filerec = new StdClass;
             $filerec->contextid = $contextid;
             $filerec->component = 'user';
             $filerec->filearea = 'draft';

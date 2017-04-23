@@ -1,0 +1,6 @@
+# Bind on:
+# shortname;idbnumber;shortname
+course;cohort;role
+TESTCOURSE1;COH001;teacher
+TESTCOURSE2;COH003;student
+TESTCOURSE3;COH002;student
