@@ -1,4 +1,4 @@
 shortname;events;logs;notes;grades;roles;local_roles;groups;groupings;modules
-TESTCOURSE1;all;all;all;grades;all;all;groups;all;all
-TESTCOURSE2;all;all;all;grades;all;all;groups;all;all
-TESTCOURSE3;all;all;all;grades;all;all;groups;all;all
+TESTCOURSE1;all;all;all;none;all;all;groups;all;all
+TESTCOURSE2;all;all;all;none;all;all;groups;all;all
+TESTCOURSE3;all;all;all;none;all;all;groups;all;all
