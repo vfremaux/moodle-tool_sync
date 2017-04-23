@@ -269,11 +269,19 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $users = $DB->get_records('user');
         echo "Users\n";
-        print_object($users);
+        foreach($users as $u) {
+            echo "$u->username $u->deleted $u->suspended\n";
+        }
 
         set_config('users_filelocation', 'user_delete_sample.csv');
         $config->users_filelocation = 'user_delete_sample.csv';
         $usersmanager->cron($config);
+
+        $users = $DB->get_records('user');
+        echo "Users after delete \n";
+        foreach($users as $u) {
+            echo "$u->username $u->deleted $u->suspended\n";
+        }
 
         $udeleted1 = $DB->get_record('user', array('username' => 'todelete1'));
         $udeleted2 = $DB->get_record('user', array('username' => 'todelete2'));
