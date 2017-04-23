@@ -72,7 +72,7 @@ if ($data = $form->get_data()) {
     } else {
         // Use the just uploaded file.
 
-        if (!$manualfilerec = tool_sync_receive_file()) {
+        if (!$manualfilerec = tool_sync_receive_file($data)) {
             $errormes = "Failed loading a file";
         } else {
             $processedfile = $manualfilerec->filename;
