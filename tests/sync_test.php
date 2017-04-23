@@ -278,9 +278,9 @@ class admin_tool_sync_testcase extends advanced_testcase {
         }
 
         // We cannot rely on username as usernames are tagged on deletion.
-        $udeleted1 = $DB->get_record('user', array('email' => 'todelete1@foo.com'));
-        $udeleted2 = $DB->get_record('user', array('email' => 'todelete2@foo.com'));
-        $udeleted3 = $DB->get_record('user', array('email' => 'todelete3@foo.com'));
+        $udeleted1 = $DB->get_record_select('user', "username LIKE 'todelete1@foo.com%' ");
+        $udeleted2 = $DB->get_record_select('user', "username LIKE 'todelete2@foo.com%' ");
+        $udeleted3 = $DB->get_record_select('user', "username LIKE 'todelete3@foo.com%' ");
 
         $this->assertTrue($udeleted1->deleted == 1);
         $this->assertTrue($udeleted2->deleted == 1);
