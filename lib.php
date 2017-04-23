@@ -35,6 +35,9 @@ define('SYNC_COURSE_RESET', 0x008);
 define('SYNC_COURSE_METAS', 0x010);
 define('SYNC_COURSE_CREATE_DELETE', 0x006);
 
+define('SYNC_COHORT_CREATE_UPDATE', 0x1001);
+define('SYNC_COHORT_BIND_COURSES', 0x1002);
+
 /**
  * Tells wether a feature is supported or not. Gives back the
  * implementation path where to fetch resources.
@@ -130,14 +133,14 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
         $textlib = new core_text();
     }
 
-    if ($first && $config->encoding == 'UTF-8') {
+    if ($first && @$config->encoding == 'UTF-8') {
         $text = $textlib->trim_utf8_bom($text);
         $first = false;
     }
 
     $text = preg_replace("/\n?\r?/", '', $text);
 
-    if ($config->encoding != 'UTF-8') {
+    if (@$config->encoding != 'UTF-8') {
         $text = utf8_encode($text);
     }
 
@@ -412,4 +415,31 @@ function tool_sync_get_course_identifier($course, $forfile, $syncconfig) {
             break;
     }
     return $cid;
+}
+
+/**
+ *
+ */
+function tool_sync_receive_file($data) {
+    global $USER;
+
+    $usercontext = context_user::instance($USER->id);
+
+    $fs = get_file_storage();
+
+    if (!$fs->is_area_empty($usercontext->id, 'user', 'draft', $data->inputfile)) {
+
+        $areafiles = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->inputfile);
+        $uploadedfile = array_pop($areafiles);
+
+        $manualfilerec = new StdClass();
+        $manualfilerec->contextid = $usercontext->id;
+        $manualfilerec->component = 'user';
+        $manualfilerec->filearea = 'draft';
+        $manualfilerec->itemid = $data->inputfile;
+        $manualfilerec->filepath = $uploadedfile->get_filepath();
+        $manualfilerec->filename = $uploadedfile->get_filename();
+        return $manualfilerec;
+    }
+    return false;
 }
