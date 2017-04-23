@@ -108,7 +108,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('users_primaryidentity', 'username', 'tool_sync');
 
         // Configure cohort tool.
-        set_config('cohorts_useridentifier', 'username', 'tool_sync');
+        set_config('cohorts_useridentifier', 'idnumber', 'tool_sync');
         set_config('cohorts_cohortidentifier', 'idnumber', 'tool_sync');
 
         set_config('cohorts_coursebindingfilelocation', 'cohort_bind_courses_sample.csv', 'tool_sync');
