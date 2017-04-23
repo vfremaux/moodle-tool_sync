@@ -110,6 +110,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         // Configure cohort tool.
         set_config('cohorts_useridentifier', 'idnumber', 'tool_sync');
         set_config('cohorts_cohortidentifier', 'idnumber', 'tool_sync');
+        set_config('cohorts_roleidentifier', 'shortname', 'tool_sync');
 
         set_config('cohorts_coursebindingfilelocation', 'cohort_bind_courses_sample.csv', 'tool_sync');
         set_config('cohorts_courseidentifier', 'shortname', 'tool_sync');
@@ -270,9 +271,16 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $config->users_filelocation = 'user_delete_sample.csv';
         $usersmanager->cron($config);
 
-        $udeleted1 = $DB->get_record('user', array('username' => 'todelete1'));
-        $udeleted2 = $DB->get_record('user', array('username' => 'todelete2'));
-        $udeleted3 = $DB->get_record('user', array('username' => 'todelete3'));
+        $deleted = $DB->get_records('user', array('deleted' => 1));
+        echo "\nDeleted users\n";
+        foreach ($deleted as $d) {
+            echo "$d->username $d->deleted $d->email\n";
+        }
+
+        // We cannot rely on username as usernames are tagged on deletion.
+        $udeleted1 = $DB->get_record_select('user', "username LIKE 'todelete1@foo.com%' ");
+        $udeleted2 = $DB->get_record_select('user', "username LIKE 'todelete2@foo.com%' ");
+        $udeleted3 = $DB->get_record_select('user', "username LIKE 'todelete3@foo.com%' ");
 
         $this->assertTrue($udeleted1->deleted == 1);
         $this->assertTrue($udeleted2->deleted == 1);
@@ -280,6 +288,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $coursemanager->cron($config);
+
+        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
+        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
+        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
     }
 
     protected function load_file($filepath) {
