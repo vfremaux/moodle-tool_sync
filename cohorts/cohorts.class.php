@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
+require_once($CFG->dirroot.'/cohort/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 
 class cohorts_sync_manager extends sync_manager {
@@ -331,12 +332,7 @@ class cohorts_sync_manager extends sync_manager {
                     if ($user) {
                         $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
                         if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
-                            $cohortmembership = new StdClass();
-                            $cohortmembership->userid = $user->id;
-                            $cohortmembership->cohortid = ''.@$cohort->id;
-                            $cohortmembership->timeadded = time();
-                            $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
-                            $userscohortassign++;
+                            \cohort_add_member($cohort->id, $user->id);
 
                             $e = new StdClass;
                             $e->username = $user->username;
@@ -364,7 +360,7 @@ class cohorts_sync_manager extends sync_manager {
 
                     if ($user) {
                         if ($cohort) {
-                            cohort_remove_member($cohort->id, $user->id);
+                            \cohort_remove_member($cohort->id, $user->id);
 
                             $e = new StdClass;
                             $e->username = $user->username;
@@ -375,7 +371,7 @@ class cohorts_sync_manager extends sync_manager {
                     } else {
                         // Delete the whole cohort.
                         if ($cohort) {
-                            cohort_delete_cohort($cohort);
+                            \cohort_delete_cohort($cohort);
 
                             // Removing all related enrolment data.
                             $enrols = $DB->get_records('enrol', array('enrol' => 'cohort', 'customint1' => $cohort->id));
@@ -406,11 +402,11 @@ class cohorts_sync_manager extends sync_manager {
                     $members = $DB->get_records('cohort_members', array('cohortid' => $cohort->id));
                     if ($members) {
                         foreach ($members as $member) {
-                            cohort_remove_member($cohort->id, $member->userid);
+                            \cohort_remove_member($cohort->id, $member->userid);
                         }
                         $e = new StdClass;
                         $e->idnumber = $cohort->idnumber;
-                        $e->cname = $cohort->name;
+                        $e->name = $cohort->name;
                         $this->report(get_string('cohortfreed', 'tool_sync', $e));
                     }
                 }
