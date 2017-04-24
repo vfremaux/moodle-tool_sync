@@ -55,7 +55,10 @@ class coursesync_task extends \core\task\scheduled_task {
 
         // Process task.
         $syncconfig = get_config('tool_sync');
-        $coursesmanager = new \tool_sync\course_sync_manager();
+        $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CREATE_DELETE);
+        $coursesmanager->cron($syncconfig);
+
+        $coursesmanager = new \tool_sync\course_sync_manager(SYNC_COURSE_METAS);
         $coursesmanager->cron($syncconfig);
 
         $logmuter->deactivate();

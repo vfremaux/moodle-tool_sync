@@ -56,7 +56,10 @@ class cohortsync_task extends \core\task\scheduled_task {
 
         // Process task.
         $syncconfig = get_config('tool_sync');
-        $cohortsmanager = new \tool_sync\cohorts_sync_manager();
+        $cohortsmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_CREATE_UPDATE);
+        $cohortsmanager->cron($syncconfig);
+
+        $cohortsmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
         $cohortsmanager->cron($syncconfig);
 
         $logmuter->deactivate();
