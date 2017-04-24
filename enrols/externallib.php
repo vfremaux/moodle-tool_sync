@@ -545,6 +545,9 @@ class tool_sync_core_ext_external extends external_api {
         $validkeys = array('idnumber', 'shortname', 'id');
         $params['courseid'] = self::validate_course_param($params, $validkeys);
 
+        $defaultfields = user_get_default_fields();
+        // Filter out picture and give explicit options to get_enrolled_users.
+
         return \core_enrol_external::get_enrolled_users($params['courseid'], $options);
     }
 
