@@ -1126,7 +1126,7 @@ class course_sync_manager extends sync_manager {
             }
         }
 
-        /* ****** Launching metas tool ****** */
+        /* **************************** Launching metas tool *************************************** */
 
         if ($this->execute & SYNC_COURSE_METAS) {
 
