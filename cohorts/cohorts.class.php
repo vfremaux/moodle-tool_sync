@@ -31,6 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
+require_once($CFG->dirroot.'/enrol/cohort/locallib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 
 class cohorts_sync_manager extends sync_manager {
@@ -585,6 +586,10 @@ class cohorts_sync_manager extends sync_manager {
 
             $this->report('... finished');
         }
+
+        $trace = new \null_progress_trace();
+        \enrol_cohort_sync($trace);
+        $trace->finished();
 
         if (!empty($syncconfig->storereport)) {
             $this->store_report_file($filerec);
