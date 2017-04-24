@@ -83,8 +83,8 @@ if ($data = $form->get_data()) {
         print_error('confirmsesskeybad', 'error');
     }
 
-    // Erase all configs.
-    $DB->delete_records('config_plugins', array('plugin' => 'tool_sync'));
+    // Erase all configs but not version !
+    $DB->delete_records_select('config_plugins', " plugin = 'tool_sync' AND 'name' != 'version' ");
 
     foreach ($data as $key => $value) {
         if (strpos($key, '/') > 0) {
