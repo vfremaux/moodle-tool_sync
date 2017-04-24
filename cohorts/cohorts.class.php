@@ -332,12 +332,7 @@ class cohorts_sync_manager extends sync_manager {
                     if ($user) {
                         $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
                         if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
-                            $cohortmembership = new StdClass();
-                            $cohortmembership->userid = $user->id;
-                            $cohortmembership->cohortid = ''.@$cohort->id;
-                            $cohortmembership->timeadded = time();
-                            $cohortmembership->id = $DB->insert_record('cohort_members', $cohortmembership);
-                            $userscohortassign++;
+                            \cohort_add_member($cohort->id, $user->id);
 
                             $e = new StdClass;
                             $e->username = $user->username;
@@ -411,7 +406,7 @@ class cohorts_sync_manager extends sync_manager {
                         }
                         $e = new StdClass;
                         $e->idnumber = $cohort->idnumber;
-                        $e->cname = $cohort->name;
+                        $e->name = $cohort->name;
                         $this->report(get_string('cohortfreed', 'tool_sync', $e));
                     }
                 }
