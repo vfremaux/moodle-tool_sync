@@ -536,6 +536,8 @@ class tool_sync_core_ext_external extends external_api {
     }
 
     public static function get_enrolled_full_users($courseidsource, $courseid, $options = array()) {
+        global $CFG, $USER, $DB;
+        require_once($CFG->dirroot . "/user/lib.php");
 
         // Validate parameters.
         $parameters = array('courseidsource' => $courseidsource,
@@ -545,10 +547,128 @@ class tool_sync_core_ext_external extends external_api {
         $validkeys = array('idnumber', 'shortname', 'id');
         $params['courseid'] = self::validate_course_param($params, $validkeys);
 
-        $defaultfields = user_get_default_fields();
-        // Filter out picture and give explicit options to get_enrolled_users.
+        /* Copy all code of original here. change : avoid validating context as it creates a weird redirection. */
 
-        return \core_enrol_external::get_enrolled_users($params['courseid'], $options);
+        $withcapability = '';
+        $groupid        = 0;
+        $onlyactive     = false;
+        $userfields     = array();
+        $limitfrom = 0;
+        $limitnumber = 0;
+        $sortby = 'us.id';
+        $sortparams = array();
+        $sortdirection = 'ASC';
+        foreach ($options as $option) {
+            switch ($option['name']) {
+            case 'withcapability':
+                $withcapability = $option['value'];
+                break;
+            case 'groupid':
+                $groupid = (int)$option['value'];
+                break;
+            case 'onlyactive':
+                $onlyactive = !empty($option['value']);
+                break;
+            case 'userfields':
+                $thefields = explode(',', $option['value']);
+                foreach ($thefields as $f) {
+                    $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
+                }
+                break;
+            case 'limitfrom' :
+                $limitfrom = clean_param($option['value'], PARAM_INT);
+                break;
+            case 'limitnumber' :
+                $limitnumber = clean_param($option['value'], PARAM_INT);
+                break;
+            case 'sortby':
+                $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
+                if (!in_array($option['value'], $sortallowedvalues)) {
+                    throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
+                        'allowed values are: ' . implode(',', $sortallowedvalues));
+                }
+                if ($option['value'] == 'siteorder') {
+                    list($sortby, $sortparams) = users_order_by_sql('us');
+                } else {
+                    $sortby = 'us.' . $option['value'];
+                }
+                break;
+            case 'sortdirection':
+                $sortdirection = strtoupper($option['value']);
+                $directionallowedvalues = array('ASC', 'DESC');
+                if (!in_array($sortdirection, $directionallowedvalues)) {
+                    throw new invalid_parameter_exception('Invalid value for sortdirection parameter
+                        (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
+                }
+                break;
+            }
+        }
+
+        $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
+        $coursecontext = context_course::instance($courseid, IGNORE_MISSING);
+        if ($courseid == SITEID) {
+            $context = context_system::instance();
+        } else {
+            $context = $coursecontext;
+        }
+
+        if ($courseid == SITEID) {
+            require_capability('moodle/site:viewparticipants', $context);
+        } else {
+            require_capability('moodle/course:viewparticipants', $context);
+        }
+        // to overwrite this parameter, you need role:review capability
+        if ($withcapability) {
+            require_capability('moodle/role:review', $coursecontext);
+        }
+        // need accessallgroups capability if you want to overwrite this option
+        if (!empty($groupid) && !groups_is_member($groupid)) {
+            require_capability('moodle/site:accessallgroups', $coursecontext);
+        }
+        // to overwrite this option, you need course:enrolereview permission
+        if ($onlyactive) {
+            require_capability('moodle/course:enrolreview', $coursecontext);
+        }
+
+        list($enrolledsql, $enrolledparams) = get_enrolled_sql($coursecontext, $withcapability, $groupid, $onlyactive);
+        $ctxselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
+        $ctxjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = u.id AND ctx.contextlevel = :contextlevel)";
+        $enrolledparams['contextlevel'] = CONTEXT_USER;
+
+        $groupjoin = '';
+        if (empty($groupid) && groups_get_course_groupmode($course) == SEPARATEGROUPS &&
+                !has_capability('moodle/site:accessallgroups', $coursecontext)) {
+            // Filter by groups the user can view.
+            $usergroups = groups_get_user_groups($course->id);
+            if (!empty($usergroups['0'])) {
+                list($groupsql, $groupparams) = $DB->get_in_or_equal($usergroups['0'], SQL_PARAMS_NAMED);
+                $groupjoin = "JOIN {groups_members} gm ON (u.id = gm.userid AND gm.groupid $groupsql)";
+                $enrolledparams = array_merge($enrolledparams, $groupparams);
+            } else {
+                // User doesn't belong to any group, so he can't see any user. Return an empty array.
+                return array();
+            }
+        }
+        $sql = "SELECT us.*
+                  FROM {user} us
+                  JOIN (
+                      SELECT DISTINCT u.id $ctxselect
+                        FROM {user} u $ctxjoin $groupjoin
+                       WHERE u.id IN ($enrolledsql)
+                  ) q ON q.id = us.id
+                ORDER BY $sortby $sortdirection";
+        $enrolledparams = array_merge($enrolledparams, $sortparams);
+        $enrolledusers = $DB->get_recordset_sql($sql, $enrolledparams, $limitfrom, $limitnumber);
+        $users = array();
+        foreach ($enrolledusers as $user) {
+            context_helper::preload_from_record($user);
+            if ($userdetails = user_get_user_details($user, $course, $userfields)) {
+                $users[] = $userdetails;
+            }
+        }
+        $enrolledusers->close();
+
+        return $users;
     }
 
     /**
@@ -673,6 +793,8 @@ class tool_sync_core_ext_external extends external_api {
     }
 
     public static function get_enrolled_users($courseidsource, $courseid, $options = array()) {
+        global $CFG, $USER, $DB;
+        require_once($CFG->dirroot . "/user/lib.php");
 
         // Validate parameters.
         $parameters = array('courseidsource' => $courseidsource,
@@ -682,7 +804,130 @@ class tool_sync_core_ext_external extends external_api {
         $validkeys = array('idnumber', 'shortname', 'id');
         $params['courseid'] = self::validate_course_param($params, $validkeys);
 
-        $users = \core_enrol_external::get_enrolled_users($params['courseid'], $options);
+        /*
+        * $users = \core_enrol_external::get_enrolled_users($params['courseid'], $options);
+        */
+
+        /* Copy all code of original here. change : avoid validating context as it creates a weird redirection. */
+
+        $withcapability = '';
+        $groupid        = 0;
+        $onlyactive     = false;
+        $userfields     = array();
+        $limitfrom = 0;
+        $limitnumber = 0;
+        $sortby = 'us.id';
+        $sortparams = array();
+        $sortdirection = 'ASC';
+        foreach ($options as $option) {
+            switch ($option['name']) {
+            case 'withcapability':
+                $withcapability = $option['value'];
+                break;
+            case 'groupid':
+                $groupid = (int)$option['value'];
+                break;
+            case 'onlyactive':
+                $onlyactive = !empty($option['value']);
+                break;
+            case 'userfields':
+                $thefields = explode(',', $option['value']);
+                foreach ($thefields as $f) {
+                    $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
+                }
+                break;
+            case 'limitfrom' :
+                $limitfrom = clean_param($option['value'], PARAM_INT);
+                break;
+            case 'limitnumber' :
+                $limitnumber = clean_param($option['value'], PARAM_INT);
+                break;
+            case 'sortby':
+                $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
+                if (!in_array($option['value'], $sortallowedvalues)) {
+                    throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
+                        'allowed values are: ' . implode(',', $sortallowedvalues));
+                }
+                if ($option['value'] == 'siteorder') {
+                    list($sortby, $sortparams) = users_order_by_sql('us');
+                } else {
+                    $sortby = 'us.' . $option['value'];
+                }
+                break;
+            case 'sortdirection':
+                $sortdirection = strtoupper($option['value']);
+                $directionallowedvalues = array('ASC', 'DESC');
+                if (!in_array($sortdirection, $directionallowedvalues)) {
+                    throw new invalid_parameter_exception('Invalid value for sortdirection parameter
+                        (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
+                }
+                break;
+            }
+        }
+
+        $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
+        $coursecontext = context_course::instance($courseid, IGNORE_MISSING);
+        if ($courseid == SITEID) {
+            $context = context_system::instance();
+        } else {
+            $context = $coursecontext;
+        }
+
+        if ($courseid == SITEID) {
+            require_capability('moodle/site:viewparticipants', $context);
+        } else {
+            require_capability('moodle/course:viewparticipants', $context);
+        }
+        // to overwrite this parameter, you need role:review capability
+        if ($withcapability) {
+            require_capability('moodle/role:review', $coursecontext);
+        }
+        // need accessallgroups capability if you want to overwrite this option
+        if (!empty($groupid) && !groups_is_member($groupid)) {
+            require_capability('moodle/site:accessallgroups', $coursecontext);
+        }
+        // to overwrite this option, you need course:enrolereview permission
+        if ($onlyactive) {
+            require_capability('moodle/course:enrolreview', $coursecontext);
+        }
+
+        list($enrolledsql, $enrolledparams) = get_enrolled_sql($coursecontext, $withcapability, $groupid, $onlyactive);
+        $ctxselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
+        $ctxjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = u.id AND ctx.contextlevel = :contextlevel)";
+        $enrolledparams['contextlevel'] = CONTEXT_USER;
+
+        $groupjoin = '';
+        if (empty($groupid) && groups_get_course_groupmode($course) == SEPARATEGROUPS &&
+                !has_capability('moodle/site:accessallgroups', $coursecontext)) {
+            // Filter by groups the user can view.
+            $usergroups = groups_get_user_groups($course->id);
+            if (!empty($usergroups['0'])) {
+                list($groupsql, $groupparams) = $DB->get_in_or_equal($usergroups['0'], SQL_PARAMS_NAMED);
+                $groupjoin = "JOIN {groups_members} gm ON (u.id = gm.userid AND gm.groupid $groupsql)";
+                $enrolledparams = array_merge($enrolledparams, $groupparams);
+            } else {
+                // User doesn't belong to any group, so he can't see any user. Return an empty array.
+                return array();
+            }
+        }
+        $sql = "SELECT us.*
+                  FROM {user} us
+                  JOIN (
+                      SELECT DISTINCT u.id $ctxselect
+                        FROM {user} u $ctxjoin $groupjoin
+                       WHERE u.id IN ($enrolledsql)
+                  ) q ON q.id = us.id
+                ORDER BY $sortby $sortdirection";
+        $enrolledparams = array_merge($enrolledparams, $sortparams);
+        $enrolledusers = $DB->get_recordset_sql($sql, $enrolledparams, $limitfrom, $limitnumber);
+        $users = array();
+        foreach ($enrolledusers as $user) {
+            context_helper::preload_from_record($user);
+            if ($userdetails = user_get_user_details($user, $course, $userfields)) {
+                $users[] = $userdetails;
+            }
+        }
+        $enrolledusers->close();
 
         $lightusers = array();
         if ($users) {
