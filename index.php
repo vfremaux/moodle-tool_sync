@@ -88,11 +88,14 @@ if ($data = $form->get_data()) {
 
     foreach ($data as $key => $value) {
         if (strpos($key, '/') > 0) {
-            // Is a configuration key.
-            list($plugin, $datakey) = explode('/', $key);
-            set_config($datakey, $value, 'tool_sync');
-            // Refresh the currently loaded config for reflecting in form.
-            $syncconfig->$datakey = $value;
+            if ($key != 'version') {
+                // Be sure to protect version.
+                // Is a configuration key.
+                list($plugin, $datakey) = explode('/', $key);
+                set_config($datakey, $value, 'tool_sync');
+                // Refresh the currently loaded config for reflecting in form.
+                $syncconfig->$datakey = $value;
+            }
         }
     }
 

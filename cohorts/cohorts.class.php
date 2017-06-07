@@ -165,6 +165,7 @@ class cohorts_sync_manager extends sync_manager {
                 'userid' => 1,
                 'cid' => 1,
                 'cname',
+                'ccatcontext',
                 'cdescription',
                 'cidnumber',
             );
@@ -294,7 +295,19 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->description = @$record['cdescription'];
                             $cohort->idnumber = @$record['cidnumber'];
                             $cohort->descriptionformat = FORMAT_MOODLE;
-                            $cohort->contextid = $systemcontext->id;
+                            if ($record['ccatcontext']) {
+                                if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
+                                    $context = context_coursecat::instance($record['ccatcontext']);
+                                    $cohort->contextid = $context->id;
+                                } else {
+                                    $e = new StdClass;
+                                    $e->catid = $record['ccatcontext'];
+                                    $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
+                                    continue;
+                                }
+                            } else {
+                                $cohort->contextid = $systemcontext->id;
+                            }
                             $cohort->timecreated = $t;
                             $cohort->timemodified = $t;
 
@@ -325,6 +338,14 @@ class cohorts_sync_manager extends sync_manager {
                         }
                         if (!empty($record['name'])) {
                             $cohort->idnumber = @$record['name'];
+                        }
+                        if ($record['ccatcontext']) {
+                            if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
+                                $context = context_coursecat::instance($record['ccatcontext']);
+                                $cohort->contextid = $context->id;
+                            }
+                        } else {
+                            $cohort->contextid = $systemcontext->id;
                         }
                         $DB->update_record('cohort', $cohort);
                         $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
