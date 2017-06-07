@@ -42,6 +42,7 @@ $string['cleancategories'] = 'Clean empty categories';
 $string['cleancats'] = 'Cleanup categories';
 $string['cohortalreadymember'] = 'User {$a->username} ({$a->idnumber}) already member of cohort {$a->cname}';
 $string['cohortautocreate'] = 'Create missing cohorts';
+$string['cohortbadcontext'] = 'Bad context (missing required category {$a->catid}) for cohort';
 $string['cohortbindingadded'] = 'Cohort {$a->cohort} added in course {$a->course} with role {$a->role}';
 $string['cohortbindingbadcohortid'] = 'The expected cohort {$a} could not be found. Skipping.';
 $string['cohortbindingbadcourseid'] = 'The expected course {$a} could not be found. Skipping.';
