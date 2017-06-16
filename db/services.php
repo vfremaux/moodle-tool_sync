@@ -121,6 +121,60 @@ $functions = array(
         'type' => 'read',
         'capabilities' => ''
     ),
+
+    'tool_sync_cohort_bind' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'bind_cohort',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Binds a cohort to a course with an enrol instance',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_unbind' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'unbind_cohort',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Unbinds a cohort from a course with an enrol instance',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_suspend_enrol' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'suspend_enrol',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Suspends a cohort enrol instance',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_restore_enrol' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'restore_enrol',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Enables a cohort enrol instance that was suspended',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_get_users' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'get_users',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Get full info about members',
+        'type' => 'read',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_delete' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'delete',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Deletes a cohort if exists',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
 );
 
 $services = array(
