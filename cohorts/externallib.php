@@ -31,7 +31,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir.'/externallib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/cohorts/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 
 /**
@@ -76,7 +76,7 @@ class tool_sync_cohort_ext_external extends external_api {
     public static function bind_cohort($chidsource, $chid, $cidsource, $cid, $ridsource, $rid,
                                       $method = 'cohort', $timestart = 0, $timeend = 0, $suspend = 0,
                                       $makegroup = 0, $extraparam1 = '', $extraparam2 = '') {
-        global $CFG;
+        global $CFG, $DB;
 
         // Validate parameters.
         $parameters = array('cidsource' => $cidsource,
@@ -85,42 +85,17 @@ class tool_sync_cohort_ext_external extends external_api {
 
         // Validate parameters.
         $parameters = array('chidsource' => $chidsource,
-            'chid' => $roleid);
+            'chid' => $chid);
         $cohort = self::validate_cohort_parameters($parameters);
 
         // Validate parameters.
-        $parameters = array('ridsource' => $chidsource,
-            'rid' => $roleid);
+        $parameters = array('ridsource' => $ridsource,
+            'rid' => $rid);
         $role = self::validate_role_parameters($parameters);
-
-        $params = array('courseid' => $course->id, 'enrol' => $method, 'customint1' => $cohort->id);
-        if ($DB->record_exists('enrol', $params)) {
-            // ensure it is enabled.
-            $DB->set_field('enrol', 'status', 0, $params);
-            return true;
-        }
 
         self::validate_method_parameter($method);
 
-        $lastorder = $DB->get_field('enrol', 'MAX(sortorder)', array('courseid' => $courseid));
-        if ($lastorder === false) {
-            $lastorder = 0;
-        } else {
-            $lastorder++;
-        }
-
-        $enrol = new StdClass;
-        $enrol->courseid = $course->id;
-        $enrol->status = 0;
-        $enrol->enrol = $method;
-        $enrol->sortorder = $lastorder;
-        $enrol->roleid = $role->id;
-        $enrol->enrolstartdate = $timestart;
-        $enrol->enrolenddate = $timeend;
-        $enrol->customint1 = $cohort->id;
-        $enrol->customint2 = $makegroup;
-
-        $DB->insert_record('enrol');
+        tool_sync_execute_bind('add', $method, $course->id, $cohort->id, $role->id, $timestart, $timeend, $makegroup, $extraparam1, $extraparam2);
 
         return true;
     }
@@ -166,10 +141,12 @@ class tool_sync_cohort_ext_external extends external_api {
 
         // Validate parameters.
         $parameters = array('chidsource' => $chidsource,
-            'chid' => $roleid);
+            'chid' => $chid);
         $cohort = self::validate_cohort_parameters($parameters);
 
-        tool_sync_cohort_execute_bind('fulldel', $method, $course->id, $cohort->id, $role->id);
+        self::validate_method_parameter($method);
+
+        tool_sync_execute_bind('fulldel', $method, $course->id, $cohort->id, '*');
 
         return true;
     }
@@ -207,7 +184,7 @@ class tool_sync_cohort_ext_external extends external_api {
      *
      * @return a boolean status
      */
-    public static function suspend_enrol($chidsource, $chid, $cidsource, $cid, $method) {
+    public static function suspend_enrol($chidsource, $chid, $cidsource, $cid, $method = 'cohort') {
 
         // Validate parameters.
         $parameters = array('cidsource' => $cidsource,
@@ -216,10 +193,10 @@ class tool_sync_cohort_ext_external extends external_api {
 
         // Validate parameters.
         $parameters = array('chidsource' => $chidsource,
-            'chid' => $roleid);
+            'chid' => $chid);
         $cohort = self::validate_cohort_parameters($parameters);
 
-        tool_sync_cohort_execute_bind('del', $method, $course->id, $cohort->id, $role->id);
+        tool_sync_execute_bind('del', $method, $course->id, $cohort->id, $role->id);
 
         return true;
     }
@@ -256,6 +233,17 @@ class tool_sync_cohort_ext_external extends external_api {
      */
     public static function restore_enrol($chidsource, $chid, $cidsource, $cid, $method = 'cohort') {
 
+        // Validate parameters.
+        $parameters = array('cidsource' => $cidsource,
+            'cid' => $cid);
+        $course = self::validate_course_parameters($parameters);
+
+        // Validate parameters.
+        $parameters = array('chidsource' => $chidsource,
+            'chid' => $chid);
+        $cohort = self::validate_cohort_parameters($parameters);
+
+        tool_sync_execute_bind('restore', $method, $course->id, $cohort->id, $role->id);
 
         return true;
     }
@@ -311,7 +299,7 @@ class tool_sync_cohort_ext_external extends external_api {
         $userfields     = array();
         $limitfrom = 0;
         $limitnumber = 0;
-        $sortby = 'us.id';
+        $sortby = 'u.id';
         $sortparams = array();
         $sortdirection = 'ASC';
         foreach ($options as $option) {
@@ -335,9 +323,9 @@ class tool_sync_cohort_ext_external extends external_api {
                             'allowed values are: ' . implode(',', $sortallowedvalues));
                     }
                     if ($option['value'] == 'siteorder') {
-                        list($sortby, $sortparams) = users_order_by_sql('us');
+                        list($sortby, $sortparams) = users_order_by_sql('u');
                     } else {
-                        $sortby = 'us.' . $option['value'];
+                        $sortby = 'u.' . $option['value'];
                     }
                     break;
                 case 'sortdirection':
@@ -356,7 +344,7 @@ class tool_sync_cohort_ext_external extends external_api {
                 u.*
             FROM
                 {user} u,
-                {cohort_memebers} cm
+                {cohort_members} cm
             WHERE
                 cm.userid = u.id AND
                 cm.cohortid = ?
@@ -496,7 +484,7 @@ class tool_sync_cohort_ext_external extends external_api {
 
         switch ($inputs['chidsource']) {
             case 'id': {
-                if (!$cohort = $DB->get_record('role', array('id' => $inputs['chid']))) {
+                if (!$cohort = $DB->get_record('cohort', array('id' => $inputs['chid']))) {
                     if ($blocking) {
                         throw new invalid_parameter_exception('Cohort not found by id : '.$inputs['chid']);
                     }
@@ -506,12 +494,49 @@ class tool_sync_cohort_ext_external extends external_api {
             }
 
             case 'idnumber': {
-                if (!$cohort = $DB->get_record('role', array('idnumber' => $inputs['chid']))) {
+                if (!$cohort = $DB->get_record('cohort', array('idnumber' => $inputs['chid']))) {
                     if ($blocking) {
-                        throw new invalid_parameter_exception('Cohort not found by shortname : '.$inputs['chid']);
+                        throw new invalid_parameter_exception('Cohort not found by idnumber : '.$inputs['chid']);
                     }
                 }
                 return $cohort;
+                break;
+            }
+        }
+    }
+
+    /**
+     * @param array $inputs
+     * @param bool $blocking if false, may return null or false
+     */
+    protected static function validate_role_parameters(&$inputs, $blocking = true) {
+        global $DB;
+
+        $validkeys = array('id', 'shortname');
+        if (!in_array($inputs['ridsource'], $validkeys)) {
+            if ($blocking) {
+                throw new invalid_parameter_exception('Role source not in acceptable ranges.');
+            }
+        }
+
+        switch ($inputs['ridsource']) {
+            case 'id': {
+                if (!$role = $DB->get_record('role', array('id' => $inputs['rid']))) {
+                    if ($blocking) {
+                        throw new invalid_parameter_exception('Role not found by id : '.$inputs['rid']);
+                    }
+                }
+                return $role;
+                break;
+            }
+
+            case 'shortname': {
+                if (!$role = $DB->get_record('role', array('shortname' => $inputs['rid']))) {
+                    if ($blocking) {
+                        throw new invalid_parameter_exception('Role not found by shortname : '.$inputs['rid']);
+                    }
+                }
+                return $role;
                 break;
             }
         }
@@ -521,11 +546,11 @@ class tool_sync_cohort_ext_external extends external_api {
         global $DB;
 
         $validkeys = array('id', 'idnumber', 'shortname');
-        if (!in_array($inputs['courseidsource'], $validkeys)) {
+        if (!in_array($inputs['cidsource'], $validkeys)) {
             throw new invalid_parameter_exception('Course id source not in acceptable ranges');
         }
 
-        switch ($inputs['courseidsource']) {
+        switch ($inputs['cidsource']) {
             case 'id': {
                 if (!$course = $DB->get_record('course', array('id' => $inputs['cid']))) {
                     throw new invalid_parameter_exception('Course not found by id for '.$inputs['cid']);
@@ -547,5 +572,15 @@ class tool_sync_cohort_ext_external extends external_api {
                 return $course;
             }
         }
+    }
+
+    protected static function validate_method_parameter($method) {
+
+        $supportedmethods = array('cohort', 'delayedcohort', 'cohortrestricted');
+
+        if (!in_array($method, $supportedmethods)) {
+            throw new invalid_parameter_exception('Bad enrol method '.$method);
+        }
+        return true;
     }
 }
