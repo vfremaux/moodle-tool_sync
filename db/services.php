@@ -205,4 +205,20 @@ $services = array(
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),
+
+    'Moodle Cohort Extension API'  => array(
+        'functions' => array (
+            'tool_sync_cohort_get_users',
+            'tool_sync_cohort_bind',
+            'tool_sync_cohort_unbind',
+            'tool_sync_cohort_suspend_enrol',
+            'tool_sync_cohort_restore_enrol',
+            'tool_sync_cohort_delete',
+        ),
+        'enabled' => 0,
+        'restrictedusers' => 1,
+        'shortname' => 'tool_sync_cohort_ext',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
 );

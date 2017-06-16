@@ -9,18 +9,18 @@ function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $st
         case 'add': {
             $params = array('enrol' => $enrol, 'courseid' => $courseid, 'customint1' => $cohortid, 'roleid' => $roleid);
             if (!$oldrec = $DB->get_record('enrol', $params)) {
-                $enrol = new StdClass;
-                $enrol->enrol = $enrol;
-                $enrol->status = 0;
-                $enrol->courseid = $courseid;
-                $enrol->enrolstartdate = $timestart;
-                $enrol->enrolenddate = $timeend;
-                $enrol->roleid = $roleid;
-                $enrol->customint1 = $cohortid;
-                $enrol->customint2 = $makegroup;
-                $enrol->customint3 = $extra1;
-                $enrol->customint4 = $extra2;
-                $DB->insert_record('enrol', $enrol);
+                $enrolobj = new StdClass;
+                $enrolobj->enrol = $enrol;
+                $enrolobj->status = 0;
+                $enrolobj->courseid = $courseid;
+                $enrolobj->enrolstartdate = $timestart;
+                $enrolobj->enrolenddate = $timeend;
+                $enrolobj->roleid = $roleid;
+                $enrolobj->customint1 = $cohortid;
+                $enrolobj->customint2 = $makegroup;
+                $enrolobj->customint3 = $extra1;
+                $enrolobj->customint4 = $extra2;
+                $DB->insert_record('enrol', $enrolobj);
             } else {
                 if ($oldrec->status == 1) {
                     $oldrec->status = 0;
