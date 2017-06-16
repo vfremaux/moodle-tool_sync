@@ -699,22 +699,26 @@ class course_sync_manager extends sync_manager {
             $required = array(  'fullname' => false, // Mandatory fields.
                                 'shortname' => false);
 
+            $courseconfig = get_config('moodlecourse');
+
             $optional = array(  'category' => $defaultcategory, // Default values for optional fields.
                                 'sortorder' => 0,
                                 'summary' => get_string('coursedefaultsummary', 'tool_sync'),
-                                'format' => 'topics',
+                                'format' => $courseconfig->format,
                                 'idnumber' => '',
-                                'showgrades' => 1,
-                                'newsitems' => 5,
+                                'showgrades' => $courseconfig->showgrades,
+                                'newsitems' => $courseconfig->newsitems,
                                 'startdate' => $defaultmtime,
                                 'marker' => 0,
-                                'maxbytes' => 2097152,
+                                'maxbytes' => $courseconfig->maxbytes,
                                 'legacyfiles' => 0,
-                                'showreports' => 0,
-                                'visible' => 1,
+                                'showreports' => $courseconfig->showreports,
+                                'visible' => $courseconfig->visible,
                                 'visibleold' => 0,
-                                'groupmode' => 0,
-                                'groupmodeforce' => 0,
+                                'coursedisplay' => $courseconfig->coursedisplay,
+                                'groupmode' => $courseconfig->groupmode,
+                                'enablecompletion' => $courseconfig->enablecompletion,
+                                'groupmodeforce' => $courseconfig->groupmodeforce,
                                 'defaultgroupingid' => 0,
                                 'lang' => '',
                                 'theme' => '',
