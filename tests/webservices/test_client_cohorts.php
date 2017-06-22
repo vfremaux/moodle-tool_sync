@@ -1,8 +1,8 @@
 <?php
 
-class test_client_cohorts {
+require_once('test_client_base.php');
 
-    protected $t; // target.
+class test_client_cohorts extends test_client {
 
     public function __construct() {
 
@@ -10,13 +10,13 @@ class test_client_cohorts {
 
         // Setup this settings for tests
         $this->t->baseurl = 'http://dev.moodle31.fr'; // The remote Moodle url to push in.
-        $this->t->wstoken = ''; // the service token for access.
+        $this->t->wstoken = 'b401cbe98bd1385c280ddbcb66856e35'; // the service token for access.
 
         $this->t->uploadservice = '/webservice/upload.php';
         $this->t->service = '/webservice/rest/server.php';
     }
 
-    public function test_bind_cohort($chidsource, $chid, $cidsource, $cid) {
+    public function test_bind_cohort($chidsource, $chid, $cidsource, $cid, $ridsource, $rid, $method = 'cohort') {
 
         if (empty($this->t->baseurl)) {
             echo "Test target not configured\n";
@@ -29,12 +29,96 @@ class test_client_cohorts {
         }
 
         $params = array('wstoken' => $this->t->wstoken,
-                        'wsfunction' => 'tool_sync_enrol_get_enrolled_users',
+                        'wsfunction' => 'tool_sync_cohort_bind',
                         'moodlewsrestformat' => 'json',
-                        'chidsource' => $ocurseidsource,
-                        'chid' => $courseid,
-                        'cidsource' => $ocurseidsource,
-                        'cid' => $courseid,
+                        'chidsource' => $chidsource,
+                        'chid' => $chid,
+                        'cidsource' => $cidsource,
+                        'cid' => $cid,
+                        'ridsource' => $ridsource,
+                        'rid' => $rid,
+                        'method' => $method,
+        );
+
+        $serviceurl = $this->t->baseurl.$this->t->service;
+
+        return $this->send($serviceurl, $params);
+    }
+
+    public function test_unbind_cohort($chidsource, $chid, $cidsource, $cid, $method = 'cohort') {
+
+        if (empty($this->t->baseurl)) {
+            echo "Test target not configured\n";
+            return;
+        }
+
+        if (empty($this->t->wstoken)) {
+            echo "No token to proceed\n";
+            return;
+        }
+
+        $params = array('wstoken' => $this->t->wstoken,
+                        'wsfunction' => 'tool_sync_cohort_unbind',
+                        'moodlewsrestformat' => 'json',
+                        'chidsource' => $chidsource,
+                        'chid' => $chid,
+                        'cidsource' => $cidsource,
+                        'cid' => $cid,
+                        'method' => $method,
+        );
+
+        $serviceurl = $this->t->baseurl.$this->t->service;
+
+        return $this->send($serviceurl, $params);
+    }
+
+    public function test_suspend_enrol($chidsource, $chid, $cidsource, $cid, $method = 'cohort') {
+
+        if (empty($this->t->baseurl)) {
+            echo "Test target not configured\n";
+            return;
+        }
+
+        if (empty($this->t->wstoken)) {
+            echo "No token to proceed\n";
+            return;
+        }
+
+        $params = array('wstoken' => $this->t->wstoken,
+                        'wsfunction' => 'tool_sync_cohort_suspend_enrol',
+                        'moodlewsrestformat' => 'json',
+                        'chidsource' => $chidsource,
+                        'chid' => $chid,
+                        'cidsource' => $cidsource,
+                        'cid' => $cid,
+                        'method' => $method,
+        );
+
+        $serviceurl = $this->t->baseurl.$this->t->service;
+
+        return $this->send($serviceurl, $params);
+    }
+
+    public function test_restore_enrol($chidsource, $chid, $cidsource, $cid, $method = 'cohort') {
+
+        if (empty($this->t->baseurl)) {
+            echo "Test target not configured\n";
+            return;
+        }
+
+        if (empty($this->t->wstoken)) {
+            echo "No token to proceed\n";
+            return;
+        }
+
+        $params = array('wstoken' => $this->t->wstoken,
+                        'wsfunction' => 'tool_sync_cohort_restore_enrol',
+                        'moodlewsrestformat' => 'json',
+                        'chidsource' => $chidsource,
+                        'chid' => $chid,
+                        'cidsource' => $cidsource,
+                        'cid' => $cid,
+                        'method' => $method,
         );
 
         $serviceurl = $this->t->baseurl.$this->t->service;
@@ -55,10 +139,10 @@ class test_client_cohorts {
         }
 
         $params = array('wstoken' => $this->t->wstoken,
-                        'wsfunction' => 'tool_sync_enrol_get_enrolled_full_users',
+                        'wsfunction' => 'tool_sync_cohort_get_users',
                         'moodlewsrestformat' => 'json',
-                        'chidsource' => $courseidsource,
-                        'chid' => $courseid,
+                        'chidsource' => $chidsource,
+                        'chid' => $chid,
         );
 
         $serviceurl = $this->t->baseurl.$this->t->service;
@@ -66,26 +150,59 @@ class test_client_cohorts {
         return $this->send($serviceurl, $params);
     }
 
+    public function test_delete_cohort($chidsource, $chid) {
+
+        if (empty($this->t->baseurl)) {
+            echo "Test target not configured\n";
+            return;
+        }
+
+        if (empty($this->t->wstoken)) {
+            echo "No token to proceed\n";
+            return;
+        }
+
+        $params = array('wstoken' => $this->t->wstoken,
+                        'wsfunction' => 'tool_sync_cohort_delete',
+                        'moodlewsrestformat' => 'json',
+                        'chidsource' => $chidsource,
+                        'chid' => $chid,
+        );
+
+        $serviceurl = $this->t->baseurl.$this->t->service;
+
+        return $this->send($serviceurl, $params);
+    }
 
 }
 
 // Effective test scenario.
 
-$client = new test_client();
+$client = new test_client_cohorts();
 
-$client->test_create_courses();
-$client->test_reset_courses();
+$ix = 1;
 
-$client->test_create_users();
+echo "\n\nTest $ix ########### GET USERS\n";
+$ix++;
+$client->test_get_cohort_users('idnumber', 'TESTCOHORT');
 
-$client->test_update_users();
+echo "\n\nTest $ix ########### BIND\n";
+$ix++;
+$client->test_bind_cohort('idnumber', 'TESTCOHORT', 'shortname', 'TESTBIND', 'shortname', 'student', 'cohort');
 
-$client->test_enrol_users();
-$client->test_rolechange_users();
+echo "\n\nTest $ix ########### UNBIND\n";
+$ix++;
+$client->test_unbind_cohort('idnumber', 'TESTCOHORT', 'shortname', 'TESTBIND', 'cohort');
 
-$client->test_suspend_users();
-$client->test_delete_users();
+echo "\n\nTest $ix ########### BIND NON STANDARD\n";
+$ix++;
+$client->test_bind_cohort('idnumber', 'TESTCOHORT', 'shortname', 'TESTBIND', 'shortname', 'student', 'cohortrestricted');
 
-$client->test_create_cohorts();
+echo "\n\nTest $ix ########### SUSPEND/RESTORE\n";
+$ix++;
+$client->test_suspend_enrol('idnumber', 'TESTCOHORT', 'shortname', 'TESTBIND');
+$client->test_restore_enrol('idnumber', 'TESTCOHORT', 'shortname', 'TESTBIND');
 
-$client->test_delete_courses();
+echo "\n\nTest $ix ########### DELETE\n";
+$ix++;
+$client->test_delete_cohort('idnumber', 'TESTCOHORTTODELETE');
