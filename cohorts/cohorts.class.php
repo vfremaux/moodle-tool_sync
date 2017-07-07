@@ -31,6 +31,7 @@ use context_system;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/cohorts/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once($CFG->dirroot.'/enrol/cohort/locallib.php');
@@ -580,9 +581,9 @@ class cohorts_sync_manager extends sync_manager {
 
                 $starttime = time();
                 $endtime = 0;
-                $makegroup = $valuearr['makegroup'];
+                $makegroup = @$valuearr['makegroup'];
 
-                tool_sync_cohort_bind($valuearr['cmd'], $enrol, $courseid, $cohortid, $roleid, $timestart, $timeend, $makegroup);
+                tool_sync_execute_bind($valuearr['cmd'], $enrol, $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup);
             }
 
             fclose($filereader);
