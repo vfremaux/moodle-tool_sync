@@ -26,7 +26,7 @@ global $CLI_VMOODLE_PRECHECK;
 
 $CLI_VMOODLE_PRECHECK = true; // Force first config to be minimal.
 
-require('../../../../config.php');
+require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
 require_once($CFG->dirroot.'/lib/clilib.php'); // CLI only functions.
 
 // Now get cli options.
@@ -51,7 +51,7 @@ list($options, $unrecognized) = cli_get_params(
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
-    cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
+    cli_error("Unkown option $unrecognized\n");
 }
 
 if ($options['help']) {
@@ -97,32 +97,54 @@ require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
+// Integrates file in file system within tool_sync file area.
+
+$fs = get_file_storage();
+$filerec = new Stdclass();
+$contextid = context_system::instance()->id;
+$filerec->contextid = $contextid;
+$filerec->component = 'tool_sync';
+$filerec->filearea = 'syncfiles';
+$filerec->itemid = 0;
+$filerec->filepath = '/';
+$filerec->filename = basename($options['file']);
+
+// Purge eventual previous file.
+if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                             $filerec->filepath, $filerec->filename)) {
+    $oldfile->delete();
+}
+
+$inputfile = $fs->create_file_from_pathname($filerec, $options['file']);
+
 global $USER;
 $USER = get_admin();
 
-$controlfiles = new StdClass();
 switch ($options['action']) {
     case 'check':
         $action = SYNC_COURSE_CHECK;
-        $controlfiles->check = $options['file'];
         break;
+
     case 'create':
         $action = SYNC_COURSE_CREATE;
-        $controlfiles->creation = $options['file'];
         break;
+
     case 'delete':
         $action = SYNC_COURSE_DELETE;
-        $controlfiles->deletion = $options['file'];
         break;
+
     case 'reset':
         die("Future implementation. Needs some reshape in tool organization\n");
         $action = SYNC_COURSE_RESET;
-        $controlfiles->reset = $options['file'];
         break;
 }
 
-$manager = new \tool_sync\course_sync_manager($controlfiles, $action);
-$manager->cron();
+$syncconfig = get_config('tool_sync');
+
+$manager = new \tool_sync\course_sync_manager($action, $filerec);
+
+$syncconfig->courses_coursecategoryidentifier = 'idnumber';
+$manager->cron($syncconfig);
 
 if ($options['verbose']) {
     echo $CFG->tool_sync_courselog;
