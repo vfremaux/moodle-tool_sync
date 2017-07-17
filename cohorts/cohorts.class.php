@@ -494,6 +494,7 @@ class cohorts_sync_manager extends sync_manager {
                 'cmd' => 1,
                 'enrolstart' => 1,
                 'enrolend' => 1,
+                'enrol' => 'cohort',
                 'role' => 1,
             );
             $patterns = array();
@@ -583,7 +584,11 @@ class cohorts_sync_manager extends sync_manager {
                 $endtime = 0;
                 $makegroup = @$valuearr['makegroup'];
 
-                tool_sync_execute_bind($valuearr['cmd'], $enrol, $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup);
+                if (empty($valuearr['enrol'])) {
+                    $valuearr['enrol'] = 'cohort';
+                }
+
+                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup);
             }
 
             fclose($filereader);

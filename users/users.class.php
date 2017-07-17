@@ -671,11 +671,11 @@ class users_sync_manager extends sync_manager {
                          */
                         if (empty($syncconfig->simulate)) {
                             if (!empty($c->wwwroot) && $DB->get_record('block', array('name' => 'vmoodle'))) {
-                                if (!file_exists($CFG->dirroot.'/blocks/vmoodle/rpclib.php')) {
+                                if (!file_exists($CFG->dirroot.'/local/vmoodle/rpclib.php')) {
                                     echo $OUTPUT->notification('This feature works with VMoodle Virtual Moodle Implementation');
                                     continue;
                                 }
-                                include_once($CFG->dirroot.'/blocks/vmoodle/rpclib.php');
+                                include_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
                                 include_once($CFG->dirroot.'/mnet/xmlrpc/client.php');
 
                                 // Imagine we never did it before.
