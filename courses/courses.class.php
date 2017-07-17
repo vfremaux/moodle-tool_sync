@@ -45,6 +45,7 @@ class course_sync_manager extends sync_manager {
         $this->manualfilerec = $manualfilerec;
         $this->execute = $execute;
         $this->identifieroptions = array('idnumber' => 'idnumber', 'shortname' => 'shortname', 'id' => 'id');
+        $this->catidentifieroptions = array('idnumber' => get_string('idnumber'), 'idname' => get_string('catidname', 'tool_sync'));
     }
 
     public function form_elements(&$frm) {
@@ -53,6 +54,11 @@ class course_sync_manager extends sync_manager {
         $label = get_string('uploadcoursecreationfile', 'tool_sync');
         $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/courses_fileuploadlocation', PARAM_TEXT);
+
+        $key = 'tool_sync/courses_coursecategoryidentifier';
+        $label = get_string('coursecategoryidentifier', 'tool_sync');
+        $frm->addElement('select', $key, $label, $this->catidentifieroptions);
+        $frm->setDefault($key, 'idname');
 
         $key = 'tool_sync/courses_filedeletelocation';
         $label = get_string('coursedeletefile', 'tool_sync');
@@ -699,22 +705,26 @@ class course_sync_manager extends sync_manager {
             $required = array(  'fullname' => false, // Mandatory fields.
                                 'shortname' => false);
 
+            $courseconfig = get_config('moodlecourse');
+
             $optional = array(  'category' => $defaultcategory, // Default values for optional fields.
                                 'sortorder' => 0,
                                 'summary' => get_string('coursedefaultsummary', 'tool_sync'),
-                                'format' => 'topics',
+                                'format' => $courseconfig->format,
                                 'idnumber' => '',
-                                'showgrades' => 1,
-                                'newsitems' => 5,
+                                'showgrades' => $courseconfig->showgrades,
+                                'newsitems' => $courseconfig->newsitems,
                                 'startdate' => $defaultmtime,
                                 'marker' => 0,
-                                'maxbytes' => 2097152,
+                                'maxbytes' => $courseconfig->maxbytes,
                                 'legacyfiles' => 0,
-                                'showreports' => 0,
-                                'visible' => 1,
+                                'showreports' => $courseconfig->showreports,
+                                'visible' => $courseconfig->visible,
                                 'visibleold' => 0,
-                                'groupmode' => 0,
-                                'groupmodeforce' => 0,
+                                'coursedisplay' => $courseconfig->coursedisplay,
+                                'groupmode' => $courseconfig->groupmode,
+                                'enablecompletion' => $courseconfig->enablecompletion,
+                                'groupmodeforce' => $courseconfig->groupmodeforce,
                                 'defaultgroupingid' => 0,
                                 'lang' => '',
                                 'theme' => '',
@@ -864,28 +874,47 @@ class course_sync_manager extends sync_manager {
                         $coursetocreate[$key] = $value;
                     }
 
-                    // prepare category
-                    if (!is_numeric($coursetocreate['category'])) {
-                        $coursetocreate['category'] = explode('/', $coursetocreate['category']);
+                    $keyedvalues = array_combine($headers, $valueset);
+
+                    // Prepare category.
+                    if ($syncconfig->courses_coursecategoryidentifier == 'idname') {
+                        if (!is_numeric($keyedvalues['category'])) {
+                            $coursetocreate['category'] = explode('/', $keyedvalues['category']);
+                        }
+                    } else {
+                        // categories by idnumber, if exists..
+                        if (!$catid = $DB->get_field('course_categories', 'id', array('idnumber' => $keyedvalues['category']))) {
+                            $this->report(get_string('catidnumbererror', 'tool_sync', $keyedvalues['category']));
+                            if (!empty($syncconfig->filefailed)) {
+                                $this->feed_tryback($text);
+                            }
+                            $i++;
+                            continue;
+                        }
+                        $coursetocreate['category'] = $catid;
                     }
 
                     $coursetopics = array();
 
                     // Validate incoming values.
                     foreach ($valueset as $key => $value) {
+
                         $cf = $headers[$key];
 
-                        if (preg_match(TOPIC_FIELD, $cf, $matches)) {
-                            // Register a topic definition.
-                            $coursetopics[$matches[2]] = $this->validate_as($value, $matches[1], $i, $cf);
-                        } else if (preg_match(TEACHER_FIELD, $cf, $matches)) {
-                            // Register a teacher account request.
-                            $tmp = $this->validate_as(trim($value), $matches[1].$matches[3], $i, $cf);
-                            (isset($tmp) && ($tmp != '')) and ($courseteachers[$matches[2]][$matches[3]] = $tmp);
-                        } else {
-                            $coursetocreate[$cf] = $this->validate_as($value, $cf, $i); // Accept value if it passed validation.
+                        if ($cf != 'category') {
+                            if (preg_match(TOPIC_FIELD, $cf, $matches)) {
+                                // Register a topic definition.
+                                $coursetopics[$matches[2]] = $this->validate_as($value, $matches[1], $i, $cf);
+                            } else if (preg_match(TEACHER_FIELD, $cf, $matches)) {
+                                // Register a teacher account request.
+                                $tmp = $this->validate_as(trim($value), $matches[1].$matches[3], $i, $cf);
+                                (isset($tmp) && ($tmp != '')) and ($courseteachers[$matches[2]][$matches[3]] = $tmp);
+                            } else {
+                                $coursetocreate[$cf] = $this->validate_as($value, $cf, $i); // Accept value if it passed validation.
+                            }
                         }
                     }
+
                     $coursetocreate['topics'] = $coursetopics;
 
                     if (isset($courseteachers)) {
@@ -1260,6 +1289,9 @@ class course_sync_manager extends sync_manager {
         return true;
     }
 
+    /**
+     * Locates or creates the category where the ocurse will be created in.
+     */
     protected function make_category($categories, $syncconfig, $sourcetext, $line, &$catcreated, &$caterrors) {
         $curparent = 0;
         $curstatus = 0;
@@ -1687,8 +1719,10 @@ class course_sync_manager extends sync_manager {
 
         // Trap when template not found.
         if (!empty($course['template'])) {
-            if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
-                return -7;
+            if (tool_sync_is_course_identifier($course['template'])) {
+                if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
+                    return -7;
+                }
             }
         }
 
