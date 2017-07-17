@@ -35,8 +35,8 @@ function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $st
                 $enrolobj->enrol = $enrol;
                 $enrolobj->status = 0;
                 $enrolobj->courseid = $courseid;
-                $enrolobj->enrolstartdate = $timestart;
-                $enrolobj->enrolenddate = $timeend;
+                $enrolobj->enrolstartdate = $starttime;
+                $enrolobj->enrolenddate = $endtime;
                 $enrolobj->roleid = $roleid;
                 $enrolobj->customint1 = $cohortid;
                 $enrolobj->customint2 = $makegroup;
