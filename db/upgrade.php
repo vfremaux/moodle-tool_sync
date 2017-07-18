@@ -25,14 +25,31 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_tool_sync_upgrade($oldversion) {
-    global $CFG;
+    global $CFG, $DB;
 
     if ($oldversion < 2015112600) {
         require_once($CFG->dirroot.'/admin/tool/sync/db/install.php');
         xmldb_tool_sync_install();
 
-        // Forum savepoint reached.
+        // Tool Sync savepoint reached.
         upgrade_plugin_savepoint(true, 2015112600, 'tool', 'sync');
+    }
+
+    if ($oldversion < 2017071701) {
+        // Tool Sync savepoint reached.
+
+        // Fix version loss in some 3.1 and older instances.
+        if ($DB->record_exists('config_plugins', array('plugin' => 'tool_sync', 'name' => 'encoding'))) {
+            if (!$DB->record_exists('config_plugins', array('plugin' => 'tool_sync', 'name' => 'version'))) {
+                $versionrec = new StdClass;
+                $versionrec->plugin = 'tool_sync';
+                $versionrec->name = 'version';
+                $versionrec->value = 2017071701;
+                $DB->insert_record('config_plugins', $versionrec);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2017071701, 'tool', 'sync');
     }
 
     return true;
