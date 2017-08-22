@@ -26,12 +26,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2017071701;
+$plugin->version = 2017073100;
 $plugin->requires = 2016051900; // Requires this Moodle version.
 $plugin->component = 'tool_sync'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_RC;
-$plugin->release = '3.1.0 (Build 2017071701)';
+$plugin->release = '3.1.0 (Build 2017073100)';
 
 // Non moodle attributes.
-$plugin->codeincrement = '3.1.0012';
+$plugin->codeincrement = '3.1.0014';
 $plugin->privacy = 'dualrelease';
