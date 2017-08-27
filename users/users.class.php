@@ -795,7 +795,7 @@ class users_sync_manager extends sync_manager {
 
         // Pre check we have no username collision.
         if ($identifiedby != 'username') {
-            $params = array('mnethostid' => $user->mnethostid, 'username' => $user->username, $identifiedby => $user->identifiedby);
+            $params = array('mnethostid' => $user->mnethostid, 'username' => $user->username, $identifiedby => $user->$identifiedby);
             $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
             if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                 if (empty($olduser)) {
@@ -812,7 +812,7 @@ class users_sync_manager extends sync_manager {
         // Pre check we have no email collision.
         if ($identifiedby != 'email') {
             if ($user->email) {
-                $params = array('mnethostid' => $user->mnethostid, 'email' => $user->email, $identifiedby => $user->identifiedby);
+                $params = array('mnethostid' => $user->mnethostid, 'email' => $user->email, $identifiedby => $user->$identifiedby);
                 $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
                 if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                     if (empty($olduser)) {
