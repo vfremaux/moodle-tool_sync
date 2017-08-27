@@ -311,35 +311,42 @@ class course_sync_manager extends sync_manager {
                     $this->report(get_string('resettingcourse', 'tool_sync').$course->fullname.' ('.$course->shortname.')');
 
                     // Processing events.
-                    if ($record['events'] == 'yes') {
+                    if ($record['events'] == 'yes' || $record['events'] == '1') {
                         $data['reset_events'] = 1;
                     } else {
                         $this->report(get_string('noeventstoprocess', 'tool_sync', $i), false);
                     }
 
+                    // Processing completion.
+                    if (!array_key_exists('blog_associations', $record) || $record['completion'] == 'yes' || $record['completion'] == '1') {
+                        $data['reset_completion'] = 1;
+                    } else {
+                        $this->report(get_string('nocompletiontoprocess', 'tool_sync', $i), false);
+                    }
+
                     // Processing blog associations.
-                    if (!array_key_exists('blog_associations', $record) || ($record['blog_associations'] == 'yes')) {
+                    if (!array_key_exists('blog_associations', $record) || ($record['blog_associations'] == 'yes') || ($record['blog_associations'] == '1')) {
                         $data['delete_blog_associations'] = 1;
                     } else {
                         $this->report(get_string('noblogstoprocess', 'tool_sync', $i), false);
                     }
 
                     // Processing logs.
-                    if ($record['logs'] == 'yes') {
+                    if ($record['logs'] == 'yes' || $record['logs'] == '1') {
                         $data['reset_logs'] = 1;
                     } else {
                         $this->report(get_string('nologstoprocess', 'tool_sync', $i), false);
                     }
 
                     // Processing notes.
-                    if ($record['notes'] == 'yes') {
+                    if ($record['notes'] == 'yes' || $record['notes'] == '1') {
                         $data['reset_notes'] = 1;
                     } else {
                         $this->report(get_string('nonotestoprocess', 'tool_sync', $i), false);
                     }
 
                     // Processing comments.
-                    if (!array_key_exists('comments', $record) || ($record['comments'] == 'yes')) {
+                    if (!array_key_exists('comments', $record) || ($record['comments'] == 'yes') || ($record['comments'] == '1')) {
                         $data['reset_comments'] = 1;
                     } else {
                         $this->report(get_string('nocommentstoprocess', 'tool_sync', $i), false);
