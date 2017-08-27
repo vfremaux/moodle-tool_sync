@@ -67,7 +67,7 @@ class logmuter {
      */
     public function __destruct() {
         if ($this->stackidx !== -1) {
-            throw new Exception('Coding error: logmuter must be deactivated before destruction');
+            throw new \Exception('Coding error: logmuter must be deactivated before destruction');
         }
     }
 
@@ -112,7 +112,7 @@ class logmuter {
 
         // Make sure that muters are deactivated in the reverse order of activation.
         if ($this->stackidx !== self::$stacksize) {
-            throw new Exception('Coding error: logmuter being deactivated out of order');
+            throw new \Exception('Coding error: logmuter being deactivated out of order');
         }
 
         // Deal with unstacking logic.
