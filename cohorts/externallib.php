@@ -48,6 +48,92 @@ class tool_sync_cohort_ext_external extends external_api {
      * Returns description of method parameters
      *
      * @return external_function_parameters
+<<<<<<< HEAD
+=======
+     * @since Moodle 2.5
+     */
+    public static function get_cohorts_parameters() {
+        return new external_function_parameters(
+            array(
+                'cohortidsource' => new external_value(PARAM_TEXT, 'Cohort identification source'),
+                'cohortids' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Cohort ID')
+                    , 'List of cohort id. A cohort id is an integer.', VALUE_DEFAULT, array()),
+            )
+        );
+    }
+
+    /**
+     * Get cohorts definition specified by ids
+     *
+     * @param array $cohortids array of cohort ids
+     * @return array of cohort objects (id, courseid, name)
+     * @since Moodle 2.5
+     */
+    public static function get_cohorts($cohortidsource, $cohortids = array()) {
+        global $DB;
+
+        $params = self::validate_parameters(self::get_cohorts_parameters(), array('cohortidsource' => $cohortidsource, 'cohortids' => $cohortids));
+
+        if (empty($cohortids)) {
+            $cohorts = $DB->get_records('cohort');
+        } else {
+            if ($cohortidsource == 'id') {
+                $cohorts = $DB->get_records_list('cohort', 'id', $params['cohortids']);
+            } else if ($cohortidsource == 'idnumber') {
+                $cohorts = $DB->get_records_list('cohort', 'idnumber', $params['cohortids']);
+            } else {
+                throw new invalid_parameter_exception('Cohort id source not in accepted range');
+            }
+        }
+
+        $cohortsinfo = array();
+        foreach ($cohorts as $cohort) {
+            // Now security checks.
+            $context = context::instance_by_id($cohort->contextid, MUST_EXIST);
+            if ($context->contextlevel != CONTEXT_COURSECAT and $context->contextlevel != CONTEXT_SYSTEM) {
+                throw new invalid_parameter_exception('Invalid context');
+            }
+            self::validate_context($context);
+            if (!has_any_capability(array('moodle/cohort:manage', 'moodle/cohort:view'), $context)) {
+                throw new required_capability_exception($context, 'moodle/cohort:view', 'nopermissions', '');
+            }
+
+            list($cohort->description, $cohort->descriptionformat) =
+                external_format_text($cohort->description, $cohort->descriptionformat,
+                        $context->id, 'cohort', 'description', $cohort->id);
+
+            $cohortsinfo[] = (array) $cohort;
+        }
+        return $cohortsinfo;
+    }
+
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 2.5
+     */
+    public static function get_cohorts_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id' => new external_value(PARAM_INT, 'ID of the cohort'),
+                    'name' => new external_value(PARAM_RAW, 'cohort name'),
+                    'idnumber' => new external_value(PARAM_RAW, 'cohort idnumber'),
+                    'description' => new external_value(PARAM_RAW, 'cohort description'),
+                    'descriptionformat' => new external_format_value('description'),
+                    'visible' => new external_value(PARAM_BOOL, 'cohort visible'),
+                )
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+>>>>>>> MOODLE_33_STABLE
      */
     public static function bind_cohort_parameters() {
         return new external_function_parameters(
@@ -122,7 +208,11 @@ class tool_sync_cohort_ext_external extends external_api {
                 'chid' => new external_value(PARAM_TEXT, 'The cohort id'),
                 'cidsource' => new external_value(PARAM_TEXT, 'The source for course identification'),
                 'cid' => new external_value(PARAM_TEXT, 'The course identifier'),
+<<<<<<< HEAD
                 'method' => new external_value(PARAM_TEXT, 'The enrol method', VALUE_DEFAULT, 'cohort'),
+=======
+                'method' => new external_value(PARAM_TEXT, 'The enrol method (needs bing a cohort related method)', VALUE_DEFAULT, 'cohort'),
+>>>>>>> MOODLE_33_STABLE
             )
         );
     }
@@ -468,6 +558,175 @@ class tool_sync_cohort_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Operation status. If false, cohort was not found');
     }
 
+<<<<<<< HEAD
+=======
+    /* ---------------------------------------- Wrappers for core_cohort functions -------------------------------.
+
+    /**
+     * Completes the input possibilities of the core core_add_cohort_members
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.5
+     */
+    public static function add_cohort_members_parameters() {
+        return new external_function_parameters (
+            array(
+                'members' => new external_multiple_structure (
+                    new external_single_structure (
+                        array (
+                            'cohorttype' => new external_single_structure (
+                                array(
+                                    'type' => new external_value(PARAM_ALPHANUMEXT, 'The name of the field: id
+                                        (numeric value of cohortid) or idnumber (alphanumeric value of idnumber) '),
+                                    'value' => new external_value(PARAM_RAW, 'The value of the cohort identifier')
+                                )
+                            ),
+                            'usertype' => new external_single_structure (
+                                array(
+                                    'type' => new external_value(PARAM_ALPHANUMEXT, 'The name of the field: numeric id
+                                         or username or idnumber '),
+                                    'value' => new external_value(PARAM_RAW, 'The value of the user identifier')
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    /**
+     * Add cohort members
+     *
+     * @param array $members of arrays with keys userid, cohortid
+     * @since Moodle 2.5
+     */
+    public static function add_cohort_members($members) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot."/cohort/externallib.php");
+
+        // Transforms the members input into a core acceptable structure.
+        $coremembers = array();
+
+        $i = 0;
+        foreach ($members as $member) {
+
+            if (empty($member['usertype']['value'])) {
+                throw new invalid_parameter_exception('Null User idnumber at record '.$i);
+            }
+
+            $inputs = array(
+                'uidsource' => $member['usertype']['type'],
+                'uid' => $member['usertype']['value']
+            );
+            $user = self::validate_user_parameters($inputs, $blocking);
+
+            $member['usertype']['type'] = 'id';
+            $member['usertype']['value'] = $user->id;
+            $coremembers[] = $member;
+            $i++;
+        }
+
+        return core_cohort_external::add_cohort_members($coremembers);
+
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return null
+     * @since Moodle 2.5
+     */
+    public static function add_cohort_members_returns() {
+        return new external_single_structure(
+            array(
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.5
+     */
+    public static function delete_cohort_members_parameters() {
+        return new external_function_parameters(
+            array(
+                'members' => new external_multiple_structure(
+                    new external_single_structure(
+                        array(
+                            'cohorttype' => new external_single_structure(
+                                array(
+                                    'type' => new external_value(PARAM_ALPHANUMEXT, 'The name of the field: id or idnumber '),
+                                    'value' => new external_value(PARAM_RAW, 'The value of the cohort identifier')
+                                )
+                            ),
+                            'usertype' => new external_single_structure(
+                                array(
+                                    'type' => new external_value(PARAM_ALPHANUMEXT, 'The name of the field: numeric id
+                                         or username or idnumber '),
+                                    'value' => new external_value(PARAM_RAW, 'The value of the user identifier')
+                                )
+                            )
+                        )
+                    )
+                ),
+                'blocking' => new external_value(PARAM_BOOL, 'If set tp 0, will let continue on input errors', VALUE_DEFAULT, 1)
+            )
+        );
+    }
+
+    /**
+     * Delete cohort members
+     *
+     * @param array $members of arrays with keys userid, cohortid
+     * @since Moodle 2.5
+     */
+    public static function delete_cohort_members($members, $blocking = true) {
+        global $CFG, $DB;
+        require_once("$CFG->dirroot/cohort/externallib.php");
+
+        $coremembers = array();
+        foreach ($members as $member) {
+            $inputs = array(
+                'chidsource' => $member['cohorttype']['type'],
+                'chid' => $member['cohorttype']['value']
+            );
+            $cohort = self::validate_cohort_parameters($inputs, $blocking);
+
+            $inputs = array(
+                'uidsource' => $member['usertype']['type'],
+                'uid' => $member['usertype']['value']
+            );
+            $user = self::validate_user_parameters($inputs, $blocking);
+
+            $coremember = array(
+                'cohortid' => $cohort->id,
+                'userid' => $user->id
+            );
+            $coremembers[] = $coremember;
+        }
+
+        return core_cohort_external::delete_cohort_members($coremembers);
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return null
+     * @since Moodle 2.5
+     */
+    public static function delete_cohort_members_returns() {
+        return null;
+    }
+
+    /* ---------------------------------------- Object validators ---------------------------------------.
+
+>>>>>>> MOODLE_33_STABLE
     /**
      * @param array $inputs
      * @param bool $blocking if false, may return null or false
@@ -574,6 +833,48 @@ class tool_sync_cohort_ext_external extends external_api {
         }
     }
 
+<<<<<<< HEAD
+=======
+    protected static function validate_user_parameters(&$inputs, $blocking = true) {
+        global $DB;
+
+        $validkeys = array('id', 'idnumber', 'username', 'email');
+        if (!in_array($inputs['uidsource'], $validkeys)) {
+            throw new invalid_parameter_exception('User id source not in acceptable ranges');
+        }
+
+        switch ($inputs['uidsource']) {
+            case 'id': {
+                if (!$user = $DB->get_record('user', array('id' => $inputs['uid']))) {
+                    throw new invalid_parameter_exception('User not found by id for '.$inputs['uid']);
+                }
+                return $user;
+            }
+
+            case 'username': {
+                if (!$user = $DB->get_record('user', array('username' => $inputs['uid']))) {
+                    throw new invalid_parameter_exception('User not found by username for '.$inputs['uid']);
+                }
+                return $user;
+            }
+
+            case 'idnumber': {
+                if (!$user = $DB->get_record('user', array('idnumber' => $inputs['uid']))) {
+                    throw new invalid_parameter_exception('User not found by idnumber for '.$inputs['uid']);
+                }
+                return $user;
+            }
+
+            case 'email': {
+                if (!$user = $DB->get_record('user', array('email' => $inputs['uid']))) {
+                    throw new invalid_parameter_exception('User not found by email for '.$inputs['uid']);
+                }
+                return $user;
+            }
+        }
+    }
+
+>>>>>>> MOODLE_33_STABLE
     protected static function validate_method_parameter($method) {
 
         $supportedmethods = array('cohort', 'delayedcohort', 'cohortrestricted');

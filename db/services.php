@@ -77,6 +77,18 @@ $functions = array(
         'capabilities' => ''
     ),
 
+<<<<<<< HEAD
+=======
+    'tool_sync_enrol_users_enrol' => array(
+        'classname' => 'tool_sync_core_ext_external',
+        'methodname' => 'enrol_users',
+        'classpath' => 'admin/tool/sync/enrols/externallib.php',
+        'description' => 'enrol a set of users',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+>>>>>>> MOODLE_33_STABLE
     'tool_sync_enrol_user_unenrol' => array(
         'classname' => 'tool_sync_core_ext_external',
         'methodname' => 'unenrol_user',
@@ -86,6 +98,18 @@ $functions = array(
         'capabilities' => ''
     ),
 
+<<<<<<< HEAD
+=======
+    'tool_sync_enrol_users_unenrol' => array(
+        'classname' => 'tool_sync_core_ext_external',
+        'methodname' => 'unenrol_users',
+        'classpath' => 'admin/tool/sync/enrols/externallib.php',
+        'description' => 'Unenrol a set of users',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+>>>>>>> MOODLE_33_STABLE
     'tool_sync_enrol_role_assign' => array(
         'classname' => 'tool_sync_core_ext_external',
         'methodname' => 'assign_role',
@@ -122,6 +146,18 @@ $functions = array(
         'capabilities' => ''
     ),
 
+<<<<<<< HEAD
+=======
+    'tool_sync_get_cohorts' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'get_cohorts',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Get cohorts by id or idnumber',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+>>>>>>> MOODLE_33_STABLE
     'tool_sync_cohort_bind' => array(
         'classname' => 'tool_sync_cohort_ext_external',
         'methodname' => 'bind_cohort',
@@ -175,6 +211,27 @@ $functions = array(
         'type' => 'write',
         'capabilities' => ''
     ),
+<<<<<<< HEAD
+=======
+
+    'tool_sync_cohort_add_members' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'add_cohort_members',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Add members to cohort, potentially by idnumber reference',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_delete_members' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'delete_cohort_members',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Delete members from cohort, potentially by idnumber reference',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+>>>>>>> MOODLE_33_STABLE
 );
 
 $services = array(
@@ -195,7 +252,15 @@ $services = array(
     'Moodle Core Extension API'  => array(
         'functions' => array (
             'tool_sync_enrol_user_enrol',
+<<<<<<< HEAD
             'tool_sync_enrol_user_unenrol',
+=======
+            'tool_sync_enrol_users_enrol',
+            'tool_sync_enrol_user_unenrol',
+            'tool_sync_enrol_users_unenrol',
+            'tool_sync_enrol_assign_role',
+            'tool_sync_enrol_unassign_role',
+>>>>>>> MOODLE_33_STABLE
             'tool_sync_get_enrolled_users',
             'tool_sync_get_enrolled_full_users',
         ),
@@ -208,12 +273,21 @@ $services = array(
 
     'Moodle Cohort Extension API'  => array(
         'functions' => array (
+<<<<<<< HEAD
+=======
+            'tool_sync_cohort_get_cohorts',
+>>>>>>> MOODLE_33_STABLE
             'tool_sync_cohort_get_users',
             'tool_sync_cohort_bind',
             'tool_sync_cohort_unbind',
             'tool_sync_cohort_suspend_enrol',
             'tool_sync_cohort_restore_enrol',
             'tool_sync_cohort_delete',
+<<<<<<< HEAD
+=======
+            'tool_sync_cohort_add_members',
+            'tool_sync_cohort_delete_members',
+>>>>>>> MOODLE_33_STABLE
         ),
         'enabled' => 0,
         'restrictedusers' => 1,
