@@ -375,7 +375,9 @@ class cohorts_sync_manager extends sync_manager {
                                 continue;
                             }
                         } else {
-                            $cohort->contextid = $systemcontext->id;
+                            if ($record['ccatcontext'] === 0) {
+                                $cohort->contextid = $systemcontext->id;
+                            }
                         }
                         $DB->update_record('cohort', $cohort);
                         $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
