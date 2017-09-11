@@ -51,6 +51,7 @@ $string['cohortbindingbadroleid'] = 'The explicit role {$a} could not be found. 
 $string['cohortbindingdisabled'] = 'Cohort {$a->cohort} disengaged from course {$a->course} for role {$a->role}';
 $string['cohortbindingmanual'] = 'Binding courses';
 $string['cohortcohortidentifier'] = 'Cohort identifier';
+$string['cohortmissinguser'] = 'User {$a} does no exit in moodle';
 $string['cohortcoursebindingfilelocation'] = 'Cohorts to course file location';
 $string['cohortcourseidentifier'] = 'Course identifier';
 $string['cohortcreated'] = 'Cohort {$a->name} created';

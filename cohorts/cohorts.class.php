@@ -400,6 +400,8 @@ class cohorts_sync_manager extends sync_manager {
                             $e->cname = $cohort->name;
                             $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
                         }
+                    } else {
+                        $this->report(get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                     }
 
                 } else if ($record['cmd'] == 'del') {
