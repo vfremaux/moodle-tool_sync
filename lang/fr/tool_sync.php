@@ -50,6 +50,7 @@ $string['cohortbindingbadroleid'] = 'Le role explicite {$a} n\'a pas pu être tr
 $string['cohortbindingdisabled'] = 'Cohorte {$a->cohort} désactivée du cours {$a->course} pour le role {$a->role}';
 $string['cohortbindingmanual'] = 'Accrocher les cohortes aux cours';
 $string['cohortcohortidentifier'] = 'Identifiant de cohorte';
+$string['cohortmissinguser'] = 'L\'utilisateur {$a} n\'existe pas dans moodle';
 $string['cohortcoursebindingfilelocation'] = 'Fichier des liaisons des cohortes aux cours';
 $string['cohortcourseidentifier'] = 'Identifiant de cours';
 $string['cohortcreated'] = 'Cohorte {$a->name} ajoutée';
