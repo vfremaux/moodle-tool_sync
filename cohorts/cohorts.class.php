@@ -172,6 +172,7 @@ class cohorts_sync_manager extends sync_manager {
                 'ccatcontextidnumber',
                 'cdescription',
                 'cidnumber',
+                'component',
             );
             $patterns = array();
             $metas = array();
@@ -299,6 +300,7 @@ class cohorts_sync_manager extends sync_manager {
                             }
                             $cohort->description = @$record['cdescription'];
                             $cohort->idnumber = @$record['cidnumber'];
+                            $cohort->component = ''.@$record['component'];
                             $cohort->descriptionformat = FORMAT_MOODLE;
                             if (!empty($record['ccatcontext'])) {
                                 if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
