@@ -25,11 +25,24 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$ADMIN->add('root', new admin_category('automation', new lang_string('automation', 'tool_sync')));
+// PATCH+ : Adminsettings takeover
+// settings default init
+if (is_dir($CFG->dirroot.'/local/adminsettings')) {
+    // Integration driven code 
+    require_once($CFG->dirroot.'/local/adminsettings/lib.php');
+    list($hasconfig, $hassiteconfig, $capability) = local_adminsettings_access();
+} else {
+    // Standard Moodle code
+    $hasconfig = $hassiteconfig = has_capability('moodle/site:config', context_system::instance());
+}
 
-if (has_capability('tool/sync:configure', context_system::instance())) {
-    // General settings.
-    $syncurl = new moodle_url('/admin/tool/sync/index.php');
-    $label = get_string('pluginname', 'tool_sync');
-    $ADMIN->add('automation', new admin_externalpage('toolsync', $label, $syncurl, 'tool/sync:configure'));
+if ($hassiteconfig) {
+    $ADMIN->add('root', new admin_category('automation', new lang_string('automation', 'tool_sync')));
+
+    if (has_capability('tool/sync:configure', context_system::instance())) {
+        // General settings.
+        $syncurl = new moodle_url('/admin/tool/sync/index.php');
+        $label = get_string('pluginname', 'tool_sync');
+        $ADMIN->add('automation', new admin_externalpage('toolsync', $label, $syncurl, 'tool/sync:configure'));
+    }
 }
