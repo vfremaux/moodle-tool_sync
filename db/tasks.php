@@ -79,5 +79,16 @@ $tasks = array(
         'month' => '*',
         'disabled' => 1,
     ),
+
+    array(
+        'classname' => '\tool_sync\task\fileareacleanup_task',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '1',
+        'day' => '*/1',
+        'dayofweek' => '*',
+        'month' => '*',
+        'disabled' => 1,
+    ),
 );
 
