@@ -29,3 +29,8 @@ Add get_cohorts WS extension to get cohorts by id or idnumber
 ===================================
 
 Add mass enrol/unenrol web services.
+
+2017091900
+===================================
+
+Add file area cleanup task to keep number of files acceptable in the sync file area.

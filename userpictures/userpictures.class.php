@@ -161,6 +161,12 @@ class userpictures_sync_manager extends sync_manager {
 
         $this->report("\n".get_string('endofreport', 'tool_sync'));
 
+        mtrace("Finalization");
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
+            $this->store_report_file($filerec);
+        }
+
         return true;
     }
 
