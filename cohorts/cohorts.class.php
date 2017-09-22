@@ -606,19 +606,21 @@ class cohorts_sync_manager extends sync_manager {
         \enrol_cohort_sync($trace);
         $trace->finished();
 
-        if (!empty($syncconfig->storereport)) {
+        mtrace("Finalization");
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
         }
 
-        if (!empty($syncconfig->filearchive)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
             $this->archive_input_file($filerec);
         }
 
-        if (!empty($syncconfig->filecleanup)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
             $this->cleanup_input_file($filerec);
         }
 
-        if (!empty($syncconfig->filefailed)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
             $this->write_tryback($filerec);
         }
 
