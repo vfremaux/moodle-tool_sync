@@ -48,9 +48,13 @@ $plugin->release = '3.3.0 (Build 2017091900)';
 
 // Non moodle attributes.
 <<<<<<< HEAD
+<<<<<<< HEAD
 $plugin->codeincrement = '3.3.0014';
 >>>>>>> MOODLE_33_STABLE
 =======
 $plugin->codeincrement = '3.3.0015';
+>>>>>>> MOODLE_33_STABLE
+=======
+$plugin->codeincrement = '3.3.0016';
 >>>>>>> MOODLE_33_STABLE
 $plugin->privacy = 'dualrelease';

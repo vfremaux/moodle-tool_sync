@@ -40,4 +40,11 @@ Add mass enrol/unenrol web services.
 ===================================
 
 Add file area cleanup task to keep number of files acceptable in the sync file area.
+<<<<<<< HEAD
+>>>>>>> MOODLE_33_STABLE
+=======
+
+3.x.0016
+===================================
+Fixes get_full_users WS when course invoked by shortname
 >>>>>>> MOODLE_33_STABLE
