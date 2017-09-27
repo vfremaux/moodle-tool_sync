@@ -34,3 +34,7 @@ Add mass enrol/unenrol web services.
 ===================================
 
 Add file area cleanup task to keep number of files acceptable in the sync file area.
+
+3.x.0016
+===================================
+Fixes get_full_users WS when course invoked by shortname
