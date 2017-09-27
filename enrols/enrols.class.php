@@ -564,76 +564,23 @@ class enrol_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
-        if (!empty($syncconfig->storereport)) {
+        mtrace("Finalization");
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
         }
 
-        if (!empty($syncconfig->filefailed)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
             $this->write_tryback($filerec);
         }
 
         if (empty($syncconfig->simulate)) {
-            if (!empty($syncconfig->filearchive)) {
+            if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
                 $this->archive_input_file($filerec);
             }
 
-            if (!empty($syncconfig->filecleanup)) {
+            if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
                 $this->cleanup_input_file($filerec);
-            }
-
-            if (!empty($syncconfig->eventcleanup)) {
-
-                $admin = get_admin();
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%user_enrolment_updated'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%user_enrolment_created'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%user_enrolment_deleted'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%role_assigned'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%role_unassigned'
-                ";
-                $DB->execute($sql, array($admin->id));
             }
         }
 
