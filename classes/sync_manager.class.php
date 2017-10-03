@@ -67,6 +67,7 @@ class sync_manager {
         }
 
         if (!empty($this->log)) {
+            mtrace("Storing report");
             $fs->create_file_from_string($reportrec, $this->log);
         }
     }
@@ -95,6 +96,8 @@ class sync_manager {
      */
     public function write_tryback($originalfilerec) {
 
+        $config = get_config('tool_sync');
+
         if (empty($this->trybackarr)) {
             return;
         }
@@ -104,7 +107,7 @@ class sync_manager {
         $parts = pathinfo($originalfilerec->filename);
         $trybackfilename = $parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$parts['extension'];
 
-        $buffer = implode("\n", $this->trybackhead)."\n";
+        $buffer = implode($config->csvseparator, $this->trybackhead)."\n";
         $buffer .= implode("\n", $this->trybackarr);
 
         $filerec = $originalfilerec;
@@ -115,7 +118,7 @@ class sync_manager {
             $oldfile->delete();
         }
 
-        echo " Creating tryback ";
+        echo "Creating tryback\n";
         $fs->create_file_from_string($filerec, $buffer);
     }
 
@@ -287,6 +290,7 @@ class sync_manager {
 
         $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
                                    $filerec->filepath, $filerec->filename);
+        echo "Archive input file\n";
         $fs->create_file_from_storedfile($archiverec, $inputfile);
     }
 
@@ -298,6 +302,7 @@ class sync_manager {
 
         $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
                                    $filerec->filepath, $filerec->filename);
+        echo "Cleaning out input file\n";
         $inputfile->delete();
     }
 

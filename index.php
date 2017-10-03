@@ -114,6 +114,8 @@ $PAGE->set_pagetype('admin-index');
 
 echo $OUTPUT->header();
 
+$config = get_config('tool_sync');
+
 echo $OUTPUT->heading(get_string('title', 'tool_sync'));
 
 if ($message = optional_param('resultmessage', '', PARAM_TEXT)) {
