@@ -80,6 +80,8 @@ class enrol_sync_manager extends sync_manager {
     public function cron($syncconfig) {
         global $CFG, $DB;
 
+        raise_memory_limit(MEMORY_HUGE);
+
         $csvencode = '/\&\#44/';
         if (isset($syncconfig->csvseparator)) {
             $csvdelimiter = '\\' . $syncconfig->csvseparator;
@@ -163,6 +165,8 @@ class enrol_sync_manager extends sync_manager {
         $i = 2;
         while (!feof ($filereader)) {
 
+            $this->report("# -- $i");
+
             $record = array();
 
             $text = tool_sync_read($filereader, 1024, $syncconfig);
@@ -217,10 +221,10 @@ class enrol_sync_manager extends sync_manager {
 
             if (!$user = $DB->get_record('user', array($uidentifiername => $record['uid'])) ) {
                 $this->report(get_string('errornouser', 'tool_sync', $e));
-                $i++;
                 if (!empty($syncconfig->filefailed)) {
                     $this->feed_tryback($text);
                 }
+                $i++;
                 continue;
             }
 
@@ -341,8 +345,18 @@ class enrol_sync_manager extends sync_manager {
                                         'component' => '');
                         if (!$DB->get_record('role_assignments', $params)) {
                             if (empty($syncconfig->simulate)) {
-                                if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent,
-                                                 $enrolinstance, $record['starttime'])) {
+                                $failed = false;
+                                try {
+                                    if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent,
+                                                     $enrolinstance, $record['starttime'])) {
+                                        $failed = true;
+                                    } else {
+                                        $this->report(get_string('assign', 'tool_sync', $e));
+                                    }
+                                } catch (Exception $e) {
+                                    $failed = true;
+                                }
+                                if ($failed) {
                                     if (!empty($syncconfig->filefailed)) {
                                         $this->feed_tryback($text);
                                     }
@@ -350,8 +364,8 @@ class enrol_sync_manager extends sync_manager {
                                     $errorline .= " {$record['cmd']} role : $user->lastname $user->firstname ";
                                     $errorline .= "== $role->shortname ==> $course->shortname";
                                     $this->report($errorline);
-                                } else {
-                                    $this->report(get_string('assign', 'tool_sync', $e));
+                                    $i++;
+                                    continue;
                                 }
                             } else {
                                 $this->report('SIMULATION : '.get_string('assign', 'tool_sync', $e));
@@ -422,14 +436,25 @@ class enrol_sync_manager extends sync_manager {
                         }
                     } else {
                         if (empty($syncconfig->simulate)) {
-                            if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent,
-                                             $enrolinstance, $record['starttime'])) {
+                            $failed = false;
+                            try {
+                                if (!role_assign($role->id, $user->id, $context->id, $enrolcomponent,
+                                                 $enrolinstance, $record['starttime'])) {
+                                    $failed = true;
+                                } else {
+                                    $this->report(get_string('assign', 'tool_sync', $e));
+                                }
+                            } catch (Exception $e) {
+                                $failed = true;
+                            }
+
+                            if ($failed) {
                                 if (!empty($syncconfig->filefailed)) {
                                     $this->feed_tryback_file($text);
                                 }
                                 $this->report(get_string('errorassign', 'tool_sync', $e));
-                            } else {
-                                $this->report(get_string('assign', 'tool_sync', $e));
+                                $i++;
+                                continue;
                             }
                         } else {
                             $this->report('SIMULATION : '.get_string('assign', 'tool_sync', $e));
@@ -451,111 +476,142 @@ class enrol_sync_manager extends sync_manager {
                 $this->report(get_string('errorbadcmd', 'tool_sync', $e));
             }
 
+            echo "Grouping...\n";
             if (!empty($record['gcmd'])) {
                 if ($record['gcmd'] == 'gadd' || $record['gcmd'] == 'gaddcreate') {
-                    for ($i = 1; $i < 10; $i++) {
-                        if (!empty($record['g'.$i])) {
-                            if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
-                                $groupid[$i] = $gid;
-                            } else {
-                                if ($record['gcmd'] == 'gaddcreate') {
-                                    $groupsettings = new StdClass;
-                                    $groupsettings->name = $record['g'.$i];
-                                    $groupsettings->courseid = $course->id;
-                                    if (empty($syncconfig->simulate)) {
-                                        if ($gid = groups_create_group($groupsettings)) {
-                                            $groupid[$i] = $gid;
-                                            $e->group = $record['g'.$i];
-                                            $this->report(get_string('groupcreated', 'tool_sync', $e));
+                    try {
+                        for ($j = 1; $j < 10; $j++) {
+                            if (!empty($record['g'.$j])) {
+                                $gname = $record['g'.$j];
+                                if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $gname))) {
+                                    $groupid[$j] = $gid;
+                                } else {
+                                    if ($record['gcmd'] == 'gaddcreate') {
+                                        $groupsettings = new StdClass;
+                                        $groupsettings->name = $record['g'.$j];
+                                        $groupsettings->courseid = $course->id;
+                                        if (empty($syncconfig->simulate)) {
+                                            if ($gid = groups_create_group($groupsettings)) {
+                                                $groupid[$j] = $gid;
+                                                $e->group = $record['g'.$j];
+                                                $this->report(get_string('groupcreated', 'tool_sync', $e));
+                                            } else {
+                                                $e->group = $record['g'.$j];
+                                                $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                                continue;
+                                            }
                                         } else {
-                                            $e->group = $record['g'.$i];
-                                            $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                            $e->group = $record['g'.$j];
+                                            $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
+                                            $gid = 999999; // Simulate a created gtoup.
                                         }
                                     } else {
-                                        $e->group = $record['g'.$i];
-                                        $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
-                                        $gid = 999999; // Simulate a created gtoup.
+                                        $e->group = $record['g'.$j];
+                                        $this->report(get_string('groupunknown', 'tool_sync', $e));
+                                        // Next j same i.
+                                        continue; // Continue inner groups loop.
                                     }
-                                } else {
-                                    $e->group = $record['g'.$i];
-                                    $this->report(get_string('groupunknown', 'tool_sync', $e));
-                                    continue;
                                 }
-                            }
 
-                            $e = new StdClass;
-                            $e->group = $record['g'.$i];
-                            $e->myuser = $user->username.' ('.$record['userid'].')';
+                                $e = new StdClass;
+                                $e->group = $record['g'.$j];
+                                $e->myuser = $user->username.' ('.$user->id.')';
 
-                            if (count(get_user_roles($context, $user->id))) {
-                                if (empty($syncconfig->simulate)) {
-                                    if (groups_add_member($groupid[$i], $user->id)) {
-                                        $this->report(get_string('addedtogroup', 'tool_sync', $e));
+                                if (count(get_user_roles($context, $user->id))) {
+                                    if (empty($syncconfig->simulate)) {
+                                        if (groups_add_member($groupid[$j], $user->id)) {
+                                            $this->report(get_string('addedtogroup', 'tool_sync', $e));
+                                        } else {
+                                            $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
+                                        }
                                     } else {
-                                        $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
+                                        $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
                                     }
                                 } else {
-                                    $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
+                                    $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$j]));
                                 }
-                            } else {
-                                $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$i]));
                             }
                         }
+                    } catch (Exception $e) {
+                        $this->report("Global group gadd/gaddcreate exception on line $i");
                     }
                 } else if ($record['gcmd'] == 'greplace' || $record['gcmd'] == 'greplacecreate') {
-                    if (empty($syncconfig->simulate)) {
-                        groups_delete_group_members($course->id, $user->id);
-                        $this->report(get_string('groupassigndeleted', 'tool_sync', $e));
-                    } else {
-                        $this->report('SIMULATION : '.get_string('groupassigndeleted', 'tool_sync', $e));
-                    }
-                    for ($i = 1; $i < 10; $i++) {
-                        if (!empty($record['g'.$i])) {
-                            $e = new StdClass();
-                            $e->group = $record['g'.$i];
-                            if ($gid = groups_get_group_by_name($course->id, $record['g'.$i])) {
-                                $groupid[$i] = $gid;
-                            } else {
-                                if ($record['gcmd'] == 'greplacecreate') {
-                                    $groupsettings = new StdClass;
-                                    $groupsettings->name = $record['g'.$i];
-                                    $groupsettings->courseid = $course->id;
-                                    if (empty($syncconfig->simulate)) {
-                                        if ($gid = groups_create_group($groupsettings)) {
-                                            $groupid[$i] = $gid;
-                                            $this->report(get_string('groupcreated', 'tool_sync', $e));
+                    try {
+                        if (empty($syncconfig->simulate)) {
+                            groups_delete_group_members($course->id, $user->id);
+                            $this->report(get_string('groupassigndeleted', 'tool_sync', $e));
+                        } else {
+                            $this->report('SIMULATION : '.get_string('groupassigndeleted', 'tool_sync', $e));
+                        }
+                        for ($j = 1; $j < 10; $j++) {
+                            if (!empty($record['g'.$j])) {
+                                $e = new StdClass();
+                                $e->group = $record['g'.$j];
+                                $gname = $record['g'.$j];
+                                if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
+                                    echo "Got group $gid by name $e->group\n";
+                                    $groupid[$j] = $gid;
+                                } else {
+                                    if ($record['gcmd'] == 'greplacecreate') {
+                                        $groupsettings = new StdClass;
+                                        $groupsettings->name = $record['g'.$j];
+                                        $groupsettings->courseid = $course->id;
+                                        if (empty($syncconfig->simulate)) {
+                                            if ($gid = groups_create_group($groupsettings)) {
+                                                $groupid[$j] = $gid;
+                                                $this->report(get_string('groupcreated', 'tool_sync', $e));
+                                            } else {
+                                                // We could not create the missing group.
+                                                $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                                continue;
+                                            }
                                         } else {
-                                            $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
+                                            $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
                                         }
                                     } else {
-                                        $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
+                                        $this->report(get_string('groupunknown', 'tool_sync', $e));
+                                        // Next j same i.
+                                        continue; // Continue inner groups loop.
                                     }
-                                } else {
-                                    $this->report(get_string('groupunknown', 'tool_sync', $e));
                                 }
-                            }
 
-                            if (count(get_user_roles($context, $user->id))) {
-                                if (empty($syncconfig->simulate)) {
-                                    $e = new StdClass();
-                                    $e->group = $groupid[$i];
-                                    $e->myuser = $user->username.' ('.$record['userid'].')';
-                                    if (groups_add_member($groupid[$i], $user->id)) {
-                                        $this->report(get_string('addedtogroup', 'tool_sync', $e));
+                                if (count(get_user_roles($context, $user->id))) {
+                                    if (empty($syncconfig->simulate)) {
+                                        $e = new StdClass();
+                                        $e->group = $groupid[$j];
+                                        $e->myuser = $user->username.' ('.$record['userid'].')';
+                                        if (groups_add_member($groupid[$j], $user->id)) {
+                                            $this->report(get_string('addedtogroup', 'tool_sync', $e));
+                                        } else {
+                                            $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
+                                        }
                                     } else {
-                                        $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
+                                        $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
                                     }
                                 } else {
-                                    $this->report('SIMULATION : '.get_string('addedtogroup', 'tool_sync', $e));
+                                    $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$j]));
                                 }
-                            } else {
-                                $this->report(get_string('addedtogroupnotenrolled', '', $record['g'.$i]));
                             }
                         }
+                    } catch (Exception $e) {
+                        $this->report("Global group greplace/greplacecreate exception on line $i");
                     }
                 } else if ($record['gcmd'] == 'gdel') {
                     // TODO : Remove membership.
-                    assert(true);
+                    for ($j = 1; $j < 10; $j++) {
+                        if (!empty($record['g'.$j])) {
+                            $e = new StdClass();
+                            $e->group = $record['g'.$j];
+                            if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
+                                try {
+                                    groups_remove_member($gid, $user->id);
+                                } catch(Exception $e) {
+                                    $errorstr = "Could not remove user $user->id from group $gid";
+                                    $this->report($errorstr);
+                                }
+                            }
+                        }
+                    }
                 } else {
                     $this->report(get_string('errorgcmdvalue', 'tool_sync', $e));
                 }
@@ -564,76 +620,23 @@ class enrol_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
-        if (!empty($syncconfig->storereport)) {
+        mtrace("Finalization");
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
         }
 
-        if (!empty($syncconfig->filefailed)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
             $this->write_tryback($filerec);
         }
 
         if (empty($syncconfig->simulate)) {
-            if (!empty($syncconfig->filearchive)) {
+            if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
                 $this->archive_input_file($filerec);
             }
 
-            if (!empty($syncconfig->filecleanup)) {
+            if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
                 $this->cleanup_input_file($filerec);
-            }
-
-            if (!empty($syncconfig->eventcleanup)) {
-
-                $admin = get_admin();
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%user_enrolment_updated'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%user_enrolment_created'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%user_enrolment_deleted'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%role_assigned'
-                ";
-                $DB->execute($sql, array($admin->id));
-
-                $sql = "
-                    DELETE FROM
-                        {logstore_standard_log}
-                    WHERE
-                        origin = 'cli' AND
-                        userid = ? AND
-                        eventname LIKE '%role_unassigned'
-                ";
-                $DB->execute($sql, array($admin->id));
             }
         }
 

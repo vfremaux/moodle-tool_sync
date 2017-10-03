@@ -402,6 +402,11 @@ class users_sync_manager extends sync_manager {
                     $olduser = $DB->get_record('user', array('username' => $username, 'mnethostid' => $user->mnethostid));
                 }
                 if ($olduser) {
+
+                    if ($this->user_has_identity_collision($user, $syncconfig->users_primaryidentity, $olduser)) {
+                        continue;
+                    }
+
                     if ($updateaccounts) {
                         // Record is being updated.
                         $user->id = $olduser->id;
@@ -452,11 +457,8 @@ class users_sync_manager extends sync_manager {
                     }
                 } else {
                     // New user.
-                    // Pre check we have no username collision.
-                    $params = array('mnethostid' => $user->mnethostid, 'username' => $user->username);
-                    if ($olduser = $DB->get_record('user', $params)) {
-                        $message = "$olduser->id , $user->username , $user->idnumber, $user->firstname, $user->lastname ";
-                        $this->report(get_string('usercollision', 'tool_sync', $message));
+
+                    if ($this->user_has_identity_collision($user, $syncconfig->users_primaryidentity, null)) {
                         continue;
                     }
 
@@ -671,11 +673,11 @@ class users_sync_manager extends sync_manager {
                          */
                         if (empty($syncconfig->simulate)) {
                             if (!empty($c->wwwroot) && $DB->get_record('block', array('name' => 'vmoodle'))) {
-                                if (!file_exists($CFG->dirroot.'/blocks/vmoodle/rpclib.php')) {
+                                if (!file_exists($CFG->dirroot.'/local/vmoodle/rpclib.php')) {
                                     echo $OUTPUT->notification('This feature works with VMoodle Virtual Moodle Implementation');
                                     continue;
                                 }
-                                include_once($CFG->dirroot.'/blocks/vmoodle/rpclib.php');
+                                include_once($CFG->dirroot.'/local/vmoodle/rpclib.php');
                                 include_once($CFG->dirroot.'/mnet/xmlrpc/client.php');
 
                                 // Imagine we never did it before.
@@ -773,16 +775,60 @@ class users_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
-        if (!empty($syncconfig->storereport)) {
+        mtrace("Finalization");
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
         }
-        if (!empty($syncconfig->filearchive)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
             $this->archive_input_file($filerec);
         }
-        if (!empty($syncconfig->filecleanup)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
             $this->cleanup_input_file($filerec);
         }
 
         return true;
+    }
+
+    protected function user_has_identity_collision(&$user, $identifiedby, $olduser) {
+        global $DB;
+
+        $newmode = (empty($olduser)) ? 'create' : 'update';
+
+        // Pre check we have no username collision.
+        if ($identifiedby != 'username') {
+            $params = array('mnethostid' => $user->mnethostid, 'username' => $user->username, $identifiedby => $user->$identifiedby);
+            $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
+            if ($otherusers = $DB->get_records_select('user', $select, $params)) {
+                if (empty($olduser)) {
+                    $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $this->report(get_string('usercreatecollision', 'tool_sync', $message));
+                } else {
+                    $message = "({$olduser->id}) $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $this->report(get_string('userupdatecollision', 'tool_sync', $message));
+                }
+                return true;
+            }
+        }
+
+        // Pre check we have no email collision.
+        if ($identifiedby != 'email') {
+            if ($user->email) {
+                $params = array('mnethostid' => $user->mnethostid, 'email' => $user->email, $identifiedby => $user->$identifiedby);
+                $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
+                if ($otherusers = $DB->get_records_select('user', $select, $params)) {
+                    if (empty($olduser)) {
+                        $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $this->report(get_string('usercreatemailcollision', 'tool_sync', $message));
+                    } else {
+                        $message = "({$olduser->id}) , $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $this->report(get_string('userupdatemailcollision', 'tool_sync', $message));
+                    }
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

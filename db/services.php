@@ -77,11 +77,29 @@ $functions = array(
         'capabilities' => ''
     ),
 
+    'tool_sync_enrol_users_enrol' => array(
+        'classname' => 'tool_sync_core_ext_external',
+        'methodname' => 'enrol_users',
+        'classpath' => 'admin/tool/sync/enrols/externallib.php',
+        'description' => 'enrol a set of users',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
     'tool_sync_enrol_user_unenrol' => array(
         'classname' => 'tool_sync_core_ext_external',
         'methodname' => 'unenrol_user',
         'classpath' => 'admin/tool/sync/enrols/externallib.php',
         'description' => 'Unenrol user',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_enrol_users_unenrol' => array(
+        'classname' => 'tool_sync_core_ext_external',
+        'methodname' => 'unenrol_users',
+        'classpath' => 'admin/tool/sync/enrols/externallib.php',
+        'description' => 'Unenrol a set of users',
         'type' => 'write',
         'capabilities' => ''
     ),
@@ -121,6 +139,87 @@ $functions = array(
         'type' => 'read',
         'capabilities' => ''
     ),
+
+    'tool_sync_get_cohorts' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'get_cohorts',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Get cohorts by id or idnumber',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_bind' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'bind_cohort',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Binds a cohort to a course with an enrol instance',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_unbind' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'unbind_cohort',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Unbinds a cohort from a course with an enrol instance',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_suspend_enrol' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'suspend_enrol',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Suspends a cohort enrol instance',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_restore_enrol' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'restore_enrol',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Enables a cohort enrol instance that was suspended',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_get_users' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'get_users',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Get full info about members',
+        'type' => 'read',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_delete' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'delete',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Deletes a cohort if exists',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_add_members' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'add_cohort_members',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Add members to cohort, potentially by idnumber reference',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_cohort_delete_members' => array(
+        'classname' => 'tool_sync_cohort_ext_external',
+        'methodname' => 'delete_cohort_members',
+        'classpath' => 'admin/tool/sync/cohorts/externallib.php',
+        'description' => 'Delete members from cohort, potentially by idnumber reference',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
 );
 
 $services = array(
@@ -141,13 +240,36 @@ $services = array(
     'Moodle Core Extension API'  => array(
         'functions' => array (
             'tool_sync_enrol_user_enrol',
+            'tool_sync_enrol_users_enrol',
             'tool_sync_enrol_user_unenrol',
+            'tool_sync_enrol_users_unenrol',
+            'tool_sync_enrol_assign_role',
+            'tool_sync_enrol_unassign_role',
             'tool_sync_get_enrolled_users',
             'tool_sync_get_enrolled_full_users',
         ),
         'enabled' => 0,
         'restrictedusers' => 1,
         'shortname' => 'tool_sync_core_ext',
+        'downloadfiles' => 0,
+        'uploadfiles' => 0
+    ),
+
+    'Moodle Cohort Extension API'  => array(
+        'functions' => array (
+            'tool_sync_cohort_get_cohorts',
+            'tool_sync_cohort_get_users',
+            'tool_sync_cohort_bind',
+            'tool_sync_cohort_unbind',
+            'tool_sync_cohort_suspend_enrol',
+            'tool_sync_cohort_restore_enrol',
+            'tool_sync_cohort_delete',
+            'tool_sync_cohort_add_members',
+            'tool_sync_cohort_delete_members',
+        ),
+        'enabled' => 0,
+        'restrictedusers' => 1,
+        'shortname' => 'tool_sync_cohort_ext',
         'downloadfiles' => 0,
         'uploadfiles' => 0
     ),
