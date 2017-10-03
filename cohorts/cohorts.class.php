@@ -25,10 +25,13 @@
 namespace tool_sync;
 
 use StdClass;
+use context_coursecat;
+use context_system;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/cohorts/lib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once($CFG->dirroot.'/enrol/cohort/locallib.php');
@@ -166,6 +169,7 @@ class cohorts_sync_manager extends sync_manager {
                 'cid' => 1,
                 'cname',
                 'ccatcontext',
+                'ccatcontextidnumber',
                 'cdescription',
                 'cidnumber',
                 'component',
@@ -268,6 +272,7 @@ class cohorts_sync_manager extends sync_manager {
                     }
 
                     $cohort = $DB->get_record('cohort', array( $cid => $record['c'.$cid]));
+
                     if (!empty($record['userid'])) {
                         $user = $DB->get_record('user', array($uid => $record['userid']));
                     } else {
@@ -297,13 +302,23 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->idnumber = @$record['cidnumber'];
                             $cohort->component = ''.@$record['component'];
                             $cohort->descriptionformat = FORMAT_MOODLE;
-                            if ($record['ccatcontext']) {
+                            if (!empty($record['ccatcontext'])) {
                                 if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
                                     $context = context_coursecat::instance($record['ccatcontext']);
                                     $cohort->contextid = $context->id;
                                 } else {
                                     $e = new StdClass;
                                     $e->catid = $record['ccatcontext'];
+                                    $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
+                                    continue;
+                                }
+                            } else if (!empty($record['ccatcontextidnumber'])) {
+                                if ($coursecat = $DB->get_record('course_categories', array('idnumber' => $record['ccatcontextidnumber']))) {
+                                    $context = context_coursecat::instance($coursecat->id);
+                                    $cohort->contextid = $context->id;
+                                } else {
+                                    $e = new StdClass;
+                                    $e->catid = $record['ccatcontextidnumber'];
                                     $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
                                     continue;
                                 }
@@ -341,13 +356,30 @@ class cohorts_sync_manager extends sync_manager {
                         if (!empty($record['name'])) {
                             $cohort->idnumber = @$record['name'];
                         }
-                        if ($record['ccatcontext']) {
+                        if (!empty($record['ccatcontext'])) {
                             if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
                                 $context = context_coursecat::instance($record['ccatcontext']);
                                 $cohort->contextid = $context->id;
+                            } else {
+                                $e = new StdClass;
+                                $e->catid = $record['ccatcontext'];
+                                $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
+                                continue;
+                            }
+                        } else if (!empty($record['ccatcontextidnumber'])) {
+                            if ($coursecat = $DB->get_record('course_categories', array('idnumber' => $record['ccatcontextidnumber']))) {
+                                $context = context_coursecat::instance($coursecat->id);
+                                $cohort->contextid = $context->id;
+                            } else {
+                                $e = new StdClass;
+                                $e->catid = $record['ccatcontextidnumber'];
+                                $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
+                                continue;
                             }
                         } else {
-                            $cohort->contextid = $systemcontext->id;
+                            if ($record['ccatcontext'] === 0) {
+                                $cohort->contextid = $systemcontext->id;
+                            }
                         }
                         $DB->update_record('cohort', $cohort);
                         $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
@@ -370,6 +402,8 @@ class cohorts_sync_manager extends sync_manager {
                             $e->cname = $cohort->name;
                             $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
                         }
+                    } else {
+                        $this->report(get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                     }
 
                 } else if ($record['cmd'] == 'del') {
@@ -466,6 +500,7 @@ class cohorts_sync_manager extends sync_manager {
                 'cmd' => 1,
                 'enrolstart' => 1,
                 'enrolend' => 1,
+                'enrol' => 'cohort',
                 'role' => 1,
             );
             $patterns = array();
@@ -551,58 +586,15 @@ class cohorts_sync_manager extends sync_manager {
                     continue;
                 }
 
-                switch ($valuearr['cmd']) {
-                    case 'add': {
-                        $params = array('enrol' => 'cohort', 'courseid' => $courseid, 'customint1' => $cohortid, 'roleid' => $roleid);
-                        if (!$oldrec = $DB->get_record('enrol', $params)) {
-                            $enrol = new StdClass;
-                            $enrol->enrol = 'cohort';
-                            $enrol->status = 0;
-                            $enrol->courseid = $courseid;
-                            $enrol->enrolstartdate = time();
-                            $enrol->enrolenddate = 0;
-                            $enrol->roleid = $roleid;
-                            $enrol->customint1 = $cohortid;
-                            $DB->insert_record('enrol', $enrol);
-                        } else {
-                            if ($oldrec->status == 1) {
-                                $oldrec->status = 0;
-                                $enrol->enrolstartdate = time();
-                                $DB->update_record('enrol', $oldrec);
-                            }
-                        }
-                        $e = new StdClass;
-                        $e->course = $valuearr['course'];
-                        $e->cohort = $valuearr['cohort'];
-                        $e->role = $valuearr['role'];
-                        $this->report(get_string('cohortbindingadded', 'tool_sync', $e));
-                        break;
-                    }
+                $starttime = time();
+                $endtime = 0;
+                $makegroup = @$valuearr['makegroup'];
 
-                    case 'del': {
-                        if ($roleid != '*') {
-                            $params = array('enrol' => 'cohort', 'courseid' => $courseid, 'customint1' => $cohortid, 'roleid' => $roleid);
-                        } else {
-                            $params = array('enrol' => 'cohort', 'courseid' => $courseid, 'customint1' => $cohortid);
-                        }
-                        if ($oldrecs = $DB->get_records('enrol', $params)) {
-                            foreach ($oldrecs as $oldrec) {
-                                // Disable all enrols of any role on this cohort.
-                                $oldrec->status = 1;
-                                $DB->update_record('enrol', $oldrec);
-
-                                $e = new StdClass;
-                                $e->course = $valuearr['course'];
-                                $e->cohort = $valuearr['cohort'];
-                                $e->role = $DB->get_field('role', 'shortname', array('id' => $oldrec->roleid));
-                                $this->report(get_string('cohortbindingdisabled', 'tool_sync', $e));
-                            }
-                        }
-                        break;
-                    }
-
-                    default:
+                if (empty($valuearr['enrol'])) {
+                    $valuearr['enrol'] = 'cohort';
                 }
+
+                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup);
             }
 
             fclose($filereader);
@@ -614,19 +606,21 @@ class cohorts_sync_manager extends sync_manager {
         \enrol_cohort_sync($trace);
         $trace->finished();
 
-        if (!empty($syncconfig->storereport)) {
+        mtrace("Finalization");
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
         }
 
-        if (!empty($syncconfig->filearchive)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
             $this->archive_input_file($filerec);
         }
 
-        if (!empty($syncconfig->filecleanup)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
             $this->cleanup_input_file($filerec);
         }
 
-        if (!empty($syncconfig->filefailed)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
             $this->write_tryback($filerec);
         }
 
