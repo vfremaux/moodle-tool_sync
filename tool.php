@@ -48,5 +48,9 @@ class tool_plugin_sync {
         $frm->addElement('checkbox', 'tool_sync/filearchive', get_string('filearchive', 'tool_sync'));
         $frm->addElement('checkbox', 'tool_sync/filefailed', get_string('failedfile', 'tool_sync'));
         $frm->addElement('checkbox', 'tool_sync/filecleanup', get_string('filecleanup', 'tool_sync'));
+
+        $frm->addElement('text', 'tool_sync/fileareacleanupdelay', get_string('fileareacleanupdelay', 'tool_sync'));
+        $frm->setDefault('tool_sync/fileareacleanupdelay', 90);
+        $frm->setType('tool_sync/fileareacleanupdelay', PARAM_INT);
     }
 }
