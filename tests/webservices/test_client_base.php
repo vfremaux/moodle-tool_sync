@@ -1,6 +1,6 @@
 <?php
 
-class test_client {
+class test_client_base {
 
     protected $t; // target.
 

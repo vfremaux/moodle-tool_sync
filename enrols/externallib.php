@@ -146,7 +146,7 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Operation status');
     }
 
-    // Commit an uploaded file.
+    // Unenrol a user ---------------------------------------------------------------.
 
     /**
      * Returns description of method parameters
@@ -214,9 +214,154 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success status');
     }
 
+    // Enrol a set of users --------------------------------------------------------------.
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function enrol_users_parameters() {
+        return new external_function_parameters(
+            array('enrols' => new external_multiple_structure(
+                    new external_single_structure(
+                        array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
+                            'roleid' => new external_value(PARAM_TEXT, 'The role id'),
+                            'useridsource' => new external_value(PARAM_TEXT, 'The source for user identification'),
+                            'userid' => new external_value(PARAM_TEXT, 'The user id'),
+                            'courseidsource' => new external_value(PARAM_TEXT, 'The source for course identification'),
+                            'courseid' => new external_value(PARAM_TEXT, 'The course identifier'),
+                            'method' => new external_value(PARAM_TEXT, 'The enrol method', VALUE_DEFAULT, 'manual'),
+                            'timestart' => new external_value(PARAM_INT, 'Time start of the enrol period', VALUE_DEFAULT, 0),
+                            'timeend' => new external_value(PARAM_INT, 'Time end of the enrol period', VALUE_DEFAULT, 0),
+                            'suspend' => new external_value(PARAM_INT, 'Suspension', VALUE_DEFAULT, 0),
+                            )
+                        )
+                  ),
+              )
+        );
+    }
+
+    /**
+     * Enrol a set of users
+     *
+     * @return an array of operaton status
+     */
+    public static function enrol_users($enrols) {
+
+        $results = array();
+        if (!empty($enrols)) {
+            foreach ($enrols as $enrol) {
+                $result = new Stdclass;
+                $result->userid = $enrol['userid'];
+                $result->status = tool_sync_core_ext_external::enrol_user($enrol['roleidsource'],
+                                                        $enrol['roleid'],
+                                                        $enrol['useridsource'],
+                                                        $enrol['userid'],
+                                                        $enrol['courseidsource'],
+                                                        $enrol['courseid'],
+                                                        $enrol['method'],
+                                                        $enrol['timestart'],
+                                                        $enrol['timeend'],
+                                                        $enrol['suspend']);
+                $results[] = $result;
+            }
+        }
+
+        return $results;
+
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     */
+    public static function enrol_users_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'userid' => new external_value(PARAM_TEXT, 'User identifier'),
+                    'status' => new external_value(PARAM_BOOL, 'Success status')
+                )
+            )
+        );
+    }
+
+
+    // Unenrol a set of users ------------------------------------------------.
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function unenrol_users_parameters() {
+        return new external_function_parameters(
+            array('enrols' => new external_multiple_structure(
+                    new external_single_structure(
+                    array('useridsource' => new external_value(PARAM_TEXT, 'The source for user identification'),
+                        'userid' => new external_value(PARAM_TEXT, 'The user id'),
+                        'courseidsource' => new external_value(PARAM_TEXT, 'The source for course identification'),
+                        'courseid' => new external_value(PARAM_TEXT, 'The course identifier'),
+                        'roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification', VALUE_DEFAULT, ''),
+                        'roleid' => new external_value(PARAM_TEXT, 'The role id', VALUE_DEFAULT, ''),
+                        'method' => new external_value(PARAM_TEXT, 'The enrol method', VALUE_DEFAULT, 'manual'),
+                        )
+                    )
+                ),
+            )
+        );
+    }
+
+    /**
+     * Enrol a set of users
+     *
+     * @return an array of operaton status
+     */
+    public static function unenrol_users($enrols) {
+
+        $results = array();
+        if (!empty($enrols)) {
+            foreach ($enrols as $enrol) {
+                $result = new Stdclass;
+                $result->userid = $enrol['userid'];
+                $result->status = tool_sync_core_ext_external::unenrol_user($enrol['roleidsource'],
+                                                        $enrol['roleid'],
+                                                        $enrol['useridsource'],
+                                                        $enrol['userid'],
+                                                        $enrol['courseidsource'],
+                                                        $enrol['courseid'],
+                                                        $enrol['method']);
+                $results[] = $result;
+            }
+        }
+
+        return $results;
+
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     */
+    public static function unenrol_users_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'userid' => new external_value(PARAM_TEXT, 'User identifier'),
+                    'status' => new external_value(PARAM_BOOL, 'Success status')
+                )
+            )
+        );
+    }
+
+    // Data validators ------------------------------------------------.
+
     // Role assigns related.
 
-    public function validate_role_paramters($configparamdefs, $inputs) {
+    public function validate_role_parameters($configparamdefs, $inputs) {
         global $DB, $CFG;
 
         $status = self::validate_parameters($configparamdefs, $inputs);
@@ -508,7 +653,7 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function get_enrolled_full_users_parameters() {
         return new external_function_parameters(
-            array('courseidsource' => new external_value(PARAM_TEXT, 'The source for course, can be '),
+            array('courseidsource' => new external_value(PARAM_TEXT, 'The source for course, can be id, shortname or idnumber'),
                 'courseid' => new external_value(PARAM_TEXT, 'The course id'),
                 'options'  => new external_multiple_structure(
                     new external_single_structure(
@@ -604,15 +749,15 @@ class tool_sync_core_ext_external extends external_api {
             }
         }
 
-        $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
-        $coursecontext = context_course::instance($courseid, IGNORE_MISSING);
-        if ($courseid == SITEID) {
+        $course = $DB->get_record('course', array('id'=> $params['courseid']), '*', MUST_EXIST);
+        $coursecontext = context_course::instance($params['courseid'], IGNORE_MISSING);
+        if ($params['courseid'] == SITEID) {
             $context = context_system::instance();
         } else {
             $context = $coursecontext;
         }
 
-        if ($courseid == SITEID) {
+        if ($params['courseid'] == SITEID) {
             require_capability('moodle/site:viewparticipants', $context);
         } else {
             require_capability('moodle/course:viewparticipants', $context);

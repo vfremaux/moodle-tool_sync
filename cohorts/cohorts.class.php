@@ -172,6 +172,7 @@ class cohorts_sync_manager extends sync_manager {
                 'ccatcontextidnumber',
                 'cdescription',
                 'cidnumber',
+                'component',
             );
             $patterns = array();
             $metas = array();
@@ -299,6 +300,7 @@ class cohorts_sync_manager extends sync_manager {
                             }
                             $cohort->description = @$record['cdescription'];
                             $cohort->idnumber = @$record['cidnumber'];
+                            $cohort->component = ''.@$record['component'];
                             $cohort->descriptionformat = FORMAT_MOODLE;
                             if (!empty($record['ccatcontext'])) {
                                 if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
@@ -375,7 +377,9 @@ class cohorts_sync_manager extends sync_manager {
                                 continue;
                             }
                         } else {
-                            $cohort->contextid = $systemcontext->id;
+                            if ($record['ccatcontext'] === 0) {
+                                $cohort->contextid = $systemcontext->id;
+                            }
                         }
                         $DB->update_record('cohort', $cohort);
                         $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
@@ -398,6 +402,8 @@ class cohorts_sync_manager extends sync_manager {
                             $e->cname = $cohort->name;
                             $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
                         }
+                    } else {
+                        $this->report(get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                     }
 
                 } else if ($record['cmd'] == 'del') {
@@ -600,19 +606,21 @@ class cohorts_sync_manager extends sync_manager {
         \enrol_cohort_sync($trace);
         $trace->finished();
 
-        if (!empty($syncconfig->storereport)) {
+        mtrace("Finalization");
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
         }
 
-        if (!empty($syncconfig->filearchive)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
             $this->archive_input_file($filerec);
         }
 
-        if (!empty($syncconfig->filecleanup)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
             $this->cleanup_input_file($filerec);
         }
 
-        if (!empty($syncconfig->filefailed)) {
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
             $this->write_tryback($filerec);
         }
 
