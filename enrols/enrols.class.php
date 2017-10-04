@@ -622,21 +622,21 @@ class enrol_sync_manager extends sync_manager {
 
         mtrace("Finalization");
 
-        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
-            $this->store_report_file($filerec);
+        if ($DB->get_field('config_plu$filerecgins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
+            $this->store_report_file();
         }
 
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
-            $this->write_tryback($filerec);
+            $this->write_tryback(clone($filerec));
         }
 
         if (empty($syncconfig->simulate)) {
             if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
-                $this->archive_input_file($filerec);
+                $this->archive_input_file(clone($filerec));
             }
 
             if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
-                $this->cleanup_input_file($filerec);
+                $this->cleanup_input_file(clone($filerec));
             }
         }
 
