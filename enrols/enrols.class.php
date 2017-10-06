@@ -261,15 +261,18 @@ class enrol_sync_manager extends sync_manager {
                 $enrolinstance = 0;
             }
 
-            $enrol = enrol_get_plugin('manual');
-
-            $params = array('enrol' => $record['enrol'], 'courseid' => $course->id, 'status' => ENROL_INSTANCE_ENABLED);
-            if (!$enrols = $DB->get_records('enrol', $params, 'sortorder ASC')) {
-                $this->report(get_string('errornoenrolmethod', 'tool_sync'));
-                $record['enrol'] = '';
+            if ($record['enrol'] != 'sync') {
+                $enrol = enrol_get_plugin('manual');
+                $params = array('enrol' => $record['enrol'], 'courseid' => $course->id, 'status' => ENROL_INSTANCE_ENABLED);
+                if (!$enrols = $DB->get_records('enrol', $params, 'sortorder ASC')) {
+                    $this->report(get_string('errornoenrolmethod', 'tool_sync'));
+                    $record['enrol'] = '';
+                } else {
+                    $enrol = reset($enrols);
+                    $enrolplugin = enrol_get_plugin($record['enrol']);
+                }
             } else {
-                $enrol = reset($enrols);
-                $enrolplugin = enrol_get_plugin($record['enrol']);
+                require_once($CFG->dirroot.'/enrol/sync/lib.php');
             }
 
             // Start process record.
@@ -280,7 +283,11 @@ class enrol_sync_manager extends sync_manager {
                     // Unenrol also removes all role assignations.
                     if (empty($syncconfig->simulate)) {
                         try {
-                            $enrolplugin->unenrol_user($enrol, $user->id);
+                            if ($record['enrol'] != 'sync') {
+                                $enrolplugin->unenrol_user($enrol, $user->id);
+                            } else {
+                                \enrol_sync_plugin::static_unenrol_user($course, $user->id);
+                            }
                             $this->report(get_string('unenrolled', 'tool_sync', $e));
                         } catch (Exception $exc) {
                             $this->report(get_string('errorunenrol', 'tool_sync', $e));
@@ -329,8 +336,13 @@ class enrol_sync_manager extends sync_manager {
                          */
                         if (empty($syncconfig->simulate)) {
                             try {
-                                $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
-                                                         $record['endtime'], ENROL_USER_ACTIVE);
+                                if ($record['enrol'] != 'sync') {
+                                    $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
+                                                             $record['endtime'], ENROL_USER_ACTIVE);
+                                } else {
+                                    \enrol_sync_plugin::static_enrol_user($course, $user->id, $role->id, $record['starttime'],
+                                                             $record['endtime']);
+                                }
                                 $this->report(get_string('enrolled', 'tool_sync', $e));
                             } catch (Exception $exc) {
                                 $this->report(get_string('errorenrol', 'tool_sync', $e));
@@ -390,7 +402,11 @@ class enrol_sync_manager extends sync_manager {
                     if (!empty($record['enrol'])) {
                         if (empty($syncconfig->simulate)) {
                             try {
-                                $enrolplugin->unenrol_user($enrol, $user->id);
+                                if ($record['enrol'] != 'sync') {
+                                    $enrolplugin->unenrol_user($enrol, $user->id);
+                                } else {
+                                    \enrol_sync_plugin::static_unenrol_user($course, $user->id);
+                                }
                                 $this->report(get_string('unenrolled', 'tool_sync', $e));
                             } catch (Exception $exc) {
                                 $this->report(get_string('errorunenrol', 'tool_sync', $e));
@@ -425,8 +441,13 @@ class enrol_sync_manager extends sync_manager {
                     if (!empty($record['enrol'])) {
                         if (empty($syncconfig->simulate)) {
                             try {
-                                $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
-                                                         $record['endtime'], ENROL_USER_ACTIVE);
+                                if ($record['enrol'] != 'sync') {
+                                    $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
+                                                             $record['endtime'], ENROL_USER_ACTIVE);
+                                } else {
+                                    \enrol_sync_plugin::static_enrol_user($course, $user->id, $role->id, $record['starttime'],
+                                                             $record['endtime']);
+                                }
                                 $this->report(get_string('enrolled', 'tool_sync', $e));
                             } catch (Exception $exc) {
                                 $this->report(get_string('errorenrol', 'tool_sync', $e));
@@ -627,16 +648,16 @@ class enrol_sync_manager extends sync_manager {
         }
 
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
-            $this->write_tryback($filerec);
+            $this->write_tryback(clone($filerec));
         }
 
         if (empty($syncconfig->simulate)) {
             if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
-                $this->archive_input_file($filerec);
+                $this->archive_input_file(clone($filerec));
             }
 
             if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
-                $this->cleanup_input_file($filerec);
+                $this->cleanup_input_file(clone($filerec));
             }
         }
 
