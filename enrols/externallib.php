@@ -964,6 +964,7 @@ class tool_sync_core_ext_external extends external_api {
         $sortby = 'us.id';
         $sortparams = array();
         $sortdirection = 'ASC';
+
         foreach ($options as $option) {
             switch ($option['name']) {
             case 'withcapability':
@@ -1021,7 +1022,7 @@ class tool_sync_core_ext_external extends external_api {
         if ($course->id == SITEID) {
             require_capability('moodle/site:viewparticipants', $context);
         } else {
-            require_capability('moodle/course:viewparticipants', $context);
+            require_capability('moodle/course:viewparticipants', $coursecontext);
         }
         // to overwrite this parameter, you need role:review capability
         if ($withcapability) {

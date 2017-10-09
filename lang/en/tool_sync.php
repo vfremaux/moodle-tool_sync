@@ -244,6 +244,7 @@ $string['foundfile'] = 'File found : {$a}';
 $string['foundfilestoprocess'] = 'Found {$a} files to process';
 $string['generate'] = 'Generate';
 $string['getfile'] = 'Get the command file';
+$string['groupassigndeleted'] = 'Previous group assignments deleted for {$a->myuser} in course {$a->mycourse}';
 $string['group_clean'] = 'Group cleanup';
 $string['group_cleanex'] = 'Clear groups that are present in moodle but empty of users';
 $string['groupcreated'] = 'Group {$a->group} created in course {$a->mycourse}';
