@@ -302,8 +302,9 @@ class sync_manager {
 
         $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
                                    $filerec->filepath, $filerec->filename);
-        echo "Cleaning out input file\n";
+        echo "Cleaning out input file...";
         $inputfile->delete();
+        echo " cleaned.\n";
     }
 
     protected function check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults) {
