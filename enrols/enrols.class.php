@@ -176,6 +176,7 @@ class enrol_sync_manager extends sync_manager {
             }
             $line = explode($csvdelimiter2, $text);
 
+            echo ">> Decoding \n";
             foreach ($line as $key => $value) {
                 // Decode encoded commas.
                 $record[$header[$key]] = trim($value);
@@ -193,6 +194,7 @@ class enrol_sync_manager extends sync_manager {
                 }
             }
 
+            echo ">> Fixing time \n";
             if (array_key_exists('starttime', $record)) {
                 $record['starttime'] = tool_sync_parsetime($record['starttime'], time());
             } else {
@@ -219,6 +221,7 @@ class enrol_sync_manager extends sync_manager {
             $e->userby = $uidentifiername;
             $e->mycourse = $record['cid']; // Course identifier.
 
+            echo ">> Check user \n";
             if (!$user = $DB->get_record('user', array($uidentifiername => $record['uid'])) ) {
                 $this->report(get_string('errornouser', 'tool_sync', $e));
                 if (!empty($syncconfig->filefailed)) {
@@ -230,6 +233,7 @@ class enrol_sync_manager extends sync_manager {
 
             $e->myuser = $user->username.' ('.$e->myuser.')'; // Complete idnumber with real username.
 
+            echo ">> Check course \n";
             if (empty($record['cid'])) {
                 $this->report(get_string('errornullcourseidentifier', 'tool_sync', $i));
                 $i++;
@@ -487,6 +491,7 @@ class enrol_sync_manager extends sync_manager {
                                     $groupid[$j] = $gid;
                                 } else {
                                     if ($record['gcmd'] == 'gaddcreate') {
+                                        echo ">> Creating group \n";
                                         $groupsettings = new StdClass;
                                         $groupsettings->name = $record['g'.$j];
                                         $groupsettings->courseid = $course->id;
@@ -545,14 +550,16 @@ class enrol_sync_manager extends sync_manager {
                         }
                         for ($j = 1; $j < 10; $j++) {
                             if (!empty($record['g'.$j])) {
+                                echo ">> Checking group \n";
                                 $e = new StdClass();
                                 $e->group = $record['g'.$j];
                                 $gname = $record['g'.$j];
                                 if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
-                                    echo "Got group $gid by name $e->group\n";
+                                    echo ">> Got group $gid by name $e->group\n";
                                     $groupid[$j] = $gid;
                                 } else {
                                     if ($record['gcmd'] == 'greplacecreate') {
+                                        echo ">> Creating group \n";
                                         $groupsettings = new StdClass;
                                         $groupsettings->name = $record['g'.$j];
                                         $groupsettings->courseid = $course->id;
@@ -577,6 +584,7 @@ class enrol_sync_manager extends sync_manager {
 
                                 if (count(get_user_roles($context, $user->id))) {
                                     if (empty($syncconfig->simulate)) {
+                                        echo ">> Adding memebership \n";
                                         $e = new StdClass();
                                         $e->group = $groupid[$j];
                                         $e->myuser = $user->username.' ('.$record['userid'].')';
@@ -600,6 +608,7 @@ class enrol_sync_manager extends sync_manager {
                     // TODO : Remove membership.
                     for ($j = 1; $j < 10; $j++) {
                         if (!empty($record['g'.$j])) {
+                            echo " >> Removing membership \n";
                             $e = new StdClass();
                             $e->group = $record['g'.$j];
                             if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
