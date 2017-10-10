@@ -883,6 +883,13 @@ class course_sync_manager extends sync_manager {
 
                     $keyedvalues = array_combine($headers, $valueset);
 
+                    // Override defaults with input
+                    foreach ($keyedvalues as $key => $value) {
+                        if (!empty($key)) {
+                            $coursetocreate[$key] = $value;
+                        }
+                    }
+
                     // Prepare category.
                     if ($syncconfig->courses_coursecategoryidentifier == 'idname') {
                         if (!is_numeric($keyedvalues['category'])) {
@@ -908,7 +915,7 @@ class course_sync_manager extends sync_manager {
 
                         $cf = $headers[$key];
 
-                        if ($cf != 'category') {
+                        if ($cf != 'category' && !empty($cf)) {
                             if (preg_match(TOPIC_FIELD, $cf, $matches)) {
                                 // Register a topic definition.
                                 $coursetopics[$matches[2]] = $this->validate_as($value, $matches[1], $i, $cf);
