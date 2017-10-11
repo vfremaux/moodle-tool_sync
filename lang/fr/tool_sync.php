@@ -229,6 +229,7 @@ $string['filenameformatcc'] = '<strong>Format du nom de rapport :</strong> CC_YY
 $string['filenameformatuc'] = '<strong>Format du nom de rapport :</strong> UC_YYYY-MM-DD_hh-mm.txt';
 $string['filenotfound'] = 'Le fichier {$a} n\'a pas été trouvé';
 $string['filetoprocess'] = 'Fichier à exécuter';
+$string['fileuploadidentifier'] = 'Identifiant de création/mise à jour';
 $string['final_action'] = 'Post-traitements';
 $string['flatfilefoundforenrols'] = 'Fichier d\'enrôlements trouvé :';
 $string['forcecourseupdateconfig'] = 'Si activé, les cours existants auront leurs attributs mise à jour. Le contenu et les données de cours restent inchangées.';
