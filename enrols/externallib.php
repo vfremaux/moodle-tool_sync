@@ -749,7 +749,7 @@ class tool_sync_core_ext_external extends external_api {
             }
         }
 
-        $course = $DB->get_record('course', array('id'=> $params['courseid']), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $params['courseid']), '*', MUST_EXIST);
         $coursecontext = context_course::instance($params['courseid'], IGNORE_MISSING);
         if ($params['courseid'] == SITEID) {
             $context = context_system::instance();
@@ -910,7 +910,7 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function get_enrolled_users_parameters() {
         return new external_function_parameters(
-            array('courseidsource' => new external_value(PARAM_TEXT, 'The source for course, can be '),
+            array('courseidsource' => new external_value(PARAM_TEXT, 'The source for course, can be id, idnumber, shortname'),
                 'courseid' => new external_value(PARAM_TEXT, 'The course id'),
                 'options'  => new external_multiple_structure(
                     new external_single_structure(
@@ -964,6 +964,7 @@ class tool_sync_core_ext_external extends external_api {
         $sortby = 'us.id';
         $sortparams = array();
         $sortdirection = 'ASC';
+
         foreach ($options as $option) {
             switch ($option['name']) {
             case 'withcapability':
@@ -1010,18 +1011,18 @@ class tool_sync_core_ext_external extends external_api {
             }
         }
 
-        $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
-        $coursecontext = context_course::instance($courseid, IGNORE_MISSING);
-        if ($courseid == SITEID) {
+        $course = $DB->get_record('course', array('id' => $params['courseid']), '*', MUST_EXIST);
+        $coursecontext = context_course::instance($params['courseid'], IGNORE_MISSING);
+        if ($course->id == SITEID) {
             $context = context_system::instance();
         } else {
             $context = $coursecontext;
         }
 
-        if ($courseid == SITEID) {
+        if ($course->id == SITEID) {
             require_capability('moodle/site:viewparticipants', $context);
         } else {
-            require_capability('moodle/course:viewparticipants', $context);
+            require_capability('moodle/course:viewparticipants', $coursecontext);
         }
         // to overwrite this parameter, you need role:review capability
         if ($withcapability) {
