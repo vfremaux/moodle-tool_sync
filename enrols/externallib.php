@@ -749,7 +749,7 @@ class tool_sync_core_ext_external extends external_api {
             }
         }
 
-        $course = $DB->get_record('course', array('id'=> $params['courseid']), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $params['courseid']), '*', MUST_EXIST);
         $coursecontext = context_course::instance($params['courseid'], IGNORE_MISSING);
         if ($params['courseid'] == SITEID) {
             $context = context_system::instance();
