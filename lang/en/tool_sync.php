@@ -237,6 +237,7 @@ $string['filenameformatcc'] = '<strong>Filename format:</strong> CC_YYYY-MM-DD_h
 $string['filenameformatuc'] = '<strong>Filename format:</strong> UC_YYYY-MM-DD_hh-mm.txt';
 $string['filenotfound'] = 'File {$a} not found.';
 $string['filetoprocess'] = 'File to process';
+$string['fileuploadidentifier'] = 'Course creation/update identifier';
 $string['final_action'] = 'Post-processing';
 $string['flatfilefoundforenrols'] = 'Command file found for enrols: ';
 $string['forcecourseupdateconfig'] = 'If enabled, existing courses will have settings updated to new values. Course content remains unchanged.';
