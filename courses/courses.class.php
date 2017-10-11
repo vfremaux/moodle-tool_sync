@@ -883,9 +883,19 @@ class course_sync_manager extends sync_manager {
 
                     $keyedvalues = array_combine($headers, $valueset);
 
+                    // Override defaults with input
+                    foreach ($keyedvalues as $key => $value) {
+                        if (!empty($key)) {
+                            $coursetocreate[$key] = $value;
+                        }
+                    }
+
                     // Prepare category.
                     if ($syncconfig->courses_coursecategoryidentifier == 'idname') {
                         if (!is_numeric($keyedvalues['category'])) {
+                            // Filter out leading and trailing slashes from path.
+                            $keyedvalues['category'] = preg_replace('#^/#', '', $keyedvalues['category']);
+                            $keyedvalues['category'] = preg_replace('#/$#', '', $keyedvalues['category']);
                             $coursetocreate['category'] = explode('/', $keyedvalues['category']);
                         }
                     } else {
