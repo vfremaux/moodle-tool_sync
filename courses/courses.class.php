@@ -55,6 +55,10 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/courses_fileuploadlocation', PARAM_TEXT);
 
+        $key = 'tool_sync/courses_fileuploadidentifier';
+        $label = get_string('uploadfileidentifier', 'tool_sync');
+        $frm->addElement('select', $key, $label, $this->identifieroptions);
+
         $key = 'tool_sync/courses_coursecategoryidentifier';
         $label = get_string('coursecategoryidentifier', 'tool_sync');
         $frm->addElement('select', $key, $label, $this->catidentifieroptions);
@@ -883,9 +887,19 @@ class course_sync_manager extends sync_manager {
 
                     $keyedvalues = array_combine($headers, $valueset);
 
+                    // Override defaults with input
+                    foreach ($keyedvalues as $key => $value) {
+                        if (!empty($key)) {
+                            $coursetocreate[$key] = $value;
+                        }
+                    }
+
                     // Prepare category.
                     if ($syncconfig->courses_coursecategoryidentifier == 'idname') {
                         if (!is_numeric($keyedvalues['category'])) {
+                            // Filter out leading and trailing slashes from path.
+                            $keyedvalues['category'] = preg_replace('#^/#', '', $keyedvalues['category']);
+                            $keyedvalues['category'] = preg_replace('#/$#', '', $keyedvalues['category']);
                             $coursetocreate['category'] = explode('/', $keyedvalues['category']);
                         }
                     } else {
@@ -908,7 +922,7 @@ class course_sync_manager extends sync_manager {
 
                         $cf = $headers[$key];
 
-                        if ($cf != 'category') {
+                        if ($cf != 'category' && !empty($cf)) {
                             if (preg_match(TOPIC_FIELD, $cf, $matches)) {
                                 // Register a topic definition.
                                 $coursetopics[$matches[2]] = $this->validate_as($value, $matches[1], $i, $cf);
@@ -979,7 +993,8 @@ class course_sync_manager extends sync_manager {
                 $a->fullname = $bulkcourse['fullname'];
 
                 // Try to create the course.
-                if (!$oldcourse = $DB->get_record('course', array('shortname' => $bulkcourse['shortname']))) {
+                $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
+                if (!$oldcourse = $DB->get_record('course', array($uploadidentifier => $bulkcourse[$uploadidentifier]))) {
 
                     $coursetocategory = 0; // Category ID.
 
@@ -1094,9 +1109,10 @@ class course_sync_manager extends sync_manager {
                         if (is_array($bulkcourse['category'])) {
                             // Course Category creation routine as a category path was given.
 
-                            $coursetocategory = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext,
-                                                                     $i, $catcreated, $caterrors);
+                            $results = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i,
+                                                                     $catcreated, $caterrors);
                             // Last category created will contain the actual course.
+                            $coursetocategory = $results[0];
                         } else {
                             // It's just a straight category ID.
                             $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1;
