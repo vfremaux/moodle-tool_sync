@@ -56,7 +56,7 @@ class course_sync_manager extends sync_manager {
         $frm->setType('tool_sync/courses_fileuploadlocation', PARAM_TEXT);
 
         $key = 'tool_sync/courses_fileuploadidentifier';
-        $label = get_string('uploadfileidentifier', 'tool_sync');
+        $label = get_string('uploadcoursecreationfile', 'tool_sync');
         $frm->addElement('select', $key, $label, $this->identifieroptions);
         $frm->setDefault($key, 'shortname');
 
