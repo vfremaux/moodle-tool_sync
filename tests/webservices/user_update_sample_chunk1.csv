@@ -1,0 +1,6 @@
+username;idnumber;firstname;lastname;email;country;lang
+john.doe;U0001;John;Doe;johndoe@foobar.com;GB;en
+amelie.dupont;U0002;Amélie;Dupont;adupont@foobar.com;FR;en
+jack.duf;U0003;Jack;Duff;jack.duff@foobar.com;US;en
+ggrass;U0004;Günter;Grass;ggrass@foobar.com;DE;en
+yyang;U0005;Yum;Yang;yyang@foobar.com;CN;en
