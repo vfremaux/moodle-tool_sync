@@ -202,6 +202,7 @@ $string['errortoooldlock'] = 'Error : a locked.txt file is too old an in the way
 $string['errorunassign'] = 'Error ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : Role {$a->myrole} unassignation failed.';
 $string['errorunassignall'] = 'Error ligne {$a->i}: {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : All Roles unassignation failed.';
 $string['errorunenrol'] = 'Unenrol failed. {$a->myuser} in course {$a->mycourse}';
+$string['errorunsupported'] = 'This version does not support the {$a} feature. Ask for PRO release to a distributor.';
 $string['erroruploadpicturescannotunzip'] = 'Error: Zip file cannot be unzipped : {$a} (may be empty)';
 $string['errorvalidationbadtype'] = 'Error at line {$a->i}: Invalid value for field {$a->fieldname} (not an integer or string).';
 $string['errorvalidationbaduserid'] = 'Error at line {$a->i}: Invalid value for field {$a->fieldname} (No User with ID {$a->value}).';
@@ -409,6 +410,9 @@ $string['usersupdated'] = 'Users updated ';
 $string['usersync'] = 'Users synchronization';
 $string['userunknownremotely'] = 'User {$a} unkown on remote end';
 $string['utilities'] = 'Utilities';
+$string['willcreatecategory'] = 'Will create category {$a}';
+$string['willcreatecourse'] = 'Will create course [{$a->shorname}] {$a->fullname} identified by ({$a->idnumber})';
+$string['willupdatecourse'] = 'Will update course [{$a->shorname}] {$a->fullname} identified by ({$a->idnumber})';
 
 $string['coursesync_help'] = '
 <p>this service allows creating massively courses with a default format or using a designated course template
