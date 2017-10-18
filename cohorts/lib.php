@@ -22,7 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $starttime = 0, $endtime = 0, $makegroup = 0, $extra1 = 0, $extra2 = 0) {
+function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $starttime = 0, $endtime = 0,
+                                $makegroup = 0, $extra1 = 0, $extra2 = 0, $simulate = false) {
     global $DB;
 
     $report = '';
@@ -42,12 +43,16 @@ function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $st
                 $enrolobj->customint2 = $makegroup;
                 $enrolobj->customint3 = $extra1;
                 $enrolobj->customint4 = $extra2;
-                $DB->insert_record('enrol', $enrolobj);
+                if (!$simulate) {
+                    $DB->insert_record('enrol', $enrolobj);
+                }
             } else {
                 if ($oldrec->status == 1) {
                     $oldrec->status = 0;
                     $enrol->enrolstartdate = time();
-                    $DB->update_record('enrol', $oldrec);
+                    if (!$simulate) {
+                        $DB->update_record('enrol', $oldrec);
+                    }
                 }
             }
             $e = new StdClass;
@@ -55,7 +60,11 @@ function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $st
             $e->cohort = $cohortid;
             $e->enrol = $enrol;
             $e->role = $DB->get_field('role', 'shortname', array('id' => $roleid));
-            $report .= get_string('cohortbindingadded', 'tool_sync', $e);
+            $simstr = '';
+            if ($simulate) {
+                $simstr = 'SIMULATION: ';
+            }
+            $report .= $simstr.get_string('cohortbindingadded', 'tool_sync', $e);
             break;
         }
 
@@ -70,14 +79,20 @@ function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $st
                 foreach ($oldrecs as $oldrec) {
                     // Disable all enrols of any role on this cohort.
                     $oldrec->status = ($cmd == 'del') ? 1 : 0;
-                    $DB->update_record('enrol', $oldrec);
+                    if (!$simulate) {
+                        $DB->update_record('enrol', $oldrec);
+                    }
 
                     $e = new StdClass;
                     $e->course = $courseid;
                     $e->cohort = $cohortid;
                     $e->enrol = $enrol;
                     $e->role = $DB->get_field('role', 'shortname', array('id' => $oldrec->roleid));
-                    $report .= get_string('cohortbindingdisabled', 'tool_sync', $e);
+                    $simstr = '';
+                    if ($simulate) {
+                        $simstr = 'SIMULATION: ';
+                    }
+                    $report .= $simstr.get_string('cohortbindingdisabled', 'tool_sync', $e);
                 }
             }
             break;
@@ -91,14 +106,20 @@ function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $st
             }
             if ($oldrecs = $DB->get_records('enrol', $params)) {
                 foreach ($oldrecs as $oldrec) {
-                    $DB->delete_records('enrol', array('id' => $oldrec->id));
+                    if (!$simulate) {
+                        $DB->delete_records('enrol', array('id' => $oldrec->id));
+                    }
 
                     $e = new StdClass;
                     $e->course = $courseid;
                     $e->cohort = $cohortid;
                     $e->enrol = $enrol;
                     $e->role = $DB->get_field('role', 'shortname', array('id' => $oldrec->roleid));
-                    $report .= get_string('cohortbindingdeleted', 'tool_sync', $e);
+                    $simstr = '';
+                    if ($simulate) {
+                        $simstr = 'SIMULATION: ';
+                    }
+                    $report .= $simstr.get_string('cohortbindingdeleted', 'tool_sync', $e);
                 }
             }
             break;
