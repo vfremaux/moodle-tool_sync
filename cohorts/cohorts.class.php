@@ -345,6 +345,7 @@ class cohorts_sync_manager extends sync_manager {
                             } else {
                                 $this->report('SIMULATION: '.get_string('cohortcreated', 'tool_sync', $cohort));
                             }
+                        }
                     } else {
                         if (!empty($record['cdescription'])) {
                             $cohort->description = $record['cdescription'];
