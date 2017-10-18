@@ -194,6 +194,7 @@ $string['errortoooldlock'] = 'Erreur : un ancien fichier locked.txt est présent
 $string['errorunassign'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : la désassignation du rôle {$a->myrole} à échoué.';
 $string['errorunassignall'] = 'Erreur ligne {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : la désassignation générale des rôles à échoué.';
 $string['errorunenrol'] = 'Erreur de désincription. {$a->myuser} dans le cours {$a->mycourse}';
+$string['errorunsupported'] = 'Cette version ne supporte pas la fonctionnalité {$a}. Rapprochez-vous d\'un distributeur pour les versions PRO.';
 $string['erroruploadpicturescannotunzip'] = 'Erreur : Impossible de dezipper le fichier d\'avatars : {$a} (le fichier est peut être vide)';
 $string['errorvalidationbadtype'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (ni un entier ni du texte).';
 $string['errorvalidationbaduserid'] = 'Erreur ligne {$a->i} : Valeur du champ {$a->fieldname} invalide (pas d\'utilisateur avec l\'ID "{$a->value}").';
@@ -399,6 +400,9 @@ $string['usersupdated'] = 'Utilisateurs mis à jour ';
 $string['usersync'] = 'Synchronisation des utilisateurs';
 $string['userunknownremotely'] = 'L\'utilisateur {$a} n\'existe pas sur le distant';
 $string['utilities'] = 'Utilitaires';
+$string['willcreatecategory'] = 'Va créer la catégorie {$a}';
+$string['willcreatecourse'] = 'Va créer le cours[{$a->shorname}] {$a->fullname} identifié par ({$a->idnumber})';
+$string['willupdatecourse'] = 'Va créer le cours [{$a->shorname}] {$a->fullname} identifié par ({$a->idnumber})';
 
 $string['coursesync_help'] = '
 ';
