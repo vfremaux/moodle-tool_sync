@@ -148,10 +148,6 @@ class cohorts_sync_manager extends sync_manager {
             // Internal process controls.
             $autocreatecohorts = 0 + @$syncconfig->cohorts_autocreate;
 
-            if (!get_admin()) {
-                return;
-            }
-
             $uploaded = $this->manualfilerec;
             if (empty($uploaded)) {
                 $filerec = $this->get_input_file(@$syncconfig->cohorts_filelocation, 'cohorts.csv');
@@ -343,8 +339,12 @@ class cohorts_sync_manager extends sync_manager {
                                 }
                             }
 
-                            $cohort->id = $DB->insert_record('cohort', $cohort);
-                            $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
+                            if (empty($syncconfig->simulate)) {
+                                $cohort->id = $DB->insert_record('cohort', $cohort);
+                                $this->report(get_string('cohortcreated', 'tool_sync', $cohort));
+                            } else {
+                                $this->report('SIMULATION: '.get_string('cohortcreated', 'tool_sync', $cohort));
+                            }
                         }
                     } else {
                         if (!empty($record['cdescription'])) {
@@ -381,29 +381,42 @@ class cohorts_sync_manager extends sync_manager {
                                 $cohort->contextid = $systemcontext->id;
                             }
                         }
-                        $DB->update_record('cohort', $cohort);
-                        $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
+
+                        if (empty($syncconfig->simulate)) {
+                            $DB->update_record('cohort', $cohort);
+                            $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
+                        } else {
+                            $this->report('SIMULATION: '.get_string('cohortupdated', 'tool_sync', $cohort));
+                        }
                     }
 
                     if ($user) {
-                        $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
-                        if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
-                            \cohort_add_member($cohort->id, $user->id);
+                        if (empty($syncconfig->simulate)) {
+                            $params = array('userid' => $user->id, 'cohortid' => $cohort->id);
+                            if (!$cohortmembership = $DB->get_record('cohort_members', $params)) {
+                                \cohort_add_member($cohort->id, $user->id);
 
-                            $e = new StdClass;
-                            $e->username = $user->username;
-                            $e->idnumber = $user->idnumber;
-                            $e->cname = $cohort->name;
-                            $this->report(get_string('cohortmemberadded', 'tool_sync', $e));
+                                $e = new StdClass;
+                                $e->username = $user->username;
+                                $e->idnumber = $user->idnumber;
+                                $e->cname = $cohort->name;
+                                $this->report(get_string('cohortmemberadded', 'tool_sync', $e));
+                            } else {
+                                $e = new StdClass;
+                                $e->username = $user->username;
+                                $e->idnumber = $user->idnumber;
+                                $e->cname = $cohort->name;
+                                $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
+                            }
                         } else {
-                            $e = new StdClass;
-                            $e->username = $user->username;
-                            $e->idnumber = $user->idnumber;
-                            $e->cname = $cohort->name;
-                            $this->report(get_string('cohortalreadymember', 'tool_sync', $e));
+                            $this->report('SIMULATION: '.get_string('cohortmemberadded', 'tool_sync', $e));
                         }
                     } else {
-                        $this->report(get_string('cohortmissinguser', 'tool_sync', $record['userid']));
+                        $simulate = '';
+                        if (!empty($syncconfig->simulate)) {
+                            $simulate = 'SIMULATION: ';
+                        }
+                        $this->report($simulate.get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                     }
 
                 } else if ($record['cmd'] == 'del') {
@@ -418,27 +431,37 @@ class cohorts_sync_manager extends sync_manager {
 
                     if ($user) {
                         if ($cohort) {
-                            \cohort_remove_member($cohort->id, $user->id);
+                            if (empty($syncconfig->simulate)) {
+                                \cohort_remove_member($cohort->id, $user->id);
+                            }
 
                             $e = new StdClass;
                             $e->username = $user->username;
                             $e->idnumber = $user->idnumber;
                             $e->cname = $cohort->name;
-                            $this->report(get_string('cohortmemberremoved', 'tool_sync', $e));
+                            if (empty($syncconfig->simulate)) {
+                                $this->report(get_string('cohortmemberremoved', 'tool_sync', $e));
+                            } else {
+                                $this->report('SIMULATE: '.get_string('cohortmemberremoved', 'tool_sync', $e));
+                            }
                         }
                     } else {
                         // Delete the whole cohort.
                         if ($cohort) {
-                            \cohort_delete_cohort($cohort);
+                            if (empty($syncconfig->simulate)) {
+                                \cohort_delete_cohort($cohort);
 
-                            // Removing all related enrolment data.
-                            $enrols = $DB->get_records('enrol', array('enrol' => 'cohort', 'customint1' => $cohort->id));
-                            if ($enrols) {
-                                $DB->delete_records('enrol', array('enrol' => 'cohort', 'customint1' => $cohort->id));
-                                $DB->delete_records_list('user_enrolments', 'enrolid', array_keys($enrols));
+                                // Removing all related enrolment data.
+                                $enrols = $DB->get_records('enrol', array('enrol' => 'cohort', 'customint1' => $cohort->id));
+                                if ($enrols) {
+                                    $DB->delete_records('enrol', array('enrol' => 'cohort', 'customint1' => $cohort->id));
+                                    $DB->delete_records_list('user_enrolments', 'enrolid', array_keys($enrols));
+                                }
+                                $this->report(get_string('cohortdeleted', 'tool_sync', $cohort));
+                            } else {
+                                $this->report('SIMULATION: '.get_string('cohortdeleted', 'tool_sync', $cohort));
                             }
 
-                            $this->report(get_string('cohortdeleted', 'tool_sync', $cohort));
                         } else {
                             $e = new StdClass;
                             $e->cid = $cid;
@@ -460,12 +483,18 @@ class cohorts_sync_manager extends sync_manager {
                     $members = $DB->get_records('cohort_members', array('cohortid' => $cohort->id));
                     if ($members) {
                         foreach ($members as $member) {
-                            \cohort_remove_member($cohort->id, $member->userid);
+                            if (empty($syncconfig->simulate)) {
+                                \cohort_remove_member($cohort->id, $member->userid);
+                            }
                         }
                         $e = new StdClass;
                         $e->idnumber = $cohort->idnumber;
                         $e->name = $cohort->name;
-                        $this->report(get_string('cohortfreed', 'tool_sync', $e));
+                        $simulate = '';
+                        if (empty($syncconfig->simulate)) {
+                            $simulate = 'SIMULATION: ';
+                        }
+                        $this->report($simulate.get_string('cohortfreed', 'tool_sync', $e));
                     }
                 }
             }
@@ -477,10 +506,6 @@ class cohorts_sync_manager extends sync_manager {
         if ($this->execute == SYNC_COHORT_BIND_COURSES) {
 
             $this->report('Starting binding cohorts...');
-
-            if (!get_admin()) {
-                return;
-            }
 
             $defaultrolestudent = $DB->get_record('role', array('shortname' => 'student'));
 
@@ -594,7 +619,7 @@ class cohorts_sync_manager extends sync_manager {
                     $valuearr['enrol'] = 'cohort';
                 }
 
-                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup);
+                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup, $syncconfig->simulate);
             }
 
             fclose($filereader);

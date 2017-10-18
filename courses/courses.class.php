@@ -56,7 +56,7 @@ class course_sync_manager extends sync_manager {
         $frm->setType('tool_sync/courses_fileuploadlocation', PARAM_TEXT);
 
         $key = 'tool_sync/courses_fileuploadidentifier';
-        $label = get_string('uploadfileidentifier', 'tool_sync');
+        $label = get_string('uploadcoursecreationfile', 'tool_sync');
         $frm->addElement('select', $key, $label, $this->identifieroptions);
         $frm->setDefault($key, 'shortname');
 
@@ -1002,16 +1002,20 @@ class course_sync_manager extends sync_manager {
                     if (is_array($bulkcourse['category'])) {
                         // Course Category creation routine as a category path was given.
 
-                        $results = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i,
-                                                                 $catcreated, $caterrors);
-                        // Last category created will contain the actual course.
-                        $coursetocategory = $results[0];
+                        if (empty($syncconfig->simulate)) {
+                            $results = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i,
+                                                            $catcreated, $caterrors);
+                            // Last category created will contain the actual course.
+                            $coursetocategory = $results[0];
+                        } else {
+                            $this->report('SIMULATION: '.get_string('willcreatecategory', 'tool_sync', $bulkcourse['category']));
+                        }
                     } else {
                         // It's just a straight category ID.
                         $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1;
                     }
 
-                    if ($coursetocategory == -1) {
+                    if (($coursetocategory == -1) && empty($syncconfig->simulate)) {
                         $e = new StdClass;
                         $e->i = $i;
                         $e->coursename = $bulkcourse['shortname'];
@@ -1021,85 +1025,89 @@ class course_sync_manager extends sync_manager {
                         $this->report(get_string('errorcategoryparenterror', 'tool_sync', $e));
                         continue;
                     } else {
-                        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $syncconfig);
-                        $e = new StdClass;
-                        $e->coursename = $bulkcourse['shortname'];
-                        $e->shortname = $bulkcourse['shortname'];
-                        $e->fullname = $bulkcourse['fullname'];
-                        $e->i = $i;
-                        $e->error = $result;
-                        switch ($result) {
-                            case 1:
-                                $this->report(get_string('coursecreated', 'tool_sync', $e));
-                                $n++; // Succeeded.
-                            break;
-                            case -1:
-                                $this->report(get_string('errorinputconditions', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            case -20:
-                            case -21:
-                            case -22:
-                            case -23:
-                            case -24:
-                                $this->report(get_string('errorbackupfile', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            case -3:
-                                $this->report(get_string('errorsectioncreate', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            case -4:
-                                $this->report(get_string('errorteacherenrolincourse', 'tool_sync', $e));
-                                if (!empty($CFG->sync_filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            case -5:
-                                $this->report(get_string('errorteacherrolemissing', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            case -6:
-                                $this->report(get_string('errorcoursemisconfiguration', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            case -7:
-                                $e->template = $bulkcourse['template'];
-                                $this->report(get_string('errortemplatenotfound', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            case -8:
-                                $this->report(get_string('errorrestoringtemplatesql', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                                $p++;
-                            break;
-                            default:
-                                $this->report(get_string('errorrestoringtemplate', 'tool_sync', $e));
-                                if (!empty($syncconfig->filefailed)) {
-                                    $this->feed_tryback($sourcetext[$i]);
-                                }
-                            break;
+                        if (empty($syncconfig->simulate)) {
+                            $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $syncconfig);
+                            $e = new StdClass;
+                            $e->coursename = $bulkcourse['shortname'];
+                            $e->shortname = $bulkcourse['shortname'];
+                            $e->fullname = $bulkcourse['fullname'];
+                            $e->i = $i;
+                            $e->error = $result;
+                            switch ($result) {
+                                case 1:
+                                    $this->report(get_string('coursecreated', 'tool_sync', $e));
+                                    $n++; // Succeeded.
+                                break;
+                                case -1:
+                                    $this->report(get_string('errorinputconditions', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                case -20:
+                                case -21:
+                                case -22:
+                                case -23:
+                                case -24:
+                                    $this->report(get_string('errorbackupfile', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                case -3:
+                                    $this->report(get_string('errorsectioncreate', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                case -4:
+                                    $this->report(get_string('errorteacherenrolincourse', 'tool_sync', $e));
+                                    if (!empty($CFG->sync_filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                case -5:
+                                    $this->report(get_string('errorteacherrolemissing', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                case -6:
+                                    $this->report(get_string('errorcoursemisconfiguration', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                case -7:
+                                    $e->template = $bulkcourse['template'];
+                                    $this->report(get_string('errortemplatenotfound', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                case -8:
+                                    $this->report(get_string('errorrestoringtemplatesql', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                    $p++;
+                                break;
+                                default:
+                                    $this->report(get_string('errorrestoringtemplate', 'tool_sync', $e));
+                                    if (!empty($syncconfig->filefailed)) {
+                                        $this->feed_tryback($sourcetext[$i]);
+                                    }
+                                break;
+                            }
+                        } else {
+                            $this->report('SIMULATION: '.get_string('willcreatecourse', 'tool_sync', $bulkcourse));
                         }
                     }
                 } else {
@@ -1119,7 +1127,7 @@ class course_sync_manager extends sync_manager {
                             $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1;
                         }
 
-                        if ($coursetocategory == -1) {
+                        if ($coursetocategory == -1 && empty($syncconfig->simulate)) {
                             $e = new StdClass;
                             $e->i = $i;
                             $e->coursename = $oldcourse->shortname;
@@ -1137,21 +1145,29 @@ class course_sync_manager extends sync_manager {
                                 $oldcourse->$key = $value;
                             }
                         }
-                        if ($DB->update_record('course', $oldcourse)) {
-                            $e = new StdClass;
-                            $e->i = $i;
-                            $e->shortname = $oldcourse->shortname;
-                            $this->report(get_string('courseupdated', 'tool_sync', $e));
-                        } else {
-                            $e = new StdClass;
-                            $e->i = $i;
-                            $e->shortname = $oldcourse->shortname;
-                            $this->report(get_string('errorcourseupdated', 'tool_sync', $e));
-                        }
+                        if (empty($syncconfig->simulate)) {
+                            if ($DB->update_record('course', $oldcourse)) {
+                                $e = new StdClass;
+                                $e->i = $i;
+                                $e->shortname = $oldcourse->shortname;
+                                $this->report(get_string('courseupdated', 'tool_sync', $e));
+                            } else {
+                                $e = new StdClass;
+                                $e->i = $i;
+                                $e->shortname = $oldcourse->shortname;
+                                $this->report(get_string('errorcourseupdated', 'tool_sync', $e));
+                            }
 
-                        $this->update_enrols($oldcourse, $bulkcourse['self'], $bulkcourse['guest']);
+                            $this->update_enrols($oldcourse, $bulkcourse['self'], $bulkcourse['guest']);
+                        } else {
+                            $this->report('SIMULATION: '.get_string('willupdatecourse', 'tool_sync', (object) $bulkcourse));
+                        }
                     } else {
-                        $this->report(get_string('courseexists', 'tool_sync', $a));
+                        $simulate = '';
+                        if (!empty($syncconfig->simulate)) {
+                            $simulate = 'SIMULATION: ';
+                        }
+                        $this->report($simulate.get_string('courseexists', 'tool_sync', $a));
                           // Skip course, already exists.
                     }
 
@@ -1170,12 +1186,14 @@ class course_sync_manager extends sync_manager {
                 $this->write_tryback($filerec);
             }
 
-            if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
-                $this->archive_input_file($filerec);
-            }
+            if (empty($syncconfig->simulate)) {
+                if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
+                    $this->archive_input_file($filerec);
+                }
 
-            if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
-                $this->cleanup_input_file($filerec);
+                if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
+                    $this->cleanup_input_file($filerec);
+                }
             }
         }
 
