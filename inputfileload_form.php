@@ -24,10 +24,12 @@
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/lib/formslib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
 class InputFileLoadForm extends moodleform {
 
     public function definition() {
+        global $CFG, $OUTPUT;
 
         $form = $this->_form;
 
@@ -36,11 +38,55 @@ class InputFileLoadForm extends moodleform {
         $form->addElement('hidden', 'action');
         $form->setType('action', PARAM_TEXT);
 
-        if (!empty($this->_customdata['localfile'])) {
-            $label = get_string('uselocal', 'tool_sync', $this->_customdata['localfile']);
-            $form->addElement('submit', 'uselocal', $label);
+        // Process localfile name.
+        $allfilerecs = array();
+        $wildcard = false;
+        if (tool_sync_supports_feature('fileloading/wildcard') && 
+                preg_match('#\\*#', $this->_customdata['localfile'])) {
+
+            $wildcard = true;
+            include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
+
+            $localdir = dirname($this->_customdata['localfile']);
+            $localbase = basename($this->_customdata['localfile']);
+
+            $filerec = new StdClass;
+            $filerec->contextid = context_system::instance()->id;
+            $filerec->component = 'tool_sync';
+            $filerec->filearea = 'syncfiles';
+            $filerec->itemid = 0;
+            $filerec->filepath = ($localdir == '' || $localdir == '.') ? '/' : $localdir ;
+            $filerec->filename = $localbase;
+
+            if ($allfilerecs = tool_sync_get_first_available_file($filerec, true)) {
+                $localfilerec = array_shift($allfilerecs);
+                $localfile = $localdir.'/'.$localfilerec->filename;
+                $localfile = preg_replace('#^/#', '', $localfile); // Normalise.
+            }
+        } else {
+            $localfile = $this->_customdata['localfile'];
         }
-        $form->setType('uselocal', PARAM_BOOL);
+
+        if (!empty($localfile)) {
+            $label = get_string('uselocal', 'tool_sync', $localfile);
+            $form->addElement('submit', 'uselocal', $label);
+            $form->setType('uselocal', PARAM_BOOL);
+        } else {
+            // No wildcard match.
+            if ($wildcard) {
+                $label = get_string('uselocal', 'tool_sync', '');
+                $form->addElement('static', 'uselocal', $label, $OUTPUT->notification(get_string('nomatch', 'tool_sync')));
+            }
+        }
+
+        if (!empty($allfilerecs)) {
+            $html = '<ul>';
+            foreach ($allfilerecs as $frec) {
+                $html .= '<li>'.$frec->filepath.$frec->filename.'</li>';
+            }
+            $html .= '</ul>';
+            $form->addElement('static', 'candidates', get_string('othermatchs', 'tool_sync'), $html);
+        }
 
         if (!empty($this->_customdata['runlocalfiles'])) {
             $form->addElement('submit', 'runlocalfiles', get_string('runlocalfiles', 'tool_sync'));
