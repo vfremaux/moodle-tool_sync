@@ -58,11 +58,12 @@ class users_sync_manager extends sync_manager {
         $frm->addElement('checkbox', 'tool_sync/users_sendpasswordtousers', get_string('sendpasswordtousers', 'tool_sync'));
         $frm->addHelpButton('tool_sync/users_sendpasswordtousers', 'sendpasswordtousers', 'tool_sync');
 
-        $frm->addElement('checkbox', 'tool_sync/users_allowrename', get_string('allowrename', 'tool_sync'));
+        $frm->addElement('advcheckbox', 'tool_sync/users_allowrename', get_string('allowrename', 'tool_sync'));
         $frm->addHelpButton('tool_sync/users_allowrename', 'allowrename', 'tool_sync');
 
-        $frm->addElement('checkbox', 'tool_sync/users_protectemails', get_string('protectemails', 'tool_sync'));
+        $frm->addElement('advcheckbox', 'tool_sync/users_protectemails', get_string('protectemails', 'tool_sync'));
         $frm->addHelpButton('tool_sync/users_protectemails', 'protectemails', 'tool_sync');
+        $frm->setDefault('tool_sync/users_protectemails', true);
 
         $identifieroptions = $this->get_userfields();
         $key = 'tool_sync/users_primaryidentity';
@@ -415,9 +416,11 @@ class users_sync_manager extends sync_manager {
                             $this->report(get_string('userrevived', 'tool_sync', "$user->username ($idnumber)"));
                             $user->deleted = 0;
                         }
+
                         if ($keepexistingemailsafe) {
                             unset($user->email);
                         }
+
                         try {
                             // This triggers event as required.
                             if (empty($syncconfig->simulate)) {

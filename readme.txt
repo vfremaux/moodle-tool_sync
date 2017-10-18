@@ -45,3 +45,17 @@ given back to sender and checked for changes.
 2016032400 : Adding the LogMuter class to avoid tons of logs when syncing.
 
 2017021500 : Add the core extension web services
+
+2017091900 Increment X.X.0006 :
+- splits the pro and non pro features
+
+2017091900 Increment X.X.0014 :
+- fix and secures the post-processing options.
+
+2017091900 Increment X.X.0016 :
+- consolidates simulate mode on all sync services
+- fix ISO encoding files conversion
+- add report/archive file cleanup task
+
+2017091900 Increment X.X.0017 :
+- add wildcard input file processing for splitting load
