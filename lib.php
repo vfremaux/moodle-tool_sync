@@ -53,6 +53,7 @@ function tool_sync_supports_feature($feature) {
         $supports = array(
             'pro' => array(
                 'api' => array('config', 'process', 'commit', 'deploy'),
+                'fileloading' => array('remote', 'wildcard'),
             ),
             'community' => array(
                 'api' => array(),
@@ -141,10 +142,10 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
     $text = preg_replace("/\n?\r?/", '', $text);
 
     if (@$config->encoding != 'UTF-8') {
-        $text = utf8_encode($text);
+        $checktext = utf8_encode($text);
     }
 
-    return preg_match('/^$/', $text) || preg_match('/^(\(|\[|-|#|\/| )/', $text);
+    return preg_match('/^$/', $checktext) || preg_match('/^(\(|\[|-|#|\/| )/', $checktext);
 }
 
 /**
