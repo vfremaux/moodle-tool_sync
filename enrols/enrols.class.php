@@ -102,7 +102,7 @@ class enrol_sync_manager extends sync_manager {
         }
 
         // We have no file to process. Probably because never setup.
-        if (!($filereader = $this->open_input_file($filerec))) {
+        if (!($filereader = $this->open_input_file($filerec, 'enrol'))) {
             return;
         }
 
@@ -669,6 +669,8 @@ class enrol_sync_manager extends sync_manager {
                 $this->cleanup_input_file(clone($filerec));
             }
         }
+
+        set_config('lastrunning_enrol', null, 'tool_sync');
 
         $this->report("\n".get_string('endofreport', 'tool_sync'));
 

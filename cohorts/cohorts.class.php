@@ -176,7 +176,7 @@ class cohorts_sync_manager extends sync_manager {
             $this->report(get_string('cohortsstarting', 'tool_sync'));
 
             // We have no file to process. Probably because never setup.
-            if (!($filereader = $this->open_input_file($filerec))) {
+            if (!($filereader = $this->open_input_file($filerec, 'cohorts'))) {
                 return;
             }
 
@@ -499,8 +499,6 @@ class cohorts_sync_manager extends sync_manager {
                 }
             }
             fclose($filereader);
-
-            $this->report('... finished.');
         }
 
         if ($this->execute == SYNC_COHORT_BIND_COURSES) {
@@ -532,7 +530,7 @@ class cohorts_sync_manager extends sync_manager {
             $metas = array();
 
             // We have no file to process. Probably because never setup.
-            if (!($filereader = $this->open_input_file($filerec))) {
+            if (!($filereader = $this->open_input_file($filerec, 'cohorts'))) {
                 return;
             }
 
@@ -623,8 +621,6 @@ class cohorts_sync_manager extends sync_manager {
             }
 
             fclose($filereader);
-
-            $this->report('... finished');
         }
 
         $trace = new \null_progress_trace();
@@ -648,6 +644,10 @@ class cohorts_sync_manager extends sync_manager {
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
             $this->write_tryback($filerec);
         }
+
+         // Free file lock.
+        set_config('lastrunning_cohorts', null, 'tool_sync');
+        $this->report("\n".get_string('endofreport', 'tool_sync'));
 
         return true;
     }
