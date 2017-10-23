@@ -184,13 +184,40 @@ class sync_manager {
     /**
      * Given a file rec, get an open strem on it and process error cases.
      */
-    protected function open_input_file($filerec) {
+    protected function open_input_file($filerec, $tool) {
+
+        $lastrunning = get_config('tool_sync', 'lastrunning_'.$tool);
 
         if (!$filerec) {
             return false;
         }
 
+        $systemcontext = context_system::instance();
         $fs = get_file_storage();
+
+        if (!empty($lastrunning)) {
+            // Something has gone wrong in the previous processing. We must discard this file by renaming it to tryback.
+            $lastpath = dirname($lastrunning);
+            $lastname = basename($lastrunning);
+
+            if (empty($lastpath) || $lastpath == '.') {
+                $lastpath = '/';
+            }
+            $oldfile = $fs->get_file($systemcontext->id, 'tool_stnc', 'syncfiles', 0, $lastpath, $lastname);
+            if ($oldfile) {
+                $discardedrec = new StdClass;
+                $discardedrec->contextid = $systemcontext->id;
+                $dicardedrec->component = 'tool_sync';
+                $discardedrec->filearea = 'syncfiles';
+                $discardedrec->itemid = 0;
+                $discardedrec->filepath = $lastpath;
+                $discadedrec->filename = preg_replace('/\\.[^.]$/', '-tryback-failed\\1', $lastname);
+
+                $fs->create_file_from_storedfile($discaredrec, $oldfile);
+                $oldfile->delete();
+            }
+            set_config('tool_sync', null, 'lastrunning_'.$tool);
+        }
 
         if ($filerec->filepath == '/./') {
             $filerec->filepath = '/';
@@ -202,6 +229,11 @@ class sync_manager {
             $this->report(get_string('filenotfound', 'tool_sync', "{$filerec->filepath}{$filerec->filename}"));
             return false;
         } else {
+            if (!empty($filepath) && $filepath != '/') {
+                set_config('lastrunning_'.$tool, $filerec->filepath.$filerec->filename, 'tool_sync');
+            } else {
+                set_config('lastrunning_'.$tool, $filerec->filename, 'tool_sync');
+            }
             ini_set('auto_detect_line_endings', true);
             $filereader = $inputfile->get_content_file_handle();
             return $filereader;

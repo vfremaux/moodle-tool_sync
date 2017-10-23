@@ -113,7 +113,7 @@ class users_sync_manager extends sync_manager {
         }
 
         // We have no file to process. Probably because never setup.
-        if (!($filereader = $this->open_input_file($filerec))) {
+        if (!($filereader = $this->open_input_file($filerec, 'users'))) {
             return;
         }
 
@@ -789,6 +789,10 @@ class users_sync_manager extends sync_manager {
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
             $this->cleanup_input_file($filerec);
         }
+
+        set_config('lastrunning_users', null, 'tool_sync');
+
+        $this->report("\n".get_string('endofreport', 'tool_sync'));
 
         return true;
     }

@@ -191,7 +191,7 @@ class course_sync_manager extends sync_manager {
 
             $identifiername = $syncconfig->courses_fileresetidentifier;
 
-            if ($filereader = $this->open_input_file($filerec)) {
+            if ($filereader = $this->open_input_file($filerec, 'courses')) {
                 $required = array(
                         $identifiername => 1,
                         'events' => 1,
@@ -576,6 +576,10 @@ class course_sync_manager extends sync_manager {
                     }
                 }
             }
+
+            // Free file lock.
+            set_config('lastrunning_courses', null, 'tool_sync');
+            $this->report("\n".get_string('endofreport', 'tool_sync'));
         }
 
         /* ****** Launching check Files tool ****** */
@@ -593,7 +597,7 @@ class course_sync_manager extends sync_manager {
                 $filerec = $this->manualfilerec;
             }
 
-            if ($filereader = $this->open_input_file($filerec)) {
+            if ($filereader = $this->open_input_file($filerec, 'ocurses')) {
 
                 $i = 0;
 
@@ -632,6 +636,10 @@ class course_sync_manager extends sync_manager {
                 }
                 fclose($filereader);
             }
+
+            // Free file lock.
+            set_config('lastrunning_courses', null, 'tool_sync');
+            $this->report("\n".get_string('endofreport', 'tool_sync'));
         }
 
         /* ******************** delete (clean) courses ********************** */
@@ -646,7 +654,7 @@ class course_sync_manager extends sync_manager {
                 $filerec = $this->manualfilerec;
             }
 
-            if ($filereader = $this->open_input_file($filerec)) {
+            if ($filereader = $this->open_input_file($filerec, 'courses')) {
 
                 $i = 0;
 
@@ -702,6 +710,10 @@ class course_sync_manager extends sync_manager {
                     }
                 }
             }
+
+            // Free file lock.
+            set_config('lastrunning_courses', null, 'tool_sync');
+            $this->report("\n".get_string('endofreport', 'tool_sync'));
         }
 
         /* *************** update/create courses *********************** */
@@ -793,7 +805,7 @@ class course_sync_manager extends sync_manager {
                 $filerec = $this->manualfilerec;
             }
 
-            if ($filereader = $this->open_input_file($filerec)) {
+            if ($filereader = $this->open_input_file($filerec, 'courses')) {
 
                 $i = 0;
 
@@ -1195,6 +1207,9 @@ class course_sync_manager extends sync_manager {
                     $this->cleanup_input_file($filerec);
                 }
             }
+
+            set_config('lastrunning_courses', null, 'tool_sync');
+            $this->report("\n".get_string('endofreport', 'tool_sync'));
         }
 
         /* **************************** Launching metas tool *************************************** */
@@ -1214,7 +1229,7 @@ class course_sync_manager extends sync_manager {
                 $filerec = $this->manualfilerec;
             }
 
-            if ($filereader = $this->open_input_file($filerec)) {
+            if ($filereader = $this->open_input_file($filerec, 'courses')) {
 
                 $i = 0;
 
@@ -1320,7 +1335,13 @@ class course_sync_manager extends sync_manager {
                         default:
                     }
                 }
+
             }
+
+            // Free file lock.
+            set_config('lastrunning_courses', null, 'tool_sync');
+            $this->report("\n".get_string('endofreport', 'tool_sync'));
+
         }
 
         // F.e. for course reset operation.
