@@ -153,20 +153,26 @@ class sync_manager {
             }
         }
 
+        $filerec = new \StdClass();
+        $filerec->contextid = \context_system::instance()->id;
+        $filerec->component = 'tool_sync';
+        $filerec->filearea = 'syncfiles';
+        $filerec->itemid = 0;
+        $filerec->filepath = $filepath;
+        $filerec->filename = $filename;
+
+        if ($filepath == '/./') {
+            $filerec->filepath = '/';
+        }
+
         if (!$this->filename_has_wildcard($filename)) {
-            $filerec = new \StdClass();
-            $filerec->contextid = \context_system::instance()->id;
-            $filerec->component = 'tool_sync';
-            $filerec->filearea = 'syncfiles';
-            $filerec->itemid = 0;
-            $filerec->filepath = $filepath;
-            $filerec->filename = $filename;
             return $filerec;
         } else {
             if (tool_sync_supports_feature('fileloading/wildcard')) {
                 // This is a remotely stored exposed file on the web. First retreive it.
                 require_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
-                return tool_sync_get_first_availablefile($filerec);
+                $firstfile = tool_sync_get_first_available_file($filerec);
+                return $firstfile;
             } else {
                 print_error('notsupported', 'tool_sync', 'fileloading/wildcard');
             }
@@ -192,7 +198,7 @@ class sync_manager {
             return false;
         }
 
-        $systemcontext = context_system::instance();
+        $systemcontext = \context_system::instance();
         $fs = get_file_storage();
 
         if (!empty($lastrunning)) {
@@ -203,23 +209,29 @@ class sync_manager {
             if (empty($lastpath) || $lastpath == '.') {
                 $lastpath = '/';
             }
-            $oldfile = $fs->get_file($systemcontext->id, 'tool_stnc', 'syncfiles', 0, $lastpath, $lastname);
+            $oldfile = $fs->get_file($systemcontext->id, 'tool_sync', 'syncfiles', 0, $lastpath, $lastname);
             if ($oldfile) {
-                $discardedrec = new StdClass;
+                $discardedrec = new \StdClass;
                 $discardedrec->contextid = $systemcontext->id;
-                $dicardedrec->component = 'tool_sync';
+                $discardedrec->component = 'tool_sync';
                 $discardedrec->filearea = 'syncfiles';
                 $discardedrec->itemid = 0;
                 $discardedrec->filepath = $lastpath;
-                $discadedrec->filename = preg_replace('/\\.[^.]$/', '-tryback-failed\\1', $lastname);
+                $newname = preg_replace('/(\\.[^\\.]*)$/', '-tryback-failed\\1', $lastname);
+                $discardedrec->filename = $newname;
 
-                $fs->create_file_from_storedfile($discaredrec, $oldfile);
+                $fs->create_file_from_storedfile($discardedrec, $oldfile);
                 $oldfile->delete();
+                mtrace("discarding old file $lastname");
+            } else {
+                mtrace("No old file");
             }
-            set_config('tool_sync', null, 'lastrunning_'.$tool);
+            set_config('lastrunning_'.$tool, null, 'tool_sync');
+            mtrace("Rearming for next run");
+            return false;
         }
 
-        if ($filerec->filepath == '/./') {
+        if (($filerec->filepath == '/./') || ($filerec->filepath == '//')) {
             $filerec->filepath = '/';
         }
 
