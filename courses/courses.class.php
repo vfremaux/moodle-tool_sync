@@ -744,7 +744,7 @@ class course_sync_manager extends sync_manager {
                                 'legacyfiles' => 0,
                                 'showreports' => $courseconfig->showreports,
                                 'visible' => $courseconfig->visible,
-                                'visibleold' => 0,
+                                'visibleold' => $courseconfig->visible,
                                 'coursedisplay' => $courseconfig->coursedisplay,
                                 'groupmode' => $courseconfig->groupmode,
                                 'enablecompletion' => $courseconfig->enablecompletion,
