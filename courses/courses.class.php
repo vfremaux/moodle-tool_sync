@@ -65,6 +65,11 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('select', $key, $label, $this->catidentifieroptions);
         $frm->setDefault($key, 'idname');
 
+        $key = 'tool_sync/courses_newcategoriesvisible';
+        $label = get_string('newcategoriesvisible', 'tool_sync');
+        $frm->addElement('advcheckbox', $key, $label);
+        $frm->setDefault($key, 1);
+
         $key = 'tool_sync/courses_filedeletelocation';
         $label = get_string('coursedeletefile', 'tool_sync');
         $frm->addElement('text', $key, $label);
@@ -284,14 +289,13 @@ class course_sync_manager extends sync_manager {
                         continue;
                     }
 
-                    $values = explode($syncconfig->csvseparator, $text);
-                    $record = array_combine($headers, $values);
+                    $records = tool_sync_extract($headers, $text, $syncconfig);
                     $data['reset_start_date'] = 0;
 
                     // Adaptative identifier.
                     $identifiername = @$syncconfig->course_resetfileidentifier;
                     if (empty($identifiername)) {
-                        echo "Setting default ";
+                        echo "Setting default identifier ";
                         $identifiername = 'shortname';
                     }
 
@@ -889,18 +893,34 @@ class course_sync_manager extends sync_manager {
                         continue;
                     }
 
+                    // Extracts an associative filtered array of input values.
+                    $keyedvalues = tool_sync_extract($headers, $text, $syncconfig);
+
                     unset($coursetocreate);
                     unset($coursetopics);
                     unset($courseteachers);
 
+                    // Check if the course exists.
+                    $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
+                    $oldcourse = $DB->get_record('course', array($uploadidentifier => $keyedvalues[$uploadidentifier]));
+
                     // Set course array to defaults.
+                    // Fix Edunao eiffel-10.
                     foreach ($optional as $key => $value) {
-                        $coursetocreate[$key] = $value;
+                        if ($key == 'visible' || $key == 'oldvisible') {
+                            if ($oldcourse) {
+                                $coursetocreate['visible'] = $oldcourse->visible;
+                            } else {
+                                // Set tools default which is default course options.
+                                $coursetocreate[$key] = $value;
+                            }
+                        } else {
+                            // Set defaults values.
+                            $coursetocreate[$key] = $value;
+                        }
                     }
 
-                    $keyedvalues = array_combine($headers, $valueset);
-
-                    // Override defaults with input
+                    // Override defaults with input.
                     foreach ($keyedvalues as $key => $value) {
                         if (!empty($key)) {
                             $coursetocreate[$key] = $value;
@@ -916,7 +936,7 @@ class course_sync_manager extends sync_manager {
                             $coursetocreate['category'] = explode('/', $keyedvalues['category']);
                         }
                     } else {
-                        // categories by idnumber, if exists..
+                        // Categories by idnumber, if exists..
                         if (!$catid = $DB->get_field('course_categories', 'id', array('idnumber' => $keyedvalues['category']))) {
                             $this->report(get_string('catidnumbererror', 'tool_sync', $keyedvalues['category']));
                             if (!empty($syncconfig->filefailed)) {
@@ -985,6 +1005,8 @@ class course_sync_manager extends sync_manager {
 
             if (empty($bulkcourses)) {
                 $this->report(get_string('errornocourses', 'tool_sync'));
+                set_config('lastrunning_courses', null, 'tool_sync');
+                $this->report("\n".get_string('endofreport', 'tool_sync'));
                 return;
             }
 
@@ -1747,7 +1769,8 @@ class course_sync_manager extends sync_manager {
             $cat->parent = $parentid;
             $cat->sortorder = 999;
             $cat->coursecount = 0;
-            $cat->visible = 1;
+            // Fix Edunao eiffel-10.2.
+            $cat->visible = 0 + @$syncconfig->courses_newcategoriesvisible;
             $cat->depth = $parent->depth + 1;
             $cat->timemodified = time();
             if (empty($syncconfig->simulate)) {
@@ -1781,7 +1804,7 @@ class course_sync_manager extends sync_manager {
         }
 
         // Trap when template not found.
-        if (!empty($course['template'])) {
+        if (!empty($course['template'] && $course['template'] != "\n")) {
             if (tool_sync_is_course_identifier($course['template'])) {
                 if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
                     return -7;
@@ -1820,7 +1843,7 @@ class course_sync_manager extends sync_manager {
             }
         }
 
-        if (!empty($course['template'])) {
+        if (!empty($course['template']) && $course['template'] != "\n") {
 
             $course['category'] = $hcategoryid;
             $result = $this->create_course_from_template($course, $syncconfig);
