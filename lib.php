@@ -444,3 +444,19 @@ function tool_sync_receive_file($data) {
     }
     return false;
 }
+
+/**
+ * Reads a line in a stream converting to utf8 if necessary
+ * @param resource $filereader the opened stream
+ * @param int $length max length of read
+ * @param objectref $config the surrounding configuration
+ * @return a string or false if no more data
+ */
+function tool_sync_read($filereader, $length, &$config) {
+    $input = fgets($filereader, $length);
+
+    if (@$config->encoding != 'UTF-8') {
+        return utf8_encode($input);
+    }
+    return $input;
+}
