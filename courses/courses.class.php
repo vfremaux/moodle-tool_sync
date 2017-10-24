@@ -909,7 +909,7 @@ class course_sync_manager extends sync_manager {
                     foreach ($optional as $key => $value) {
                         if ($key == 'visible' || $key == 'oldvisible') {
                             if ($oldcourse) {
-                                $coursetocreate['visible'] = $oldcourse->visible;
+                                $coursetocreate[$key] = $oldcourse->$key;
                             } else {
                                 // Set tools default which is default course options.
                                 $coursetocreate[$key] = $value;
@@ -951,9 +951,9 @@ class course_sync_manager extends sync_manager {
                     $coursetopics = array();
 
                     // Validate incoming values.
-                    foreach ($valueset as $key => $value) {
+                    foreach ($keyedvalues as $key => $value) {
 
-                        $cf = $headers[$key];
+                        $cf = $key;
 
                         if ($cf != 'category' && !empty($cf)) {
                             if (preg_match(TOPIC_FIELD, $cf, $matches)) {
