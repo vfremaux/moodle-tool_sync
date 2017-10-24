@@ -152,7 +152,7 @@ class users_sync_manager extends sync_manager {
                 'lastname' => 1);
 
         $optionaldefaults = array(
-                'mnethostid' => 1,
+                'mnethostid' => $CFG->mnet_localhost_id,
                 'institution' => '',
                 'department' => '',
                 'city' => $CFG->defaultcity,

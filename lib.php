@@ -460,3 +460,27 @@ function tool_sync_read($filereader, $length, &$config) {
     }
     return $input;
 }
+
+/**
+ * Extracts, filters and combine values to headers into an associative array.
+ *
+ * @return 
+ */
+function tool_sync_extract($headers, $line, $syncconfig) {
+
+    $values = explode($syncconfig->csvseparator, $line);
+
+    // Filter, clean values.
+    $filtered = array();
+    foreach ($values as $val) {
+        $filt = trim($val);
+        $filt = preg_replace('/^"/', '', $filt);
+        $filt = preg_replace('/"$/', '', $filt);
+        $filt = preg_replace('/\n$/s', '', $filt);
+        $filtered[] = $filt;
+    }
+
+    $record = array_combine($headers, $filtered);
+
+    return $record;
+}
