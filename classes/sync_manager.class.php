@@ -166,8 +166,10 @@ class sync_manager {
         }
 
         if (!$this->filename_has_wildcard($filename)) {
+            mtrace('SINGLE FILE mode');
             return $filerec;
         } else {
+            mtrace('WILDCARD mode');
             if (tool_sync_supports_feature('fileloading/wildcard')) {
                 // This is a remotely stored exposed file on the web. First retreive it.
                 require_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
