@@ -283,6 +283,7 @@ $string['metalinkrevived'] = 'Metacourse binding for {$e->for} from {$e->from} r
 $string['minute'] = 'minute';
 $string['missingidentifier'] = 'Required identifier {$a} is missing in input data';
 $string['ncategoriesdeleted'] = '{$a} categories deleted';
+$string['newcategoriesvisible'] = 'New categories are visible';
 $string['noeventstoprocess'] = 'Not resetting event at line {$a}';
 $string['nofile'] = 'No file available';
 $string['nomatch'] = 'No file is matching the wildcard pattern';

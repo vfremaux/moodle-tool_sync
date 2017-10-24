@@ -275,6 +275,7 @@ $string['metalinkrevived'] = 'Liaison Metacours pour {$e->for} à partir de {$e-
 $string['minute'] = 'minute';
 $string['missingidentifier'] = 'L\'identifiant {$a} requis par la configuration est manquant dans le fichier';
 $string['ncategoriesdeleted'] = '{$a} catégories supprimées';
+$string['newcategoriesvisible'] = 'Nouvelles catégories visibles';
 $string['noeventstoprocess'] = 'Pas de réinitialisation d\'événements à la ligne {$a}';
 $string['nofile'] = 'Aucun fichier disponible';
 $string['nofileconfigured'] = 'Pas de fichier de données configuré pour cette opération';
