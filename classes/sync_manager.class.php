@@ -132,7 +132,7 @@ class sync_manager {
         global $CFG;
 
         $fs = get_file_storage();
-        $systemcontext = context_system::instance();
+        $systemcontext = \context_system::instance();
 
         if (empty($configlocation)) {
             $filename = $defaultlocation;  // Default location.
@@ -243,6 +243,11 @@ class sync_manager {
                 $discardedrec->filepath = $lastpath;
                 $newname = preg_replace('/(\\.[^\\.]*)$/', '-tryback-failed\\1', $lastname);
                 $discardedrec->filename = $newname;
+
+                if ($olddiscardfile = $fs->get_file($systemcontext->id, 'tool_sync', 'syncfiles', 0,
+                                                    $discardedrec->filepath, $discardedrec->filename)) {
+                    $olddiscardfile->delete();
+                }
 
                 $fs->create_file_from_storedfile($discardedrec, $oldfile);
                 $oldfile->delete();
