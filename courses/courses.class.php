@@ -70,6 +70,11 @@ class course_sync_manager extends sync_manager {
         $frm->addElement('advcheckbox', $key, $label);
         $frm->setDefault($key, 1);
 
+        $key = 'tool_sync/courses_protectcategory';
+        $label = get_string('courseprotectcategory', 'tool_sync');
+        $frm->addElement('advcheckbox', $key, $label);
+        $frm->setDefault($key, 0);
+
         $key = 'tool_sync/courses_filedeletelocation';
         $label = get_string('coursedeletefile', 'tool_sync');
         $frm->addElement('text', $key, $label);
@@ -258,6 +263,7 @@ class course_sync_manager extends sync_manager {
                 if (!tool_sync_check_separator($text)) {
                     // This is a column name line that should NOT contain any of other separators.
                     $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    set_config('lastrunning_courses', null, 'tool_sync');
                     return;
                 }
 
@@ -266,6 +272,7 @@ class course_sync_manager extends sync_manager {
                 foreach ($headers as $h) {
                     if (!isset($required[$h]) and !isset($optional[$h])) {
                         $this->report(get_string('invalidfieldname', 'error', $h));
+                        set_config('lastrunning_courses', null, 'tool_sync');
                         return;
                     }
                     if (isset($required[$h])) {
@@ -277,6 +284,7 @@ class course_sync_manager extends sync_manager {
                     if ($value) {
                         // Required field missing.
                         $this->report(get_string('fieldrequired', 'error', $key));
+                        set_config('lastrunning_courses', null, 'tool_sync');
                         return;
                     }
                 }
@@ -301,6 +309,7 @@ class course_sync_manager extends sync_manager {
 
                     if (!array_key_exists($identifiername, $record)) {
                         $this->report(get_string('missingidentifier', 'tool_sync', $identifiername));
+                        set_config('lastrunning_courses', null, 'tool_sync');
                         return;
                     }
 
@@ -824,6 +833,7 @@ class course_sync_manager extends sync_manager {
                 if (!tool_sync_check_separator($text)) {
                     // This is a column name line that should NOT contain any of other separators.
                     $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    set_config('lastrunning_courses', null, 'tool_sync');
                     return;
                 }
 
@@ -837,12 +847,14 @@ class course_sync_manager extends sync_manager {
 
                     if (empty($h)) {
                         $this->report(get_string('errornullcsvheader', 'tool_sync'));
+                        set_config('lastrunning_courses', null, 'tool_sync');
                         return;
                     }
 
                     if (!preg_match(TOPIC_FIELD, $h) && !preg_match(TEACHER_FIELD, $h)) {
                         if (!(isset($required[$h]) || isset($optional[$h]))) {
                             $this->report(get_string('errorinvalidfieldname', 'tool_sync', $h));
+                            set_config('lastrunning_courses', null, 'tool_sync');
                             return;
                         }
 
@@ -856,6 +868,7 @@ class course_sync_manager extends sync_manager {
                 foreach ($required as $key => $value) {
                     if ($value != true) {
                         $this->report(get_string('fieldrequired', 'error', $key));
+                        set_config('lastrunning_courses', null, 'tool_sync');
                         return;
                     }
                 }
@@ -1149,29 +1162,34 @@ class course_sync_manager extends sync_manager {
 
                         $coursetocategory = 0;
 
-                        if (is_array($bulkcourse['category'])) {
-                            // Course Category creation routine as a category path was given.
+                        if (empty($syncconfig->courses_protectcategory)) {
+                            if (is_array($bulkcourse['category'])) {
+                                // Course Category creation routine as a category path was given.
 
-                            $results = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i,
-                                                                     $catcreated, $caterrors);
-                            // Last category created will contain the actual course.
-                            $coursetocategory = $results[0];
-                        } else {
-                            // It's just a straight category ID.
-                            $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1;
-                        }
-
-                        if ($coursetocategory == -1 && empty($syncconfig->simulate)) {
-                            $e = new StdClass;
-                            $e->i = $i;
-                            $e->coursename = $oldcourse->shortname;
-                            if (!empty($syncconfig->filefailed)) {
-                                $this->feed_tryback($sourcetext[$i]);
+                                $results = $this->make_category($bulkcourse['category'], $syncconfig, $sourcetext, $i,
+                                                                         $catcreated, $caterrors);
+                                // Last category created will contain the actual course.
+                                $coursetocategory = $results[0];
+                            } else {
+                                // It's just a straight category ID.
+                                $coursetocategory = (!empty($bulkcourse['category'])) ? $bulkcourse['category'] : -1;
                             }
-                            $this->report(get_string('errorcategoryparenterror', 'tool_sync', $e));
-                            continue;
+
+                            if ($coursetocategory == -1 && empty($syncconfig->simulate)) {
+                                $e = new StdClass;
+                                $e->i = $i;
+                                $e->coursename = $oldcourse->shortname;
+                                if (!empty($syncconfig->filefailed)) {
+                                    $this->feed_tryback($sourcetext[$i]);
+                                }
+                                $this->report(get_string('errorcategoryparenterror', 'tool_sync', $e));
+                                continue;
+                            } else {
+                                $oldcourse->category = $coursetocategory;
+                            }
                         } else {
-                            $oldcourse->category = $coursetocategory;
+                            // Do not process anything on category when old courses category are protected.
+                            assert(1);
                         }
 
                         foreach ($bulkcourse as $key => $value) {
@@ -1266,12 +1284,14 @@ class course_sync_manager extends sync_manager {
                 if (!tool_sync_check_separator($text)) {
                     // This is a column name line that should NOT contain any of other separators.
                     $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                    set_config('lastrunning_courses', null, 'tool_sync');
                     return;
                 }
 
                 // TODO : rebind to the method check_headers.
                 $headers = tool_sync_validate_headers($text, $required, $this);
                 if (empty($headers)) {
+                    set_config('lastrunning_courses', null, 'tool_sync');
                     return;
                 }
 
@@ -1361,16 +1381,17 @@ class course_sync_manager extends sync_manager {
             }
 
             // Free file lock.
-            set_config('lastrunning_courses', null, 'tool_sync');
             $this->report("\n".get_string('endofreport', 'tool_sync'));
 
         }
 
         // F.e. for course reset operation.
         if (isset($satus)) {
+            set_config('lastrunning_courses', null, 'tool_sync');
             return $status;
         }
 
+        set_config('lastrunning_courses', null, 'tool_sync');
         return true;
     }
 

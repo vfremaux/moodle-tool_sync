@@ -114,6 +114,7 @@ class users_sync_manager extends sync_manager {
 
         // We have no file to process. Probably because never setup.
         if (!($filereader = $this->open_input_file($filerec, 'users'))) {
+            set_config('lastrunning_users', null, 'tool_sync');
             return;
         }
 
@@ -211,9 +212,11 @@ class users_sync_manager extends sync_manager {
             $i++;
         }
 
+        $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
         $headers = explode($csvdelimiter2, $text);
 
         if (!$this->check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults)) {
+            set_config('lastrunning_users', null, 'tool_sync');
             return;
         }
 
@@ -274,6 +277,7 @@ class users_sync_manager extends sync_manager {
                         $message = get_string('missingfield', 'error', $name).' ';
                         $message .= get_string('erroronline', 'error', $linenum).". ".get_string('missingfield', 'error', $name);
                         $this->report($message);
+                        set_config('lastrunning_users', null, 'tool_sync');
                         return;
                     } else if ($name == 'password') {
 
@@ -489,7 +493,7 @@ class users_sync_manager extends sync_manager {
                             // Save custom profile fields data from csv file.
                             profile_save_data($user);
                         } else {
-                            $message = "$user->id , $user->username ";
+                            $message = " $user->username ";
                             $this->report('SIMULATION : '.get_string('useraccountadded', 'tool_sync', $message));
                             $usersnew++;
                         }

@@ -177,6 +177,7 @@ class cohorts_sync_manager extends sync_manager {
 
             // We have no file to process. Probably because never setup.
             if (!($filereader = $this->open_input_file($filerec, 'cohorts'))) {
+                set_config('lastrunning_cohorts', null, 'tool_sync');
                 return;
             }
 
@@ -206,12 +207,15 @@ class cohorts_sync_manager extends sync_manager {
             if (!tool_sync_check_separator($text)) {
                 // This is a column name line that should NOT contain any of other separators.
                 $this->report(get_string('invalidseparatordetected', 'tool_sync'));
+                set_config('lastrunning_cohorts', null, 'tool_sync');
                 return;
             }
 
+            $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
             $headers = explode($syncconfig->csvseparator, $text);
 
             if (!$this->check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults)) {
+                set_config('lastrunning_cohorts', null, 'tool_sync');
                 return;
             }
 
