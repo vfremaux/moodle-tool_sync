@@ -97,6 +97,7 @@ $string['coursenotfound'] = 'Le cours {$a} n\'existe pas dans moodle.';
 $string['coursenotfound2'] = 'Le cours d\'idnumber [{$a->idnumber}] "{$a->description}" n\'existe pas dans moodle';
 $string['coursereset'] = 'Réinitalisation massive des cours';
 $string['coursescronconfig'] = 'Activer la synchronisation par cron des cours';
+$string['courseprotectcategory'] = 'Protéger la catégorie des cours existants';
 $string['coursesmgtfiles'] = 'Configuration des opérations sur les cours';
 $string['coursesync'] = 'Synchronisation des cours';
 $string['courseupdated'] = 'Cours {$a->shortname} mis à jour.';

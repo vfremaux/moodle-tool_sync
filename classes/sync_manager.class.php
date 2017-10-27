@@ -131,17 +131,39 @@ class sync_manager {
     protected function get_input_file($configlocation, $defaultlocation) {
         global $CFG;
 
+        $fs = get_file_storage();
+        $systemcontext = context_system::instance();
+
         if (empty($configlocation)) {
             $filename = $defaultlocation;  // Default location.
             $filepath = '/';  // Default name.
         } else {
             if (preg_match('#(http|ftp)s?://#', $configlocation)) {
+                // Remote loction of the file.
                 if (tool_sync_supports_feature('fileloading/remote')) {
                     // This is a remotely stored exposed file on the web. First retreive it.
                     require_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
                     tool_sync_get_remote_file($configlocation);
                 } else {
                     print_error('notsupported', 'tool_sync', 'fileloading/remote');
+                }
+            } else if (preg_match('/,/', $configlocation)) {
+                $files = explode(',', $configlocation);
+                while ($file = array_shift($files)) {
+                    $parts = pathinfo($configlocation);
+                    $filename = $parts['basename'];
+                    $filepath = $parts['dirname'];
+
+                    if ($filepath == '/./') {
+                        $filepath = '/';
+                    }
+
+                    if (!$fs->get_file($systemcontext->id, 'tool_sync', 'syncfiles', 0, $filepath, $filename)) {
+                        continue;
+                    }
+                }
+                if (!$file) {
+                    return;
                 }
             } else {
                 // This is an existing file in our local tool sync filearea.

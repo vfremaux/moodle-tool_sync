@@ -103,6 +103,7 @@ class enrol_sync_manager extends sync_manager {
 
         // We have no file to process. Probably because never setup.
         if (!($filereader = $this->open_input_file($filerec, 'enrol'))) {
+            set_config('lastrunning_enrol', null, 'tool_sync');
             return;
         }
 
@@ -136,6 +137,7 @@ class enrol_sync_manager extends sync_manager {
             $i++;
         }
 
+        $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
         $headers = explode($csvdelimiter2, $text);
 
         array_walk($headers, 'trim_array_values');
@@ -144,6 +146,7 @@ class enrol_sync_manager extends sync_manager {
             $header[] = trim($h); // Remove whitespace.
             if (!(isset($required[$h]) or isset($optional[$h]))) {
                 $this->report(get_string('errorinvalidcolumnname', 'tool_sync', $h));
+                set_config('lastrunning_enrol', null, 'tool_sync');
                 return;
             }
             if (isset($required[$h])) {
@@ -154,6 +157,7 @@ class enrol_sync_manager extends sync_manager {
         foreach ($required as $key => $value) {
             if ($value) { // Required field missing.
                 $this->report(get_string('errorrequiredcolumn', 'tool_sync', $key));
+                set_config('lastrunning_enrol', null, 'tool_sync');
                 return;
             }
         }
