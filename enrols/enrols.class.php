@@ -657,7 +657,7 @@ class enrol_sync_manager extends sync_manager {
                                     try {
                                         tool_sync_group_remove_member($gid, $user->id, $component);
                                         $this->report(get_string('removedfromgroup', 'tool_sync', $e));
-                                    } catch(Exception $e) {
+                                    } catch (Exception $e) {
                                         $this->report(get_string('removedfromgroupnot', 'tool_sync', $e));
                                     }
                                 } else {

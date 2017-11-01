@@ -19,7 +19,7 @@
  *
  * Tool Sync cohort API allows external applications to bind cohorts to courses
  * with a cohort based enrol instance.
- * Compatible with some additional cohort related methods as delayedcohort or 
+ * Compatible with some additional cohort related methods as delayedcohort or
  * cohortrestricted plugins.
  *
  * @package    tool_sync
@@ -96,9 +96,12 @@ class tool_sync_cohort_ext_external extends external_api {
                 throw new required_capability_exception($context, 'moodle/cohort:view', 'nopermissions', '');
             }
 
-            list($cohort->description, $cohort->descriptionformat) =
-                external_format_text($cohort->description, $cohort->descriptionformat,
-                        $context->id, 'cohort', 'description', $cohort->id);
+            list($cohort->description, $cohort->descriptionformat) = external_format_text($cohort->description,
+                                                                                          $cohort->descriptionformat,
+                                                                                          $context->id,
+                                                                                          'cohort',
+                                                                                          'description',
+                                                                                          $cohort->id);
 
             $cohortsinfo[] = (array) $cohort;
         }
@@ -159,7 +162,6 @@ class tool_sync_cohort_ext_external extends external_api {
     public static function bind_cohort($chidsource, $chid, $cidsource, $cid, $ridsource, $rid,
                                       $method = 'cohort', $timestart = 0, $timeend = 0, $suspend = 0,
                                       $makegroup = 0, $extraparam1 = '', $extraparam2 = '') {
-        global $CFG, $DB;
 
         // Validate parameters.
         $parameters = array('cidsource' => $cidsource,
@@ -178,7 +180,8 @@ class tool_sync_cohort_ext_external extends external_api {
 
         self::validate_method_parameter($method);
 
-        tool_sync_execute_bind('add', $method, $course->id, $cohort->id, $role->id, $timestart, $timeend, $makegroup, $extraparam1, $extraparam2);
+        tool_sync_execute_bind('add', $method, $course->id, $cohort->id, $role->id, $timestart, $timeend,
+                               $makegroup, $extraparam1, $extraparam2);
 
         return true;
     }
@@ -279,7 +282,7 @@ class tool_sync_cohort_ext_external extends external_api {
             'chid' => $chid);
         $cohort = self::validate_cohort_parameters($parameters);
 
-        tool_sync_execute_bind('del', $method, $course->id, $cohort->id, $role->id);
+        tool_sync_execute_bind('del', $method, $course->id, $cohort->id, '*');
 
         return true;
     }
@@ -367,7 +370,7 @@ class tool_sync_cohort_ext_external extends external_api {
     }
 
     public static function get_users($chidsource, $chid, $options = array()) {
-        global $CFG, $USER, $DB;
+        global $CFG, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
 
         $parameters = array(
@@ -438,7 +441,7 @@ class tool_sync_cohort_ext_external extends external_api {
         $users = array();
         foreach ($cohortusers as $user) {
             context_helper::preload_from_record($user);
-            if ($userdetails = user_get_user_details($user, $course, $userfields)) {
+            if ($userdetails = user_get_user_details($user, null, $userfields)) {
                 $users[] = $userdetails;
             }
         }
@@ -534,7 +537,7 @@ class tool_sync_cohort_ext_external extends external_api {
         );
 
         // Non blocking call to validate params.
-        if ($cohort = self::validate_cohort_parameters($paramseters, false)) {
+        if ($cohort = self::validate_cohort_parameters($parameters, false)) {
             cohort_delete_cohort($cohort);
             return true;
         }
@@ -593,7 +596,7 @@ class tool_sync_cohort_ext_external extends external_api {
      * @since Moodle 2.5
      */
     public static function add_cohort_members($members) {
-        global $CFG, $DB;
+        global $CFG;
 
         require_once($CFG->dirroot."/cohort/externallib.php");
 
@@ -611,7 +614,7 @@ class tool_sync_cohort_ext_external extends external_api {
                 'uidsource' => $member['usertype']['type'],
                 'uid' => $member['usertype']['value']
             );
-            $user = self::validate_user_parameters($inputs, $blocking);
+            $user = self::validate_user_parameters($inputs);
 
             $member['usertype']['type'] = 'id';
             $member['usertype']['value'] = $user->id;
@@ -620,8 +623,6 @@ class tool_sync_cohort_ext_external extends external_api {
         }
 
         return core_cohort_external::add_cohort_members($coremembers);
-
-        return $result;
     }
 
     /**

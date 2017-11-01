@@ -44,7 +44,6 @@ define('SYNC_COHORT_BIND_COURSES', 0x1002);
  * @param string $feature a feature key to be tested.
  */
 function tool_sync_supports_feature($feature) {
-    global $CFG;
     static $supports;
 
     $config = get_config('report_trainingsessions');
@@ -496,7 +495,7 @@ function tool_sync_extract($headers, $line, $syncconfig) {
  * @seer /groups/lib.php groups_delete_group_members();
  */
 function tool_sync_delete_group_members($courseid, $userid=0, $unused=false, $component = null) {
-    global $DB, $OUTPUT;
+    global $DB;
 
     // Get the users in the course which are in a group.
     $sql = "SELECT gm.id as gmid, gm.userid, g.*

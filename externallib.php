@@ -100,7 +100,7 @@ class tool_sync_external extends external_api {
     public static function set_config($service, $confkey, $confvalue) {
 
         // Validate parameters.
-        $params = self::validate_config_parameters(self::set_config_parameters(),
+        self::validate_config_parameters(self::set_config_parameters(),
                 array('service' => $service, 'confkey' => $confkey, 'confvalue' => $confvalue));
 
         set_config($service.'_'.$confkey, $confvalue, 'tool_sync');
@@ -148,7 +148,7 @@ class tool_sync_external extends external_api {
         $parameters = array(
             'draftitemid' => $draftitemid,
         );
-        $params = self::validate_parameters(self::commit_file_parameters(), $parameters);
+        self::validate_parameters(self::commit_file_parameters(), $parameters);
 
         if (tool_sync_supports_feature('api/commit')) {
             include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
@@ -221,7 +221,7 @@ class tool_sync_external extends external_api {
         global $CFG;
 
         // Validate parameters.
-        $params = self::validate_process_parameters(self::process_parameters(),
+        self::validate_process_parameters(self::process_parameters(),
                         array('service' => $service, 'action' => $action));
 
         if (tool_sync_supports_feature('api/process')) {
@@ -276,7 +276,7 @@ class tool_sync_external extends external_api {
         global $DB;
 
         // Validate parameters.
-        $params = self::validate_check_parameters(self::check_course_parameters(), array(
+        self::validate_check_parameters(self::check_course_parameters(), array(
             'courseidsource' => $courseidsource,
             'courseid' => $courseid,
             )
@@ -348,7 +348,7 @@ class tool_sync_external extends external_api {
         global $CFG;
 
         // Validate parameters.
-        $params = self::validate_deploy_parameters(self::deploy_course_parameters(), array(
+        self::validate_deploy_parameters(self::deploy_course_parameters(), array(
             'categoryidsource' => $categoryidsource,
             'categoryid' => $categoryid,
             'templateidsource' => $templateidsource,

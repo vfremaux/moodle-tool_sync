@@ -45,7 +45,6 @@ require_once($CFG->dirroot.'/enrol/externallib.php');
 class tool_sync_core_ext_external extends external_api {
 
     protected static function validate_enrol_parameters($configparamdefs, $inputs, $isunenrol = false) {
-        global $DB, $CFG;
 
         $status = self::validate_parameters($configparamdefs, $inputs);
 
@@ -449,7 +448,7 @@ class tool_sync_core_ext_external extends external_api {
 
                 // Only in course context.
                 case 'shortname': {
-                    if (!$course = $DB->get_record('course', array('shortname' => $inputs['instanceid']))) {
+                    if (!$instance = $DB->get_record('course', array('shortname' => $inputs['instanceid']))) {
                         throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['instanceid']);
                     }
                     $status['contextid'] = context_course::instance($instance->id)->id;
@@ -463,10 +462,10 @@ class tool_sync_core_ext_external extends external_api {
                         throw new invalid_parameter_exception('Malformed instance ref: '.$inputs['instanceid']);
                     }
                     list($modname, $instanceid) = explode('§', $params['instanceid']);
-                    if (!$cm = get_coursemodule_from_instance($modname, $instanceid)) {
+                    if (!$instance = get_coursemodule_from_instance($modname, $instanceid)) {
                         throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['instanceid']);
                     }
-                    $status['contextid'] = context_course::instance($instance->id)->id;
+                    $status['contextid'] = context_course::instance($instance->courseid)->id;
                     break;
                 }
 
@@ -681,8 +680,9 @@ class tool_sync_core_ext_external extends external_api {
     }
 
     public static function get_enrolled_full_users($courseidsource, $courseid, $options = array()) {
-        global $CFG, $USER, $DB;
-        require_once($CFG->dirroot . "/user/lib.php");
+        global $CFG, $DB;
+
+        require_once ($CFG->dirroot.'/user/lib.php');
 
         // Validate parameters.
         $parameters = array('courseidsource' => $courseidsource,
@@ -938,8 +938,9 @@ class tool_sync_core_ext_external extends external_api {
     }
 
     public static function get_enrolled_users($courseidsource, $courseid, $options = array()) {
-        global $CFG, $USER, $DB;
-        require_once($CFG->dirroot . "/user/lib.php");
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/user/lib.php');
 
         // Validate parameters.
         $parameters = array('courseidsource' => $courseidsource,
