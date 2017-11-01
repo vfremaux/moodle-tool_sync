@@ -54,7 +54,7 @@ class enrol_sync_manager extends sync_manager {
 
         $key = 'tool_sync/enrols_protectgroups';
         $label = get_string('enrolprotectgroups', 'tool_sync');
-        $frm->addElement('advcheckbox', $key, $label, 1, array('group' => 1), array(0, 1));
+        $frm->addElement('advcheckbox', $key, $label, '', array('group' => 1), array(0, 1));
 
         $key = 'tool_sync/enrols_mailadmins';
         $label = get_string('enrolemailcourseadmins', 'tool_sync');
@@ -533,19 +533,23 @@ class enrol_sync_manager extends sync_manager {
                                             if ($gid = groups_create_group($groupsettings)) {
                                                 $groupid[$j] = $gid;
                                                 $e->group = $record['g'.$j];
+                                                $e->mycourse = $course->shortname;
                                                 $this->report(get_string('groupcreated', 'tool_sync', $e));
                                             } else {
                                                 $e->group = $record['g'.$j];
+                                                $e->mycourse = $course->shortname;
                                                 $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
                                                 continue;
                                             }
                                         } else {
                                             $e->group = $record['g'.$j];
+                                            $e->mycourse = $course->shortname;
                                             $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
                                             $gid = 999999; // Simulate a created gtoup.
                                         }
                                     } else {
                                         $e->group = $record['g'.$j];
+                                        $e->mycourse = $course->shortname;
                                         $this->report(get_string('groupunknown', 'tool_sync', $e));
                                         // Next j same i.
                                         continue; // Continue inner groups loop.
@@ -587,6 +591,8 @@ class enrol_sync_manager extends sync_manager {
                                 echo ">> Checking group \n";
                                 $e = new StdClass();
                                 $e->group = $record['g'.$j];
+                                $e->myuser = $user->username.' ('.$user->id.')';
+                                $e->mycourse = $course->shortname;
                                 $gname = $record['g'.$j];
                                 if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
                                     echo ">> Got group $gid by name $e->group\n";
@@ -621,7 +627,7 @@ class enrol_sync_manager extends sync_manager {
                                         echo ">> Adding memebership \n";
                                         $e = new StdClass();
                                         $e->group = $groupid[$j];
-                                        $e->myuser = $user->username.' ('.$record['userid'].')';
+                                        $e->myuser = $user->username.' ('.$user->id.')';
                                         if (groups_add_member($groupid[$j], $user->id, $component)) {
                                             $this->report(get_string('addedtogroup', 'tool_sync', $e));
                                         } else {
@@ -642,15 +648,28 @@ class enrol_sync_manager extends sync_manager {
                     // TODO : Remove membership.
                     for ($j = 1; $j < 10; $j++) {
                         if (!empty($record['g'.$j])) {
-                            echo " >> Removing membership \n";
-                            $e = new StdClass();
-                            $e->group = $record['g'.$j];
-                            if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
-                                try {
-                                    tool_sync_group_remove_member($gid, $user->id, $component);
-                                } catch(Exception $e) {
-                                    $errorstr = "Could not remove user $user->id from group $gid";
-                                    $this->report($errorstr);
+                            if (empty($syncconfig->simulate)) {
+                                echo " >> Removing membership \n";
+                                $e = new StdClass();
+                                $e->group = $record['g'.$j];
+                                $e->myuser = $user->username.' ('.$user->id.')';
+                                if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
+                                    try {
+                                        tool_sync_group_remove_member($gid, $user->id, $component);
+                                        $this->report(get_string('removedfromgroup', 'tool_sync', $e));
+                                    } catch(Exception $e) {
+                                        $this->report(get_string('removedfromgroupnot', 'tool_sync', $e));
+                                    }
+                                } else {
+                                    $this->report(get_string('removedfromgroupnot', 'tool_sync', $e));
+                                }
+                            } else {
+                                $e = new StdClass();
+                                $e->group = $record['g'.$j];
+                                if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
+                                    $this->report('SIMULATION: '.get_string('removedfromgroup', 'toll_sync', $e));
+                                } else {
+                                    $this->report('SIMULATION: '.get_string('removedfromgroupnot', 'tool_sync', $e));
                                 }
                             }
                         }
