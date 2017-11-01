@@ -117,6 +117,12 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('cohorts_autocreate', 1, 'tool_sync');
         set_config('cohorts_syncdelete', 1, 'tool_sync');
 
+        // Configure enrol tool.
+        set_config('enrols_filelocation', 'enrol_sample.csv', 'tool_sync');
+        set_config('enrols_courseidentifier', 'shortname', 'tool_sync');
+        set_config('enrols_useridentifier', 'username', 'tool_sync');
+        set_config('enrols_protectgroups', 1, 'tool_sync');
+
         // Get updated config.
         $config = get_config('tool_sync');
 
@@ -264,6 +270,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
         $cohortmanager->cron($config);
+
+        // Enrolling.
+        $enrolmanager = new \tool_sync\enrol_sync_manager();
+        $enrolmanager->cron($config);
 
         // Users deletion.
 
