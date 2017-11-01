@@ -139,7 +139,7 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
         $first = false;
     }
 
-    $text = preg_replace("/\n?\r?/", '', $text);
+    $checktext = preg_replace("/\n?\r?/", '', $text);
 
     if (@$config->encoding != 'UTF-8') {
         $checktext = utf8_encode($text);
@@ -443,4 +443,168 @@ function tool_sync_receive_file($data) {
         return $manualfilerec;
     }
     return false;
+}
+
+/**
+ * Reads a line in a stream converting to utf8 if necessary
+ * @param resource $filereader the opened stream
+ * @param int $length max length of read
+ * @param objectref $config the surrounding configuration
+ * @return a string or false if no more data
+ */
+function tool_sync_read($filereader, $length, &$config) {
+    $input = fgets($filereader, $length);
+
+    if (@$config->encoding != 'UTF-8') {
+        return utf8_encode($input);
+    }
+    return $input;
+}
+
+/**
+ * Extracts, filters and combine values to headers into an associative array.
+ *
+ * @return 
+ */
+function tool_sync_extract($headers, $line, $syncconfig) {
+
+    $values = explode($syncconfig->csvseparator, $line);
+
+    // Filter, clean values.
+    $filtered = array();
+    foreach ($values as $val) {
+        $filt = trim($val);
+        $filt = preg_replace('/^"/', '', $filt);
+        $filt = preg_replace('/"$/', '', $filt);
+        $filt = preg_replace('/\n$/s', '', $filt);
+        $filtered[] = $filt;
+    }
+
+    $record = array_combine($headers, $filtered);
+
+    return $record;
+}
+
+/**
+ * Remove all users (or one user) from all groups in course
+ * Add component protection handling.
+ *
+ * @param int $courseid
+ * @param int $userid 0 means all users
+ * @param bool $unused - formerly $showfeedback, is no longer used.
+ * @return bool success
+ * @seer /groups/lib.php groups_delete_group_members();
+ */
+function tool_sync_delete_group_members($courseid, $userid=0, $unused=false, $component = null) {
+    global $DB, $OUTPUT;
+
+    // Get the users in the course which are in a group.
+    $sql = "SELECT gm.id as gmid, gm.userid, g.*
+              FROM {groups_members} gm
+        INNER JOIN {groups} g
+                ON gm.groupid = g.id
+             WHERE g.courseid = :courseid";
+    $params = array();
+    $params['courseid'] = $courseid;
+    // Check if we want to delete a specific user.
+    if ($userid) {
+        $sql .= " AND gm.userid = :userid";
+        $params['userid'] = $userid;
+    }
+    $rs = $DB->get_recordset_sql($sql, $params);
+    foreach ($rs as $usergroup) {
+        tool_sync_group_remove_member($usergroup, $usergroup->userid, $component);
+    }
+    $rs->close();
+
+    // TODO MDL-41312 Remove events_trigger_legacy('groups_members_removed').
+    // This event is kept here for backwards compatibility, because it cannot be
+    // translated to a new event as it is wrong.
+    $eventdata = new stdClass();
+    $eventdata->courseid = $courseid;
+    $eventdata->userid   = $userid;
+    events_trigger_legacy('groups_members_removed', $eventdata);
+
+    return true;
+}
+
+/**
+ * Deletes the link between the specified user and group.
+ * Adds component handling.
+ *
+ * @param mixed $grouporid  The group id or group object
+ * @param mixed $userorid   The user id or user object
+ * @return bool True if deletion was successful, false otherwise
+ */
+function tool_sync_group_remove_member($grouporid, $userorid, $component = null) {
+    global $DB;
+
+    if (is_object($userorid)) {
+        $userid = $userorid->id;
+    } else {
+        $userid = $userorid;
+    }
+
+    if (is_object($grouporid)) {
+        $groupid = $grouporid->id;
+        $group   = $grouporid;
+    } else {
+        $groupid = $grouporid;
+        $group = $DB->get_record('groups', array('id' => $groupid), '*', MUST_EXIST);
+    }
+
+    if (!tool_sync_groups_is_member($groupid, $userid, $component)) {
+        return true;
+    }
+
+    $params = array('groupid' => $groupid,
+                    'userid' => $userid);
+    if ($component) {
+        $params['component'] = $component;
+    }
+    $DB->delete_records('groups_members', $params);
+
+    // Update group info.
+    $time = time();
+    $DB->set_field('groups', 'timemodified', $time, array('id' => $groupid));
+    $group->timemodified = $time;
+
+    // Trigger group event.
+    $params = array(
+        'context' => context_course::instance($group->courseid),
+        'objectid' => $groupid,
+        'relateduserid' => $userid
+    );
+    $event = \core\event\group_member_removed::create($params);
+    $event->add_record_snapshot('groups', $group);
+    $event->trigger();
+
+    return true;
+}
+
+/**
+ * Determines if the user is a member of the given group.
+ * Adds component handling.
+ *
+ * If $userid is null, use the global object.
+ *
+ * @category group
+ * @param int $groupid The group to check for membership.
+ * @param int $userid The user to check against the group.
+ * @return bool True if the user is a member, false otherwise.
+ * @see /lib/grouplib.php groups_is_member
+ */
+function tool_sync_groups_is_member($groupid, $userid=null, $component = null) {
+    global $USER, $DB;
+
+    if (!$userid) {
+        $userid = $USER->id;
+    }
+
+    $params = array('groupid' => $groupid,
+                    'userid' => $userid);
+    if ($component) {
+        $params['component'] = $component;
+    }
+    return $DB->record_exists('groups_members', $params);
 }
