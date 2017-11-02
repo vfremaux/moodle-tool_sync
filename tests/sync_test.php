@@ -91,6 +91,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         // Configure course tool.
         set_config('courses_fileuploadlocation', 'course_create_sample.csv', 'tool_sync');
+        set_config('courses_fileuploadidentifier', 'shortname', 'tool_sync');
         set_config('courses_filedeletelocation', 'course_delete_sample.csv', 'tool_sync');
         set_config('courses_filedeleteidentifier', 'shortname', 'tool_sync');
         set_config('courses_fileexistlocation', 'course_check_sample.csv', 'tool_sync');
