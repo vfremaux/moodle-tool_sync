@@ -145,7 +145,7 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Operation status');
     }
 
-    // Unenrol a user ---------------------------------------------------------------.
+    // Unenrol a user.
 
     /**
      * Returns description of method parameters
@@ -213,7 +213,7 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success status');
     }
 
-    // Enrol a set of users --------------------------------------------------------------.
+    // Enrol a set of users.
 
     /**
      * Returns description of method parameters
@@ -253,7 +253,7 @@ class tool_sync_core_ext_external extends external_api {
             foreach ($enrols as $enrol) {
                 $result = new Stdclass;
                 $result->userid = $enrol['userid'];
-                $result->status = tool_sync_core_ext_external::enrol_user($enrol['roleidsource'],
+                $result->status = self::enrol_user($enrol['roleidsource'],
                                                         $enrol['roleid'],
                                                         $enrol['useridsource'],
                                                         $enrol['userid'],
@@ -288,7 +288,7 @@ class tool_sync_core_ext_external extends external_api {
     }
 
 
-    // Unenrol a set of users ------------------------------------------------.
+    // Unenrol a set of users.
 
     /**
      * Returns description of method parameters
@@ -325,7 +325,7 @@ class tool_sync_core_ext_external extends external_api {
             foreach ($enrols as $enrol) {
                 $result = new Stdclass;
                 $result->userid = $enrol['userid'];
-                $result->status = tool_sync_core_ext_external::unenrol_user($enrol['roleidsource'],
+                $result->status = self::unenrol_user($enrol['roleidsource'],
                                                         $enrol['roleid'],
                                                         $enrol['useridsource'],
                                                         $enrol['userid'],
@@ -661,14 +661,14 @@ class tool_sync_core_ext_external extends external_api {
                             'value' => new external_value(PARAM_RAW, 'option value')
                         )
                     ), 'Option names:
-                            * withcapability (string) return only users with this capability. This option requires \'moodle/role:review\'
-                            * on the course context.
-                            * groupid (integer) return only users in this group id. If the course has groups enabled and this param
-                                                isn\'t defined, returns all the viewable users.
-                                                This option requires \'moodle/site:accessallgroups\' on the course context if the
-                                                user doesn\'t belong to the group.
-                            * onlyactive (integer) return only users with active enrolments and matching time restrictions. This option
-                            * requires \'moodle/course:enrolreview\' on the course context.
+                            * withcapability (string) return only users with this capability. This option requires
+                                    \'moodle/role:review\' on the course context.
+                            * groupid (integer) return only users in this group id. If the course has groups enabled and this
+                                    param isn\'t defined, returns all the viewable users.
+                                    This option requires \'moodle/site:accessallgroups\' on the course context if the
+                                    user doesn\'t belong to the group.
+                            * onlyactive (integer) return only users with active enrolments and matching time restrictions.
+                            * This option requires \'moodle/course:enrolreview\' on the course context.
                             * userfields (\'string, string, ...\') return only the values of these user fields.
                             * limitfrom (integer) sql limit from.
                             * limitnumber (integer) maximum number of returned users.
@@ -705,47 +705,63 @@ class tool_sync_core_ext_external extends external_api {
         $sortdirection = 'ASC';
         foreach ($options as $option) {
             switch ($option['name']) {
-            case 'withcapability':
-                $withcapability = $option['value'];
-                break;
-            case 'groupid':
-                $groupid = (int)$option['value'];
-                break;
-            case 'onlyactive':
-                $onlyactive = !empty($option['value']);
-                break;
-            case 'userfields':
-                $thefields = explode(',', $option['value']);
-                foreach ($thefields as $f) {
-                    $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
+
+                case 'withcapability': {
+                    $withcapability = $option['value'];
+                    break;
                 }
-                break;
-            case 'limitfrom' :
-                $limitfrom = clean_param($option['value'], PARAM_INT);
-                break;
-            case 'limitnumber' :
-                $limitnumber = clean_param($option['value'], PARAM_INT);
-                break;
-            case 'sortby':
-                $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
-                if (!in_array($option['value'], $sortallowedvalues)) {
-                    throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
-                        'allowed values are: ' . implode(',', $sortallowedvalues));
+
+                case 'groupid': {
+                    $groupid = (int)$option['value'];
+                    break;
                 }
-                if ($option['value'] == 'siteorder') {
-                    list($sortby, $sortparams) = users_order_by_sql('us');
-                } else {
-                    $sortby = 'us.' . $option['value'];
+
+                case 'onlyactive': {
+                    $onlyactive = !empty($option['value']);
+                    break;
                 }
-                break;
-            case 'sortdirection':
-                $sortdirection = strtoupper($option['value']);
-                $directionallowedvalues = array('ASC', 'DESC');
-                if (!in_array($sortdirection, $directionallowedvalues)) {
-                    throw new invalid_parameter_exception('Invalid value for sortdirection parameter
-                        (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
+
+                case 'userfields': {
+                    $thefields = explode(',', $option['value']);
+                    foreach ($thefields as $f) {
+                        $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
+                    }
+                    break;
                 }
-                break;
+
+                case 'limitfrom': {
+                    $limitfrom = clean_param($option['value'], PARAM_INT);
+                    break;
+                }
+
+                case 'limitnumber': {
+                    $limitnumber = clean_param($option['value'], PARAM_INT);
+                    break;
+                }
+
+                case 'sortby': {
+                    $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
+                    if (!in_array($option['value'], $sortallowedvalues)) {
+                        throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
+                            'allowed values are: ' . implode(',', $sortallowedvalues));
+                    }
+                    if ($option['value'] == 'siteorder') {
+                        list($sortby, $sortparams) = users_order_by_sql('us');
+                    } else {
+                        $sortby = 'us.' . $option['value'];
+                    }
+                    break;
+                }
+
+                case 'sortdirection': {
+                    $sortdirection = strtoupper($option['value']);
+                    $directionallowedvalues = array('ASC', 'DESC');
+                    if (!in_array($sortdirection, $directionallowedvalues)) {
+                        throw new invalid_parameter_exception('Invalid value for sortdirection parameter
+                            (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
+                    }
+                    break;
+                }
             }
         }
 
@@ -950,10 +966,6 @@ class tool_sync_core_ext_external extends external_api {
         $validkeys = array('idnumber', 'shortname', 'id');
         $params['courseid'] = self::validate_course_param($params, $validkeys);
 
-        /*
-        * $users = \core_enrol_external::get_enrolled_users($params['courseid'], $options);
-        */
-
         /* Copy all code of original here. change : avoid validating context as it creates a weird redirection. */
 
         $withcapability = '';
@@ -967,48 +979,64 @@ class tool_sync_core_ext_external extends external_api {
         $sortdirection = 'ASC';
 
         foreach ($options as $option) {
+
             switch ($option['name']) {
-            case 'withcapability':
-                $withcapability = $option['value'];
-                break;
-            case 'groupid':
-                $groupid = (int)$option['value'];
-                break;
-            case 'onlyactive':
-                $onlyactive = !empty($option['value']);
-                break;
-            case 'userfields':
-                $thefields = explode(',', $option['value']);
-                foreach ($thefields as $f) {
-                    $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
+                case 'withcapability': {
+                    $withcapability = $option['value'];
+                    break;
                 }
-                break;
-            case 'limitfrom' :
-                $limitfrom = clean_param($option['value'], PARAM_INT);
-                break;
-            case 'limitnumber' :
-                $limitnumber = clean_param($option['value'], PARAM_INT);
-                break;
-            case 'sortby':
-                $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
-                if (!in_array($option['value'], $sortallowedvalues)) {
-                    throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
-                        'allowed values are: ' . implode(',', $sortallowedvalues));
+
+                case 'groupid': {
+                    $groupid = (int)$option['value'];
+                    break;
                 }
-                if ($option['value'] == 'siteorder') {
-                    list($sortby, $sortparams) = users_order_by_sql('us');
-                } else {
-                    $sortby = 'us.' . $option['value'];
+
+                case 'onlyactive': {
+                    $onlyactive = !empty($option['value']);
+                    break;
                 }
-                break;
-            case 'sortdirection':
-                $sortdirection = strtoupper($option['value']);
-                $directionallowedvalues = array('ASC', 'DESC');
-                if (!in_array($sortdirection, $directionallowedvalues)) {
-                    throw new invalid_parameter_exception('Invalid value for sortdirection parameter
-                        (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
+
+                case 'userfields': {
+                    $thefields = explode(',', $option['value']);
+                    foreach ($thefields as $f) {
+                        $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
+                    }
+                    break;
                 }
-                break;
+
+                case 'limitfrom': {
+                    $limitfrom = clean_param($option['value'], PARAM_INT);
+                    break;
+                }
+
+                case 'limitnumber': {
+                    $limitnumber = clean_param($option['value'], PARAM_INT);
+                    break;
+                }
+
+                case 'sortby': {
+                    $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
+                    if (!in_array($option['value'], $sortallowedvalues)) {
+                        throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
+                            'allowed values are: ' . implode(',', $sortallowedvalues));
+                    }
+                    if ($option['value'] == 'siteorder') {
+                        list($sortby, $sortparams) = users_order_by_sql('us');
+                    } else {
+                        $sortby = 'us.' . $option['value'];
+                    }
+                    break;
+                }
+
+                case 'sortdirection': {
+                    $sortdirection = strtoupper($option['value']);
+                    $directionallowedvalues = array('ASC', 'DESC');
+                    if (!in_array($sortdirection, $directionallowedvalues)) {
+                        throw new invalid_parameter_exception('Invalid value for sortdirection parameter
+                            (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
+                    }
+                    break;
+                }
             }
         }
 
@@ -1025,15 +1053,15 @@ class tool_sync_core_ext_external extends external_api {
         } else {
             require_capability('moodle/course:viewparticipants', $coursecontext);
         }
-        // to overwrite this parameter, you need role:review capability
+        // To overwrite this parameter, you need role:review capability.
         if ($withcapability) {
             require_capability('moodle/role:review', $coursecontext);
         }
-        // need accessallgroups capability if you want to overwrite this option
+        // Need accessallgroups capability if you want to overwrite this option.
         if (!empty($groupid) && !groups_is_member($groupid)) {
             require_capability('moodle/site:accessallgroups', $coursecontext);
         }
-        // to overwrite this option, you need course:enrolereview permission
+        // To overwrite this option, you need course:enrolereview permission.
         if ($onlyactive) {
             require_capability('moodle/course:enrolreview', $coursecontext);
         }

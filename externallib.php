@@ -118,7 +118,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success');
     }
 
-    // Commit an uploaded file ----------------------------------------------.
+    // Commit an uploaded file .
 
     /**
      * Returns description of method parameters
@@ -168,7 +168,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success status');
     }
 
-    // Process a synchronisation task -----------------------------------------.
+    // Process a synchronisation task .
 
     /**
      * Returns description of method parameters
@@ -243,7 +243,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_TEXT, 'CSV report');
     }
 
-    // Check a courxe exists ------------------------------------------------.
+    // Check a courxe exists.
 
     public static function check_course_parameters() {
         return new external_function_parameters(array(
@@ -295,7 +295,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_BOOL, 'Course existance status');
     }
 
-    // Create course from a template ------------------------------------------------.
+    // Create course from a template.
 
     public static function deploy_course_parameters() {
         return new external_function_parameters(array(
