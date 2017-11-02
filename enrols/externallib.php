@@ -44,7 +44,7 @@ require_once($CFG->dirroot.'/enrol/externallib.php');
  */
 class tool_sync_core_ext_external extends external_api {
 
-    protected static $enroluserset; 
+    protected static $enroluserset;
 
     protected static function init_user_set() {
         self::$enroluserset = array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
@@ -689,9 +689,9 @@ class tool_sync_core_ext_external extends external_api {
         /* Copy all code of original here. change : avoid validating context as it creates a weird redirection. */
 
         $withcapability = '';
-        $groupid        = 0;
-        $onlyactive     = false;
-        $userfields     = array();
+        $groupid = 0;
+        $onlyactive = false;
+        $userfields = array();
         $limitfrom = 0;
         $limitnumber = 0;
         $sortby = 'us.id';
@@ -772,15 +772,15 @@ class tool_sync_core_ext_external extends external_api {
         } else {
             require_capability('moodle/course:viewparticipants', $context);
         }
-        // to overwrite this parameter, you need role:review capability
+        // To overwrite this parameter, you need role:review capability.
         if ($withcapability) {
             require_capability('moodle/role:review', $coursecontext);
         }
-        // need accessallgroups capability if you want to overwrite this option
+        // Need accessallgroups capability if you want to overwrite this option.
         if (!empty($groupid) && !groups_is_member($groupid)) {
             require_capability('moodle/site:accessallgroups', $coursecontext);
         }
-        // to overwrite this option, you need course:enrolereview permission
+        // To overwrite this option, you need course:enrolereview permission.
         if ($onlyactive) {
             require_capability('moodle/course:enrolreview', $coursecontext);
         }
@@ -925,9 +925,9 @@ class tool_sync_core_ext_external extends external_api {
         /* Copy all code of original here. change : avoid validating context as it creates a weird redirection. */
 
         $withcapability = '';
-        $groupid        = 0;
-        $onlyactive     = false;
-        $userfields     = array();
+        $groupid = 0;
+        $onlyactive = false;
+        $userfields = array();
         $limitfrom = 0;
         $limitnumber = 0;
         $sortby = 'us.id';
