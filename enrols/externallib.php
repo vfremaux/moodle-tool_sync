@@ -44,6 +44,22 @@ require_once($CFG->dirroot.'/enrol/externallib.php');
  */
 class tool_sync_core_ext_external extends external_api {
 
+    protected static $enroluserset; 
+
+    protected static function init_user_set() {
+        self::$enroluserset = array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
+            'roleid' => new external_value(PARAM_TEXT, 'The role id'),
+            'useridsource' => new external_value(PARAM_TEXT, 'The source for user identification'),
+            'userid' => new external_value(PARAM_TEXT, 'The user id'),
+            'courseidsource' => new external_value(PARAM_TEXT, 'The source for course identification'),
+            'courseid' => new external_value(PARAM_TEXT, 'The course identifier'),
+            'method' => new external_value(PARAM_TEXT, 'The enrol method', VALUE_DEFAULT, 'manual'),
+            'timestart' => new external_value(PARAM_INT, 'Time start of the enrol period', VALUE_DEFAULT, 0),
+            'timeend' => new external_value(PARAM_INT, 'Time end of the enrol period', VALUE_DEFAULT, 0),
+            'suspend' => new external_value(PARAM_INT, 'Suspension', VALUE_DEFAULT, 0),
+        );
+    }
+
     protected static function validate_enrol_parameters($configparamdefs, $inputs, $isunenrol = false) {
 
         $status = self::validate_parameters($configparamdefs, $inputs);
@@ -71,19 +87,8 @@ class tool_sync_core_ext_external extends external_api {
      * @return external_function_parameters
      */
     public static function enrol_user_parameters() {
-        return new external_function_parameters(
-            array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
-                'roleid' => new external_value(PARAM_TEXT, 'The role id'),
-                'useridsource' => new external_value(PARAM_TEXT, 'The source for user identification'),
-                'userid' => new external_value(PARAM_TEXT, 'The user id'),
-                'courseidsource' => new external_value(PARAM_TEXT, 'The source for course identification'),
-                'courseid' => new external_value(PARAM_TEXT, 'The course identifier'),
-                'method' => new external_value(PARAM_TEXT, 'The enrol method', VALUE_DEFAULT, 'manual'),
-                'timestart' => new external_value(PARAM_INT, 'Time start of the enrol period', VALUE_DEFAULT, 0),
-                'timeend' => new external_value(PARAM_INT, 'Time end of the enrol period', VALUE_DEFAULT, 0),
-                'suspend' => new external_value(PARAM_INT, 'Suspension', VALUE_DEFAULT, 0),
-            )
-        );
+        self::init_user_set();
+        return new external_function_parameters(self::$enroluserset);
     }
 
     /**
@@ -221,23 +226,12 @@ class tool_sync_core_ext_external extends external_api {
      * @return external_function_parameters
      */
     public static function enrol_users_parameters() {
+        self::init_user_set();
         return new external_function_parameters(
             array('enrols' => new external_multiple_structure(
-                    new external_single_structure(
-                        array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
-                            'roleid' => new external_value(PARAM_TEXT, 'The role id'),
-                            'useridsource' => new external_value(PARAM_TEXT, 'The source for user identification'),
-                            'userid' => new external_value(PARAM_TEXT, 'The user id'),
-                            'courseidsource' => new external_value(PARAM_TEXT, 'The source for course identification'),
-                            'courseid' => new external_value(PARAM_TEXT, 'The course identifier'),
-                            'method' => new external_value(PARAM_TEXT, 'The enrol method', VALUE_DEFAULT, 'manual'),
-                            'timestart' => new external_value(PARAM_INT, 'Time start of the enrol period', VALUE_DEFAULT, 0),
-                            'timeend' => new external_value(PARAM_INT, 'Time end of the enrol period', VALUE_DEFAULT, 0),
-                            'suspend' => new external_value(PARAM_INT, 'Suspension', VALUE_DEFAULT, 0),
-                            )
-                        )
-                  ),
-              )
+                    new external_single_structure(self::$enroluserset)
+                ),
+            )
         );
     }
 
@@ -682,7 +676,7 @@ class tool_sync_core_ext_external extends external_api {
     public static function get_enrolled_full_users($courseidsource, $courseid, $options = array()) {
         global $CFG, $DB;
 
-        require_once ($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/user/lib.php');
 
         // Validate parameters.
         $parameters = array('courseidsource' => $courseidsource,
@@ -839,83 +833,45 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function get_enrolled_full_users_returns() {
 
-        $desc = 'The shortname of the custom field - to be able to build the field class in the code';
+        tool_sync_external::full_user_set_init();
+        $fulluserset = tool_sync_external::$fullusersetbase;
 
-        return new external_multiple_structure(
+        $fulluserset['groups'] = new external_multiple_structure(
             new external_single_structure(
                 array(
-                    'id'    => new external_value(PARAM_INT, 'ID of the user'),
-                    'username'    => new external_value(PARAM_RAW, 'Username policy is defined in Moodle security config', VALUE_OPTIONAL),
-                    'firstname'   => new external_value(PARAM_NOTAGS, 'The first name(s) of the user', VALUE_OPTIONAL),
-                    'lastname'    => new external_value(PARAM_NOTAGS, 'The family name of the user', VALUE_OPTIONAL),
-                    'fullname'    => new external_value(PARAM_NOTAGS, 'The fullname of the user'),
-                    'email'       => new external_value(PARAM_TEXT, 'An email address - allow email as root@localhost', VALUE_OPTIONAL),
-                    'address'     => new external_value(PARAM_TEXT, 'Postal address', VALUE_OPTIONAL),
-                    'phone1'      => new external_value(PARAM_NOTAGS, 'Phone 1', VALUE_OPTIONAL),
-                    'phone2'      => new external_value(PARAM_NOTAGS, 'Phone 2', VALUE_OPTIONAL),
-                    'icq'         => new external_value(PARAM_NOTAGS, 'icq number', VALUE_OPTIONAL),
-                    'skype'       => new external_value(PARAM_NOTAGS, 'skype id', VALUE_OPTIONAL),
-                    'yahoo'       => new external_value(PARAM_NOTAGS, 'yahoo id', VALUE_OPTIONAL),
-                    'aim'         => new external_value(PARAM_NOTAGS, 'aim id', VALUE_OPTIONAL),
-                    'msn'         => new external_value(PARAM_NOTAGS, 'msn number', VALUE_OPTIONAL),
-                    'department'  => new external_value(PARAM_TEXT, 'department', VALUE_OPTIONAL),
-                    'institution' => new external_value(PARAM_TEXT, 'institution', VALUE_OPTIONAL),
-                    'idnumber'    => new external_value(PARAM_RAW, 'An arbitrary ID code number perhaps from the institution', VALUE_OPTIONAL),
-                    'interests'   => new external_value(PARAM_TEXT, 'user interests (separated by commas)', VALUE_OPTIONAL),
-                    'firstaccess' => new external_value(PARAM_INT, 'first access to the site (0 if never)', VALUE_OPTIONAL),
-                    'lastaccess'  => new external_value(PARAM_INT, 'last access to the site (0 if never)', VALUE_OPTIONAL),
-                    'description' => new external_value(PARAM_RAW, 'User profile description', VALUE_OPTIONAL),
-                    'descriptionformat' => new external_format_value('description', VALUE_OPTIONAL),
-                    'city'        => new external_value(PARAM_NOTAGS, 'Home city of the user', VALUE_OPTIONAL),
-                    'url'         => new external_value(PARAM_URL, 'URL of the user', VALUE_OPTIONAL),
-                    'country'     => new external_value(PARAM_ALPHA, 'Home country code of the user, such as AU or CZ', VALUE_OPTIONAL),
-                    'profileimageurlsmall' => new external_value(PARAM_URL, 'User image profile URL - small version', VALUE_OPTIONAL),
-                    'profileimageurl' => new external_value(PARAM_URL, 'User image profile URL - big version', VALUE_OPTIONAL),
-                    'customfields' => new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'type'  => new external_value(PARAM_ALPHANUMEXT, 'The type of the custom field - text field, checkbox...'),
-                                'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
-                                'name' => new external_value(PARAM_RAW, 'The name of the custom field'),
-                                'shortname' => new external_value(PARAM_RAW, $desc),
-                            )
-                        ), 'User custom fields (also known as user profil fields)', VALUE_OPTIONAL),
-                    'groups' => new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'id'  => new external_value(PARAM_INT, 'group id'),
-                                'name' => new external_value(PARAM_RAW, 'group name'),
-                                'description' => new external_value(PARAM_RAW, 'group description'),
-                                'descriptionformat' => new external_format_value('description'),
-                            )
-                        ), 'user groups', VALUE_OPTIONAL),
-                    'roles' => new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'roleid'       => new external_value(PARAM_INT, 'role id'),
-                                'name'         => new external_value(PARAM_RAW, 'role name'),
-                                'shortname'    => new external_value(PARAM_ALPHANUMEXT, 'role shortname'),
-                                'sortorder'    => new external_value(PARAM_INT, 'role sortorder')
-                            )
-                        ), 'user roles', VALUE_OPTIONAL),
-                    'preferences' => new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'name'  => new external_value(PARAM_ALPHANUMEXT, 'The name of the preferences'),
-                                'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
-                            )
-                    ), 'User preferences', VALUE_OPTIONAL),
-                    'enrolledcourses' => new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'id'  => new external_value(PARAM_INT, 'Id of the course'),
-                                'fullname' => new external_value(PARAM_RAW, 'Fullname of the course'),
-                                'shortname' => new external_value(PARAM_RAW, 'Shortname of the course')
-                            )
-                    ), 'Courses where the user is enrolled - limited by which courses the user is able to see', VALUE_OPTIONAL)
+                    'id'  => new external_value(PARAM_INT, 'group id'),
+                    'name' => new external_value(PARAM_RAW, 'group name'),
+                    'description' => new external_value(PARAM_RAW, 'group description'),
+                    'descriptionformat' => new external_format_value('description'),
                 )
-            )
-        );
+            ), 'user groups', VALUE_OPTIONAL);
+
+        $fulluserset['roles'] = new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'roleid'       => new external_value(PARAM_INT, 'role id'),
+                    'name'         => new external_value(PARAM_RAW, 'role name'),
+                    'shortname'    => new external_value(PARAM_ALPHANUMEXT, 'role shortname'),
+                    'sortorder'    => new external_value(PARAM_INT, 'role sortorder')
+                )
+            ), 'user roles', VALUE_OPTIONAL);
+        $fulluserset['preferences'] = new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'name'  => new external_value(PARAM_ALPHANUMEXT, 'The name of the preferences'),
+                    'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
+                )
+            ), 'User preferences', VALUE_OPTIONAL);
+        $fulluserset['enrolledcourses'] = new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'id'  => new external_value(PARAM_INT, 'Id of the course'),
+                    'fullname' => new external_value(PARAM_RAW, 'Fullname of the course'),
+                    'shortname' => new external_value(PARAM_RAW, 'Shortname of the course')
+                )
+            ), 'Courses where the user is enrolled - limited by which courses the user is able to see', VALUE_OPTIONAL);
+
+        return new external_multiple_structure(new external_single_structure($fulluserset));
     }
 
 
