@@ -267,6 +267,7 @@ class course_sync_manager extends sync_manager {
                     return;
                 }
 
+                $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
                 $headers = explode($syncconfig->csvseparator, $text);
 
                 foreach ($headers as $h) {
@@ -628,6 +629,7 @@ class course_sync_manager extends sync_manager {
                         continue;
                     }
 
+                    $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
                     $valueset = explode($syncconfig->csvseparator, $text);
 
                     $size = count($valueset);
@@ -837,6 +839,7 @@ class course_sync_manager extends sync_manager {
                     return;
                 }
 
+                $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
                 $headers = explode($syncconfig->csvseparator, $text);
 
                 // Check for valid field names.
@@ -1337,7 +1340,7 @@ class course_sync_manager extends sync_manager {
                                     $previous->enrolenddate = 0;
                                 }
                                 $previous->status = 0;
-                                $DB->update('enrol', $previous);
+                                $DB->update_record('enrol', $previous);
                                 $e = new StdClass();
                                 $e->for = $valuearr['meta']; // Real imput value for report.
                                 $e->from = $valuearr['master']; // Real imput value for report.
@@ -1825,7 +1828,7 @@ class course_sync_manager extends sync_manager {
         }
 
         // Trap when template not found.
-        if (!empty($course['template'] && $course['template'] != "\n")) {
+        if (!empty($course['template']) && $course['template'] != "\n") {
             if (tool_sync_is_course_identifier($course['template'])) {
                 if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
                     return -7;
