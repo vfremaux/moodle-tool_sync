@@ -205,7 +205,7 @@ class sync_manager {
     }
 
     /*
-     * Checks if 
+     * Checks if
      */
     protected function filename_has_wildcard($filename) {
         return preg_match('/\\*/', $filename);

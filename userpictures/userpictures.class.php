@@ -38,7 +38,6 @@ define('PIX_FILE_SKIPPED', 2);
 class userpictures_sync_manager extends sync_manager {
 
     public function form_elements(&$frm) {
-        global $CFG;
 
         $frm->addElement('text', 'tool_sync/userpictures_fileprefix', get_string('userpicturesfilesprefix', 'tool_sync'));
         $frm->setType('tool_sync/userpictures_fileprefix', PARAM_TEXT);
@@ -70,7 +69,7 @@ class userpictures_sync_manager extends sync_manager {
     }
 
     public function cron($syncconfig) {
-        global $CFG;
+        global $CFG, $DB;
 
         $fs = get_file_storage();
 
