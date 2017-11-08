@@ -52,9 +52,13 @@ class enrol_sync_manager extends sync_manager {
         $label = get_string('enroluseridentifier', 'tool_sync');
         $frm->addElement('select', $key, $label, $this->get_userfields());
 
+        $key = 'tool_sync/enrols_protectgroups';
+        $label = get_string('enrolprotectgroups', 'tool_sync');
+        $frm->addElement('advcheckbox', $key, $label, '', array('group' => 1), array(0, 1));
+
         $key = 'tool_sync/enrols_mailadmins';
         $label = get_string('enrolemailcourseadmins', 'tool_sync');
-        $frm->addElement('advcheckbox', $key, $label, '', array('group' => 1), array(0, 1));
+        $frm->addElement('advcheckbox', $key, $label, '', array('group' => 2), array(0, 1));
 
         $frm->addElement('static', 'enrolsst1', '<hr>');
 
@@ -102,7 +106,8 @@ class enrol_sync_manager extends sync_manager {
         }
 
         // We have no file to process. Probably because never setup.
-        if (!($filereader = $this->open_input_file($filerec))) {
+        if (!($filereader = $this->open_input_file($filerec, 'enrol'))) {
+            set_config('lastrunning_enrol', null, 'tool_sync');
             return;
         }
 
@@ -136,6 +141,7 @@ class enrol_sync_manager extends sync_manager {
             $i++;
         }
 
+        $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
         $headers = explode($csvdelimiter2, $text);
 
         array_walk($headers, 'trim_array_values');
@@ -144,6 +150,7 @@ class enrol_sync_manager extends sync_manager {
             $header[] = trim($h); // Remove whitespace.
             if (!(isset($required[$h]) or isset($optional[$h]))) {
                 $this->report(get_string('errorinvalidcolumnname', 'tool_sync', $h));
+                set_config('lastrunning_enrol', null, 'tool_sync');
                 return;
             }
             if (isset($required[$h])) {
@@ -154,6 +161,7 @@ class enrol_sync_manager extends sync_manager {
         foreach ($required as $key => $value) {
             if ($value) { // Required field missing.
                 $this->report(get_string('errorrequiredcolumn', 'tool_sync', $key));
+                set_config('lastrunning_enrol', null, 'tool_sync');
                 return;
             }
         }
@@ -170,13 +178,16 @@ class enrol_sync_manager extends sync_manager {
             $record = array();
 
             $text = tool_sync_read($filereader, 1024, $syncconfig);
+            $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
             if (tool_sync_is_empty_line_or_format($text, false)) {
                 $i++;
                 continue;
             }
             $line = explode($csvdelimiter2, $text);
 
-            echo ">> Decoding \n";
+            if (debugging(null, DEBUG_DEVELOPER)) {
+                echo ">> Decoding \n";
+            }
             foreach ($line as $key => $value) {
                 // Decode encoded commas.
                 $record[$header[$key]] = trim($value);
@@ -194,7 +205,9 @@ class enrol_sync_manager extends sync_manager {
                 }
             }
 
-            echo ">> Fixing time \n";
+            if (debugging(null, DEBUG_DEVELOPER)) {
+                echo ">> Fixing time \n";
+            }
             if (array_key_exists('starttime', $record)) {
                 $record['starttime'] = tool_sync_parsetime($record['starttime'], time());
             } else {
@@ -221,7 +234,9 @@ class enrol_sync_manager extends sync_manager {
             $e->userby = $uidentifiername;
             $e->mycourse = $record['cid']; // Course identifier.
 
-            echo ">> Check user \n";
+            if (debugging(null, DEBUG_DEVELOPER)) {
+                echo ">> Check user \n";
+            }
             if (!$user = $DB->get_record('user', array($uidentifiername => $record['uid'])) ) {
                 $this->report(get_string('errornouser', 'tool_sync', $e));
                 if (!empty($syncconfig->filefailed)) {
@@ -233,7 +248,9 @@ class enrol_sync_manager extends sync_manager {
 
             $e->myuser = $user->username.' ('.$e->myuser.')'; // Complete idnumber with real username.
 
-            echo ">> Check course \n";
+            if (debugging(null, DEBUG_DEVELOPER)) {
+                echo ">> Check course \n";
+            }
             if (empty($record['cid'])) {
                 $this->report(get_string('errornullcourseidentifier', 'tool_sync', $i));
                 $i++;
@@ -445,12 +462,12 @@ class enrol_sync_manager extends sync_manager {
                     if (!empty($record['enrol'])) {
                         if (empty($syncconfig->simulate)) {
                             try {
-                                if ($record['enrol'] != 'sync') {
-                                    $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
-                                                             $record['endtime'], ENROL_USER_ACTIVE);
-                                } else {
+                                if ($record['enrol'] == 'sync') {
                                     \enrol_sync_plugin::static_enrol_user($course, $user->id, $role->id, $record['starttime'],
                                                              $record['endtime']);
+                                } else {
+                                    $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
+                                                             $record['endtime'], ENROL_USER_ACTIVE);
                                 }
                                 $this->report(get_string('enrolled', 'tool_sync', $e));
                             } catch (Exception $exc) {
@@ -501,7 +518,14 @@ class enrol_sync_manager extends sync_manager {
                 $this->report(get_string('errorbadcmd', 'tool_sync', $e));
             }
 
-            echo "Grouping...\n";
+            $component = '';
+            if ($syncconfig->enrols_protectgroups) {
+                $component = 'tool_sync';
+            }
+
+            if (debugging(null, DEBUG_DEVELOPER)) {
+                echo "Grouping...\n";
+            }
             if (!empty($record['gcmd'])) {
                 if ($record['gcmd'] == 'gadd' || $record['gcmd'] == 'gaddcreate') {
                     try {
@@ -512,7 +536,9 @@ class enrol_sync_manager extends sync_manager {
                                     $groupid[$j] = $gid;
                                 } else {
                                     if ($record['gcmd'] == 'gaddcreate') {
-                                        echo ">> Creating group \n";
+                                        if (debugging(null, DEBUG_DEVELOPER)) {
+                                            echo ">> Creating group \n";
+                                        }
                                         $groupsettings = new StdClass;
                                         $groupsettings->name = $record['g'.$j];
                                         $groupsettings->courseid = $course->id;
@@ -520,19 +546,23 @@ class enrol_sync_manager extends sync_manager {
                                             if ($gid = groups_create_group($groupsettings)) {
                                                 $groupid[$j] = $gid;
                                                 $e->group = $record['g'.$j];
+                                                $e->mycourse = $course->shortname;
                                                 $this->report(get_string('groupcreated', 'tool_sync', $e));
                                             } else {
                                                 $e->group = $record['g'.$j];
+                                                $e->mycourse = $course->shortname;
                                                 $this->report(get_string('errorgroupnotacreated', 'tool_sync', $e));
                                                 continue;
                                             }
                                         } else {
                                             $e->group = $record['g'.$j];
+                                            $e->mycourse = $course->shortname;
                                             $this->report('SIMULATION : '.get_string('groupcreated', 'tool_sync', $e));
                                             $gid = 999999; // Simulate a created gtoup.
                                         }
                                     } else {
                                         $e->group = $record['g'.$j];
+                                        $e->mycourse = $course->shortname;
                                         $this->report(get_string('groupunknown', 'tool_sync', $e));
                                         // Next j same i.
                                         continue; // Continue inner groups loop.
@@ -545,7 +575,7 @@ class enrol_sync_manager extends sync_manager {
 
                                 if (count(get_user_roles($context, $user->id))) {
                                     if (empty($syncconfig->simulate)) {
-                                        if (groups_add_member($groupid[$j], $user->id)) {
+                                        if (groups_add_member($groupid[$j], $user->id, $component)) {
                                             $this->report(get_string('addedtogroup', 'tool_sync', $e));
                                         } else {
                                             $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
@@ -564,23 +594,31 @@ class enrol_sync_manager extends sync_manager {
                 } else if ($record['gcmd'] == 'greplace' || $record['gcmd'] == 'greplacecreate') {
                     try {
                         if (empty($syncconfig->simulate)) {
-                            groups_delete_group_members($course->id, $user->id);
+                            tool_sync_delete_group_members($course->id, $user->id, $component);
                             $this->report(get_string('groupassigndeleted', 'tool_sync', $e));
                         } else {
                             $this->report('SIMULATION : '.get_string('groupassigndeleted', 'tool_sync', $e));
                         }
                         for ($j = 1; $j < 10; $j++) {
                             if (!empty($record['g'.$j])) {
-                                echo ">> Checking group \n";
+                                if (debugging(null, DEBUG_DEVELOPER)) {
+                                    echo ">> Checking group \n";
+                                }
                                 $e = new StdClass();
                                 $e->group = $record['g'.$j];
+                                $e->myuser = $user->username.' ('.$user->id.')';
+                                $e->mycourse = $course->shortname;
                                 $gname = $record['g'.$j];
                                 if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
-                                    echo ">> Got group $gid by name $e->group\n";
+                                    if (debugging(null, DEBUG_DEVELOPER)) {
+                                        echo ">> Got group $gid by name $e->group\n";
+                                    }
                                     $groupid[$j] = $gid;
                                 } else {
                                     if ($record['gcmd'] == 'greplacecreate') {
-                                        echo ">> Creating group \n";
+                                        if (debugging(null, DEBUG_DEVELOPER)) {
+                                            echo ">> Creating group \n";
+                                        }
                                         $groupsettings = new StdClass;
                                         $groupsettings->name = $record['g'.$j];
                                         $groupsettings->courseid = $course->id;
@@ -605,11 +643,13 @@ class enrol_sync_manager extends sync_manager {
 
                                 if (count(get_user_roles($context, $user->id))) {
                                     if (empty($syncconfig->simulate)) {
-                                        echo ">> Adding memebership \n";
+                                        if (debugging(null, DEBUG_DEVELOPER)) {
+                                            echo ">> Adding membership \n";
+                                        }
                                         $e = new StdClass();
                                         $e->group = $groupid[$j];
-                                        $e->myuser = $user->username.' ('.$record['userid'].')';
-                                        if (groups_add_member($groupid[$j], $user->id)) {
+                                        $e->myuser = $user->username.' ('.$user->id.')';
+                                        if (groups_add_member($groupid[$j], $user->id, $component)) {
                                             $this->report(get_string('addedtogroup', 'tool_sync', $e));
                                         } else {
                                             $this->report(get_string('addedtogroupnot', 'tool_sync', $e));
@@ -629,15 +669,30 @@ class enrol_sync_manager extends sync_manager {
                     // TODO : Remove membership.
                     for ($j = 1; $j < 10; $j++) {
                         if (!empty($record['g'.$j])) {
-                            echo " >> Removing membership \n";
-                            $e = new StdClass();
-                            $e->group = $record['g'.$j];
-                            if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
-                                try {
-                                    groups_remove_member($gid, $user->id);
-                                } catch(Exception $e) {
-                                    $errorstr = "Could not remove user $user->id from group $gid";
-                                    $this->report($errorstr);
+                            if (empty($syncconfig->simulate)) {
+                                if (debugging(null, DEBUG_DEVELOPER)) {
+                                    echo " >> Removing membership \n";
+                                }
+                                $e = new StdClass();
+                                $e->group = $record['g'.$j];
+                                $e->myuser = $user->username.' ('.$user->id.')';
+                                if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
+                                    try {
+                                        tool_sync_group_remove_member($gid, $user->id, $component);
+                                        $this->report(get_string('removedfromgroup', 'tool_sync', $e));
+                                    } catch (Exception $e) {
+                                        $this->report(get_string('removedfromgroupnot', 'tool_sync', $e));
+                                    }
+                                } else {
+                                    $this->report(get_string('removedfromgroupnot', 'tool_sync', $e));
+                                }
+                            } else {
+                                $e = new StdClass();
+                                $e->group = $record['g'.$j];
+                                if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
+                                    $this->report('SIMULATION: '.get_string('removedfromgroup', 'toll_sync', $e));
+                                } else {
+                                    $this->report('SIMULATION: '.get_string('removedfromgroupnot', 'tool_sync', $e));
                                 }
                             }
                         }
@@ -650,7 +705,9 @@ class enrol_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
-        mtrace("Finalization");
+        if (debugging(null, DEBUG_DEVELOPER)) {
+            mtrace("Finalization");
+        }
 
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
@@ -669,6 +726,8 @@ class enrol_sync_manager extends sync_manager {
                 $this->cleanup_input_file(clone($filerec));
             }
         }
+
+        set_config('lastrunning_enrol', null, 'tool_sync');
 
         $this->report("\n".get_string('endofreport', 'tool_sync'));
 

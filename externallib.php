@@ -43,6 +43,54 @@ require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
  */
 class tool_sync_external extends external_api {
 
+    public static $fullusersetbase;
+
+    public static function full_user_set_init() {
+
+        $desc = 'The shortname of the custom field - to be able to build the field class in the code';
+
+        if (is_null(self::$fullusersetbase)) {
+            self::$fullusersetbase = array(
+                'id'          => new external_value(PARAM_INT, 'ID of the user'),
+                'username'    => new external_value(PARAM_RAW, 'Username policy is defined in Moodle security config', VALUE_OPTIONAL),
+                'firstname'   => new external_value(PARAM_NOTAGS, 'The first name(s) of the user', VALUE_OPTIONAL),
+                'lastname'    => new external_value(PARAM_NOTAGS, 'The family name of the user', VALUE_OPTIONAL),
+                'fullname'    => new external_value(PARAM_NOTAGS, 'The fullname of the user'),
+                'email'       => new external_value(PARAM_TEXT, 'An email address - allow email as root@localhost', VALUE_OPTIONAL),
+                'address'     => new external_value(PARAM_TEXT, 'Postal address', VALUE_OPTIONAL),
+                'phone1'      => new external_value(PARAM_NOTAGS, 'Phone 1', VALUE_OPTIONAL),
+                'phone2'      => new external_value(PARAM_NOTAGS, 'Phone 2', VALUE_OPTIONAL),
+                'icq'         => new external_value(PARAM_NOTAGS, 'icq number', VALUE_OPTIONAL),
+                'skype'       => new external_value(PARAM_NOTAGS, 'skype id', VALUE_OPTIONAL),
+                'yahoo'       => new external_value(PARAM_NOTAGS, 'yahoo id', VALUE_OPTIONAL),
+                'aim'         => new external_value(PARAM_NOTAGS, 'aim id', VALUE_OPTIONAL),
+                'msn'         => new external_value(PARAM_NOTAGS, 'msn number', VALUE_OPTIONAL),
+                'department'  => new external_value(PARAM_TEXT, 'department', VALUE_OPTIONAL),
+                'institution' => new external_value(PARAM_TEXT, 'institution', VALUE_OPTIONAL),
+                'idnumber'    => new external_value(PARAM_RAW, 'An arbitrary ID code number perhaps from the institution', VALUE_OPTIONAL),
+                'interests'   => new external_value(PARAM_TEXT, 'user interests (separated by commas)', VALUE_OPTIONAL),
+                'firstaccess' => new external_value(PARAM_INT, 'first access to the site (0 if never)', VALUE_OPTIONAL),
+                'lastaccess'  => new external_value(PARAM_INT, 'last access to the site (0 if never)', VALUE_OPTIONAL),
+                'description' => new external_value(PARAM_RAW, 'User profile description', VALUE_OPTIONAL),
+                'descriptionformat' => new external_format_value('description', VALUE_OPTIONAL),
+                'city'        => new external_value(PARAM_NOTAGS, 'Home city of the user', VALUE_OPTIONAL),
+                'url'         => new external_value(PARAM_URL, 'URL of the user', VALUE_OPTIONAL),
+                'country'     => new external_value(PARAM_ALPHA, 'Home country code of the user, such as AU or CZ', VALUE_OPTIONAL),
+                'profileimageurlsmall' => new external_value(PARAM_URL, 'User image profile URL - small version', VALUE_OPTIONAL),
+                'profileimageurl' => new external_value(PARAM_URL, 'User image profile URL - big version', VALUE_OPTIONAL),
+                'customfields' => new external_multiple_structure(
+                    new external_single_structure(
+                        array(
+                            'type'  => new external_value(PARAM_ALPHANUMEXT, 'The type of the custom field - text field, checkbox...'),
+                            'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
+                            'name' => new external_value(PARAM_RAW, 'The name of the custom field'),
+                            'shortname' => new external_value(PARAM_RAW, $desc),
+                        )
+                    ), 'User custom fields (also known as user profil fields)', VALUE_OPTIONAL),
+            );
+        }
+    }
+
     protected static function validate_config_parameters($configparamdefs, $inputs) {
         $status = self::validate_parameters($configparamdefs, $inputs);
 
@@ -100,7 +148,7 @@ class tool_sync_external extends external_api {
     public static function set_config($service, $confkey, $confvalue) {
 
         // Validate parameters.
-        $params = self::validate_config_parameters(self::set_config_parameters(),
+        self::validate_config_parameters(self::set_config_parameters(),
                 array('service' => $service, 'confkey' => $confkey, 'confvalue' => $confvalue));
 
         set_config($service.'_'.$confkey, $confvalue, 'tool_sync');
@@ -118,7 +166,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success');
     }
 
-    // Commit an uploaded file ----------------------------------------------.
+    // Commit an uploaded file .
 
     /**
      * Returns description of method parameters
@@ -148,7 +196,7 @@ class tool_sync_external extends external_api {
         $parameters = array(
             'draftitemid' => $draftitemid,
         );
-        $params = self::validate_parameters(self::commit_file_parameters(), $parameters);
+        self::validate_parameters(self::commit_file_parameters(), $parameters);
 
         if (tool_sync_supports_feature('api/commit')) {
             include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
@@ -168,7 +216,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success status');
     }
 
-    // Process a synchronisation task -----------------------------------------.
+    // Process a synchronisation task .
 
     /**
      * Returns description of method parameters
@@ -221,7 +269,7 @@ class tool_sync_external extends external_api {
         global $CFG;
 
         // Validate parameters.
-        $params = self::validate_process_parameters(self::process_parameters(),
+        self::validate_process_parameters(self::process_parameters(),
                         array('service' => $service, 'action' => $action));
 
         if (tool_sync_supports_feature('api/process')) {
@@ -243,7 +291,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_TEXT, 'CSV report');
     }
 
-    // Check a courxe exists ------------------------------------------------.
+    // Check a courxe exists.
 
     public static function check_course_parameters() {
         return new external_function_parameters(array(
@@ -276,7 +324,7 @@ class tool_sync_external extends external_api {
         global $DB;
 
         // Validate parameters.
-        $params = self::validate_check_parameters(self::check_course_parameters(), array(
+        self::validate_check_parameters(self::check_course_parameters(), array(
             'courseidsource' => $courseidsource,
             'courseid' => $courseid,
             )
@@ -295,7 +343,7 @@ class tool_sync_external extends external_api {
         return new external_value(PARAM_BOOL, 'Course existance status');
     }
 
-    // Create course from a template ------------------------------------------------.
+    // Create course from a template.
 
     public static function deploy_course_parameters() {
         return new external_function_parameters(array(
@@ -348,7 +396,7 @@ class tool_sync_external extends external_api {
         global $CFG;
 
         // Validate parameters.
-        $params = self::validate_deploy_parameters(self::deploy_course_parameters(), array(
+        self::validate_deploy_parameters(self::deploy_course_parameters(), array(
             'categoryidsource' => $categoryidsource,
             'categoryid' => $categoryid,
             'templateidsource' => $templateidsource,
