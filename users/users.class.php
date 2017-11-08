@@ -826,7 +826,7 @@ class users_sync_manager extends sync_manager {
 
         // Pre check we have no email collision.
         if ($identifiedby != 'email') {
-            if ($user->email) {
+            if (!empty($user->email)) {
                 $params = array('mnethostid' => $user->mnethostid, 'email' => $user->email, $identifiedby => $user->$identifiedby);
                 $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
                 if ($otherusers = $DB->get_records_select('user', $select, $params)) {
