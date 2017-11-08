@@ -19,7 +19,7 @@
  *
  * Tool Sync cohort API allows external applications to bind cohorts to courses
  * with a cohort based enrol instance.
- * Compatible with some additional cohort related methods as delayedcohort or 
+ * Compatible with some additional cohort related methods as delayedcohort or
  * cohortrestricted plugins.
  *
  * @package    tool_sync
@@ -96,9 +96,12 @@ class tool_sync_cohort_ext_external extends external_api {
                 throw new required_capability_exception($context, 'moodle/cohort:view', 'nopermissions', '');
             }
 
-            list($cohort->description, $cohort->descriptionformat) =
-                external_format_text($cohort->description, $cohort->descriptionformat,
-                        $context->id, 'cohort', 'description', $cohort->id);
+            list($cohort->description, $cohort->descriptionformat) = external_format_text($cohort->description,
+                                                                                          $cohort->descriptionformat,
+                                                                                          $context->id,
+                                                                                          'cohort',
+                                                                                          'description',
+                                                                                          $cohort->id);
 
             $cohortsinfo[] = (array) $cohort;
         }
@@ -159,7 +162,6 @@ class tool_sync_cohort_ext_external extends external_api {
     public static function bind_cohort($chidsource, $chid, $cidsource, $cid, $ridsource, $rid,
                                       $method = 'cohort', $timestart = 0, $timeend = 0, $suspend = 0,
                                       $makegroup = 0, $extraparam1 = '', $extraparam2 = '') {
-        global $CFG, $DB;
 
         // Validate parameters.
         $parameters = array('cidsource' => $cidsource,
@@ -178,7 +180,8 @@ class tool_sync_cohort_ext_external extends external_api {
 
         self::validate_method_parameter($method);
 
-        tool_sync_execute_bind('add', $method, $course->id, $cohort->id, $role->id, $timestart, $timeend, $makegroup, $extraparam1, $extraparam2);
+        tool_sync_execute_bind('add', $method, $course->id, $cohort->id, $role->id, $timestart, $timeend,
+                               $makegroup, $extraparam1, $extraparam2);
 
         return true;
     }
@@ -279,7 +282,7 @@ class tool_sync_cohort_ext_external extends external_api {
             'chid' => $chid);
         $cohort = self::validate_cohort_parameters($parameters);
 
-        tool_sync_execute_bind('del', $method, $course->id, $cohort->id, $role->id);
+        tool_sync_execute_bind('del', $method, $course->id, $cohort->id, '*');
 
         return true;
     }
@@ -367,7 +370,7 @@ class tool_sync_cohort_ext_external extends external_api {
     }
 
     public static function get_users($chidsource, $chid, $options = array()) {
-        global $CFG, $USER, $DB;
+        global $CFG, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
 
         $parameters = array(
@@ -438,7 +441,7 @@ class tool_sync_cohort_ext_external extends external_api {
         $users = array();
         foreach ($cohortusers as $user) {
             context_helper::preload_from_record($user);
-            if ($userdetails = user_get_user_details($user, $course, $userfields)) {
+            if ($userdetails = user_get_user_details($user, null, $userfields)) {
                 $users[] = $userdetails;
             }
         }
@@ -454,57 +457,18 @@ class tool_sync_cohort_ext_external extends external_api {
      */
     public static function get_users_returns() {
 
-        $desc = 'The shortname of the custom field - to be able to build the field class in the code';
+        tool_sync_external::full_user_set_init();
+        $fulluserset = tool_sync_external::$fullusersetbase;
 
-        return new external_multiple_structure(
+        $fulluserset['preferences'] = new external_multiple_structure(
             new external_single_structure(
                 array(
-                    'id'    => new external_value(PARAM_INT, 'ID of the user'),
-                    'username'    => new external_value(PARAM_RAW, 'Username policy is defined in Moodle security config', VALUE_OPTIONAL),
-                    'firstname'   => new external_value(PARAM_NOTAGS, 'The first name(s) of the user', VALUE_OPTIONAL),
-                    'lastname'    => new external_value(PARAM_NOTAGS, 'The family name of the user', VALUE_OPTIONAL),
-                    'fullname'    => new external_value(PARAM_NOTAGS, 'The fullname of the user'),
-                    'email'       => new external_value(PARAM_TEXT, 'An email address - allow email as root@localhost', VALUE_OPTIONAL),
-                    'address'     => new external_value(PARAM_TEXT, 'Postal address', VALUE_OPTIONAL),
-                    'phone1'      => new external_value(PARAM_NOTAGS, 'Phone 1', VALUE_OPTIONAL),
-                    'phone2'      => new external_value(PARAM_NOTAGS, 'Phone 2', VALUE_OPTIONAL),
-                    'icq'         => new external_value(PARAM_NOTAGS, 'icq number', VALUE_OPTIONAL),
-                    'skype'       => new external_value(PARAM_NOTAGS, 'skype id', VALUE_OPTIONAL),
-                    'yahoo'       => new external_value(PARAM_NOTAGS, 'yahoo id', VALUE_OPTIONAL),
-                    'aim'         => new external_value(PARAM_NOTAGS, 'aim id', VALUE_OPTIONAL),
-                    'msn'         => new external_value(PARAM_NOTAGS, 'msn number', VALUE_OPTIONAL),
-                    'department'  => new external_value(PARAM_TEXT, 'department', VALUE_OPTIONAL),
-                    'institution' => new external_value(PARAM_TEXT, 'institution', VALUE_OPTIONAL),
-                    'idnumber'    => new external_value(PARAM_RAW, 'An arbitrary ID code number perhaps from the institution', VALUE_OPTIONAL),
-                    'interests'   => new external_value(PARAM_TEXT, 'user interests (separated by commas)', VALUE_OPTIONAL),
-                    'firstaccess' => new external_value(PARAM_INT, 'first access to the site (0 if never)', VALUE_OPTIONAL),
-                    'lastaccess'  => new external_value(PARAM_INT, 'last access to the site (0 if never)', VALUE_OPTIONAL),
-                    'description' => new external_value(PARAM_RAW, 'User profile description', VALUE_OPTIONAL),
-                    'descriptionformat' => new external_format_value('description', VALUE_OPTIONAL),
-                    'city'        => new external_value(PARAM_NOTAGS, 'Home city of the user', VALUE_OPTIONAL),
-                    'url'         => new external_value(PARAM_URL, 'URL of the user', VALUE_OPTIONAL),
-                    'country'     => new external_value(PARAM_ALPHA, 'Home country code of the user, such as AU or CZ', VALUE_OPTIONAL),
-                    'profileimageurlsmall' => new external_value(PARAM_URL, 'User image profile URL - small version', VALUE_OPTIONAL),
-                    'profileimageurl' => new external_value(PARAM_URL, 'User image profile URL - big version', VALUE_OPTIONAL),
-                    'customfields' => new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'type'  => new external_value(PARAM_ALPHANUMEXT, 'The type of the custom field - text field, checkbox...'),
-                                'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
-                                'name' => new external_value(PARAM_RAW, 'The name of the custom field'),
-                                'shortname' => new external_value(PARAM_RAW, $desc),
-                            )
-                        ), 'User custom fields (also known as user profil fields)', VALUE_OPTIONAL),
-                    'preferences' => new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'name'  => new external_value(PARAM_ALPHANUMEXT, 'The name of the preferences'),
-                                'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
-                            )
-                    ), 'User preferences', VALUE_OPTIONAL),
+                    'name'  => new external_value(PARAM_ALPHANUMEXT, 'The name of the preferences'),
+                    'value' => new external_value(PARAM_RAW, 'The value of the custom field'),
                 )
-            )
-        );
+            ), 'User preferences', VALUE_OPTIONAL);
+
+        return new external_multiple_structure(new external_single_structure($fulluserset));
     }
 
 
@@ -534,7 +498,7 @@ class tool_sync_cohort_ext_external extends external_api {
         );
 
         // Non blocking call to validate params.
-        if ($cohort = self::validate_cohort_parameters($paramseters, false)) {
+        if ($cohort = self::validate_cohort_parameters($parameters, false)) {
             cohort_delete_cohort($cohort);
             return true;
         }
@@ -593,7 +557,7 @@ class tool_sync_cohort_ext_external extends external_api {
      * @since Moodle 2.5
      */
     public static function add_cohort_members($members) {
-        global $CFG, $DB;
+        global $CFG;
 
         require_once($CFG->dirroot."/cohort/externallib.php");
 
@@ -611,7 +575,7 @@ class tool_sync_cohort_ext_external extends external_api {
                 'uidsource' => $member['usertype']['type'],
                 'uid' => $member['usertype']['value']
             );
-            $user = self::validate_user_parameters($inputs, $blocking);
+            $user = self::validate_user_parameters($inputs);
 
             $member['usertype']['type'] = 'id';
             $member['usertype']['value'] = $user->id;
@@ -620,8 +584,6 @@ class tool_sync_cohort_ext_external extends external_api {
         }
 
         return core_cohort_external::add_cohort_members($coremembers);
-
-        return $result;
     }
 
     /**
