@@ -1337,7 +1337,7 @@ class course_sync_manager extends sync_manager {
                                     $previous->enrolenddate = 0;
                                 }
                                 $previous->status = 0;
-                                $DB->update('enrol', $previous);
+                                $DB->update_record('enrol', $previous);
                                 $e = new StdClass();
                                 $e->for = $valuearr['meta']; // Real imput value for report.
                                 $e->from = $valuearr['master']; // Real imput value for report.
