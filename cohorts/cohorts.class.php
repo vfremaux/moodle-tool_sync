@@ -281,6 +281,7 @@ class cohorts_sync_manager extends sync_manager {
 
                     // Create cohort if missing.
                     if (!$cohort) {
+                        // Cohort is new.
                         if (!$autocreatecohorts) {
                             // Creation is forbidden. Nust report the case.
                             // TODO track in log, push in runback file.
@@ -302,28 +303,8 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->idnumber = @$record['cidnumber'];
                             $cohort->component = ''.@$record['component'];
                             $cohort->descriptionformat = FORMAT_MOODLE;
-                            if (!empty($record['ccatcontext'])) {
-                                if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
-                                    $context = context_coursecat::instance($record['ccatcontext']);
-                                    $cohort->contextid = $context->id;
-                                } else {
-                                    $e = new StdClass;
-                                    $e->catid = $record['ccatcontext'];
-                                    $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
-                                    continue;
-                                }
-                            } else if (!empty($record['ccatcontextidnumber'])) {
-                                if ($coursecat = $DB->get_record('course_categories', array('idnumber' => $record['ccatcontextidnumber']))) {
-                                    $context = context_coursecat::instance($coursecat->id);
-                                    $cohort->contextid = $context->id;
-                                } else {
-                                    $e = new StdClass;
-                                    $e->catid = $record['ccatcontextidnumber'];
-                                    $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
-                                    continue;
-                                }
-                            } else {
-                                $cohort->contextid = $systemcontext->id;
+                            if (!$cohort->contextid = $this->check_category_context($record)) {
+                                continue;
                             }
                             $cohort->timecreated = $t;
                             $cohort->timemodified = $t;
@@ -351,6 +332,7 @@ class cohorts_sync_manager extends sync_manager {
                             }
                         }
                     } else {
+                        // Cohort exists. We are updating it.
                         if (!empty($record['cdescription'])) {
                             $cohort->description = $record['cdescription'];
                         }
@@ -360,32 +342,9 @@ class cohorts_sync_manager extends sync_manager {
                         if (!empty($record['name'])) {
                             $cohort->idnumber = @$record['name'];
                         }
-                        if (!empty($record['ccatcontext'])) {
-                            if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
-                                $context = context_coursecat::instance($record['ccatcontext']);
-                                $cohort->contextid = $context->id;
-                            } else {
-                                $e = new StdClass;
-                                $e->catid = $record['ccatcontext'];
-                                $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
-                                continue;
-                            }
-                        } else if (!empty($record['ccatcontextidnumber'])) {
-                            if ($coursecat = $DB->get_record('course_categories', array('idnumber' => $record['ccatcontextidnumber']))) {
-                                $context = context_coursecat::instance($coursecat->id);
-                                $cohort->contextid = $context->id;
-                            } else {
-                                $e = new StdClass;
-                                $e->catid = $record['ccatcontextidnumber'];
-                                $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
-                                continue;
-                            }
-                        } else {
-                            if ($record['ccatcontext'] === 0) {
-                                $cohort->contextid = $systemcontext->id;
-                            }
+                        if (!$cohort->contextid = $this->check_category_context($record, true)) {
+                            continue;
                         }
-
                         if (empty($syncconfig->simulate)) {
                             $DB->update_record('cohort', $cohort);
                             $this->report(get_string('cohortupdated', 'tool_sync', $cohort));
@@ -654,5 +613,43 @@ class cohorts_sync_manager extends sync_manager {
         $this->report("\n".get_string('endofreport', 'tool_sync'));
 
         return true;
+    }
+
+    protected function check_category_context($record, $update = false) {
+        global $DB;
+
+        if (!empty($record['ccatcontext'])) {
+            if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
+                $context = context_coursecat::instance($record['ccatcontext']);
+                $contextid = $context->id;
+            } else {
+                $e = new StdClass;
+                $e->catid = $record['ccatcontext'];
+                $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
+                return null;
+            }
+        } else if (!empty($record['ccatcontextidnumber'])) {
+            if ($coursecat = $DB->get_record('course_categories', array('idnumber' => $record['ccatcontextidnumber']))) {
+                $context = context_coursecat::instance($coursecat->id);
+                $contextid = $context->id;
+            } else {
+                $e = new StdClass;
+                $e->catid = $record['ccatcontextidnumber'];
+                $this->report(get_string('cohortbadcontext', 'tool_sync', $e));
+                return null;
+            }
+        } else {
+            if ($update) {
+                // If we are updating, we may force turning to system context only if explicitely required.
+                if ($record['ccatcontext'] === 0) {
+                    $contextid = $systemcontext->id;
+                }
+            } else {
+                // When new, turn to system context in all other cases.
+                $contextid = $systemcontext->id;
+            }
+        }
+
+        return $contextid;
     }
 }

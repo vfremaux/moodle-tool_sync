@@ -41,7 +41,7 @@ class InputFileLoadForm extends moodleform {
         // Process localfile name.
         $allfilerecs = array();
         $wildcard = false;
-        if (tool_sync_supports_feature('fileloading/wildcard') && 
+        if (tool_sync_supports_feature('fileloading/wildcard') &&
                 preg_match('#\\*#', $this->_customdata['localfile'])) {
 
             $wildcard = true;
@@ -55,7 +55,7 @@ class InputFileLoadForm extends moodleform {
             $filerec->component = 'tool_sync';
             $filerec->filearea = 'syncfiles';
             $filerec->itemid = 0;
-            $filerec->filepath = ($localdir == '' || $localdir == '.') ? '/' : $localdir ;
+            $filerec->filepath = ($localdir == '' || $localdir == '.') ? '/' : $localdir;
             $filerec->filename = $localbase;
 
             if ($allfilerecs = tool_sync_get_first_available_file($filerec, true)) {
