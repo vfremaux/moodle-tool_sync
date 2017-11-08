@@ -21,6 +21,7 @@
  * @copyright 2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
 function tool_sync_execute_bind($cmd, $enrol, $courseid, $cohortid, $roleid, $starttime = 0, $endtime = 0,
                                 $makegroup = 0, $extra1 = 0, $extra2 = 0, $simulate = false) {
