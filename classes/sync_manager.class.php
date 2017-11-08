@@ -319,6 +319,9 @@ class sync_manager {
         echo " cleaned.\n";
     }
 
+    /**
+     * checks headers integrity.
+     */
     protected function check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults) {
 
         // Check for valid field names.
