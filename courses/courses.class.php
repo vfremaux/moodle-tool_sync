@@ -1828,7 +1828,7 @@ class course_sync_manager extends sync_manager {
         }
 
         // Trap when template not found.
-        if (!empty($course['template'] && $course['template'] != "\n")) {
+        if (!empty($course['template']) && $course['template'] != "\n") {
             if (tool_sync_is_course_identifier($course['template'])) {
                 if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
                     return -7;
