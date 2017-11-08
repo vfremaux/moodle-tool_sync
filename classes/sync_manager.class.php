@@ -139,7 +139,7 @@ class sync_manager {
             $filepath = '/';  // Default name.
         } else {
             if (preg_match('#(http|ftp)s?://#', $configlocation)) {
-                // Remote loction of the file.
+                // Remote location of the file.
                 if (tool_sync_supports_feature('fileloading/remote')) {
                     // This is a remotely stored exposed file on the web. First retreive it.
                     require_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
