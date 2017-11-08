@@ -453,12 +453,12 @@ class enrol_sync_manager extends sync_manager {
                     if (!empty($record['enrol'])) {
                         if (empty($syncconfig->simulate)) {
                             try {
-                                if ($record['enrol'] != 'sync') {
-                                    $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
-                                                             $record['endtime'], ENROL_USER_ACTIVE);
-                                } else {
+                                if ($record['enrol'] == 'sync') {
                                     \enrol_sync_plugin::static_enrol_user($course, $user->id, $role->id, $record['starttime'],
                                                              $record['endtime']);
+                                } else {
+                                    $enrolplugin->enrol_user($enrol, $user->id, $role->id, $record['starttime'],
+                                                             $record['endtime'], ENROL_USER_ACTIVE);
                                 }
                                 $this->report(get_string('enrolled', 'tool_sync', $e));
                             } catch (Exception $exc) {
@@ -657,7 +657,7 @@ class enrol_sync_manager extends sync_manager {
                                     try {
                                         tool_sync_group_remove_member($gid, $user->id, $component);
                                         $this->report(get_string('removedfromgroup', 'tool_sync', $e));
-                                    } catch(Exception $e) {
+                                    } catch (Exception $e) {
                                         $this->report(get_string('removedfromgroupnot', 'tool_sync', $e));
                                     }
                                 } else {

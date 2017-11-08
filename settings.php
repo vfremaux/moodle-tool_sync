@@ -28,11 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 // PATCH+ : Adminsettings takeover
 // settings default init
 if (is_dir($CFG->dirroot.'/local/adminsettings')) {
-    // Integration driven code 
+    // Integration driven code.
     require_once($CFG->dirroot.'/local/adminsettings/lib.php');
     list($hasconfig, $hassiteconfig, $capability) = local_adminsettings_access();
 } else {
-    // Standard Moodle code
+    // Standard Moodle code.
     $hasconfig = $hassiteconfig = has_capability('moodle/site:config', context_system::instance());
 }
 
