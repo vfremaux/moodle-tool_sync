@@ -131,17 +131,39 @@ class sync_manager {
     protected function get_input_file($configlocation, $defaultlocation) {
         global $CFG;
 
+        $fs = get_file_storage();
+        $systemcontext = \context_system::instance();
+
         if (empty($configlocation)) {
             $filename = $defaultlocation;  // Default location.
             $filepath = '/';  // Default name.
         } else {
             if (preg_match('#(http|ftp)s?://#', $configlocation)) {
+                // Remote location of the file.
                 if (tool_sync_supports_feature('fileloading/remote')) {
                     // This is a remotely stored exposed file on the web. First retreive it.
                     require_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
                     tool_sync_get_remote_file($configlocation);
                 } else {
                     print_error('notsupported', 'tool_sync', 'fileloading/remote');
+                }
+            } else if (preg_match('/,/', $configlocation)) {
+                $files = explode(',', $configlocation);
+                while ($file = array_shift($files)) {
+                    $parts = pathinfo($configlocation);
+                    $filename = $parts['basename'];
+                    $filepath = $parts['dirname'];
+
+                    if ($filepath == '/./') {
+                        $filepath = '/';
+                    }
+
+                    if (!$fs->get_file($systemcontext->id, 'tool_sync', 'syncfiles', 0, $filepath, $filename)) {
+                        continue;
+                    }
+                }
+                if (!$file) {
+                    return;
                 }
             } else {
                 // This is an existing file in our local tool sync filearea.
@@ -153,20 +175,28 @@ class sync_manager {
             }
         }
 
+        $filerec = new \StdClass();
+        $filerec->contextid = \context_system::instance()->id;
+        $filerec->component = 'tool_sync';
+        $filerec->filearea = 'syncfiles';
+        $filerec->itemid = 0;
+        $filerec->filepath = $filepath;
+        $filerec->filename = $filename;
+
+        if ($filepath == '/./') {
+            $filerec->filepath = '/';
+        }
+
         if (!$this->filename_has_wildcard($filename)) {
-            $filerec = new \StdClass();
-            $filerec->contextid = \context_system::instance()->id;
-            $filerec->component = 'tool_sync';
-            $filerec->filearea = 'syncfiles';
-            $filerec->itemid = 0;
-            $filerec->filepath = $filepath;
-            $filerec->filename = $filename;
+            mtrace('SINGLE FILE mode');
             return $filerec;
         } else {
+            mtrace('WILDCARD mode');
             if (tool_sync_supports_feature('fileloading/wildcard')) {
                 // This is a remotely stored exposed file on the web. First retreive it.
                 require_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
-                return tool_sync_get_first_availablefile($filerec);
+                $firstfile = tool_sync_get_first_available_file($filerec);
+                return $firstfile;
             } else {
                 print_error('notsupported', 'tool_sync', 'fileloading/wildcard');
             }
@@ -175,7 +205,7 @@ class sync_manager {
     }
 
     /*
-     * Checks if 
+     * Checks if
      */
     protected function filename_has_wildcard($filename) {
         return preg_match('/\\*/', $filename);
@@ -184,15 +214,53 @@ class sync_manager {
     /**
      * Given a file rec, get an open strem on it and process error cases.
      */
-    protected function open_input_file($filerec) {
+    protected function open_input_file($filerec, $tool) {
+
+        $lastrunning = get_config('tool_sync', 'lastrunning_'.$tool);
 
         if (!$filerec) {
             return false;
         }
 
+        $systemcontext = \context_system::instance();
         $fs = get_file_storage();
 
-        if ($filerec->filepath == '/./') {
+        if (!empty($lastrunning)) {
+            // Something has gone wrong in the previous processing. We must discard this file by renaming it to tryback.
+            $lastpath = dirname($lastrunning);
+            $lastname = basename($lastrunning);
+
+            if (empty($lastpath) || $lastpath == '.') {
+                $lastpath = '/';
+            }
+            $oldfile = $fs->get_file($systemcontext->id, 'tool_sync', 'syncfiles', 0, $lastpath, $lastname);
+            if ($oldfile) {
+                $discardedrec = new \StdClass;
+                $discardedrec->contextid = $systemcontext->id;
+                $discardedrec->component = 'tool_sync';
+                $discardedrec->filearea = 'syncfiles';
+                $discardedrec->itemid = 0;
+                $discardedrec->filepath = $lastpath;
+                $newname = preg_replace('/(\\.[^\\.]*)$/', '-tryback-failed\\1', $lastname);
+                $discardedrec->filename = $newname;
+
+                if ($olddiscardfile = $fs->get_file($systemcontext->id, 'tool_sync', 'syncfiles', 0,
+                                                    $discardedrec->filepath, $discardedrec->filename)) {
+                    $olddiscardfile->delete();
+                }
+
+                $fs->create_file_from_storedfile($discardedrec, $oldfile);
+                $oldfile->delete();
+                mtrace("discarding old file $lastname");
+            } else {
+                mtrace("No old file");
+            }
+            set_config('lastrunning_'.$tool, null, 'tool_sync');
+            mtrace("Rearming for next run");
+            return false;
+        }
+
+        if (($filerec->filepath == '/./') || ($filerec->filepath == '//')) {
             $filerec->filepath = '/';
         }
 
@@ -202,6 +270,11 @@ class sync_manager {
             $this->report(get_string('filenotfound', 'tool_sync', "{$filerec->filepath}{$filerec->filename}"));
             return false;
         } else {
+            if (!empty($filepath) && $filepath != '/') {
+                set_config('lastrunning_'.$tool, $filerec->filepath.$filerec->filename, 'tool_sync');
+            } else {
+                set_config('lastrunning_'.$tool, $filerec->filename, 'tool_sync');
+            }
             ini_set('auto_detect_line_endings', true);
             $filereader = $inputfile->get_content_file_handle();
             return $filereader;
@@ -246,6 +319,9 @@ class sync_manager {
         echo " cleaned.\n";
     }
 
+    /**
+     * checks headers integrity.
+     */
     protected function check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults) {
 
         // Check for valid field names.

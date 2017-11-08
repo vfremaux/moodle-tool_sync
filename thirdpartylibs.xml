@@ -4,14 +4,28 @@
     <location>cli</location>
     <name>CLI</name>
     <license>GPL</license>
-    <version>2.7.0</version>
-    <licenseversion>2.7.0</licenseversion>
+    <version>2.9.0</version>
+    <licenseversion>2.9.0</licenseversion>
   </library>
   <library>
     <location>tests</location>
     <name>Tests scripts</name>
     <license>GPL</license>
-    <version>2.7.0</version>
-    <licenseversion>2.7.0</licenseversion>
+    <version>2.9.0</version>
+    <licenseversion>2.9.0</licenseversion>
+  </library>
+  <library>
+    <location>__customscripts</location>
+    <name>Customscripts</name>
+    <license>GPL</license>
+    <version>2.9.0</version>
+    <licenseversion>2.9.0</licenseversion>
+  </library>
+  <library>
+    <location>__reference</location>
+    <name>Moodle core reference files</name>
+    <license>GPL</license>
+    <version>2.9.0</version>
+    <licenseversion>2.9.0</licenseversion>
   </library>
 </libraries>
