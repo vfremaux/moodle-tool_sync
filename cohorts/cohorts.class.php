@@ -342,8 +342,9 @@ class cohorts_sync_manager extends sync_manager {
                         if (!empty($record['name'])) {
                             $cohort->idnumber = @$record['name'];
                         }
-                        if (!$cohort->contextid = $this->check_category_context($record, true)) {
-                            continue;
+                        $newcohortid = $this->check_category_context($record, true);
+                        if (!is_null($newcohortid)) {
+                            $cohort->contextid = $newcohortid;
                         }
                         if (empty($syncconfig->simulate)) {
                             $DB->update_record('cohort', $cohort);
@@ -641,8 +642,11 @@ class cohorts_sync_manager extends sync_manager {
         } else {
             if ($update) {
                 // If we are updating, we may force turning to system context only if explicitely required.
-                if ($record['ccatcontext'] === 0) {
+                if (@$record['ccatcontext'] === 0) {
                     $contextid = $systemcontext->id;
+                } else {
+                    // No change if updating.
+                    return null;
                 }
             } else {
                 // When new, turn to system context in all other cases.
