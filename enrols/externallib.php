@@ -113,30 +113,44 @@ class tool_sync_core_ext_external extends external_api {
             'suspend' => $suspend);
         $params = self::validate_enrol_parameters(self::enrol_user_parameters(), $parameters);
 
-        $class = 'enrol_'.$params['method'].'_external';
+        if ($method != 'sync') {
+            $class = 'enrol_'.$params['method'].'_external';
 
-        $enrollibfile = $CFG->dirroot.'/enrol/'.$params['method'].'/externallib.php';
-        if (!file_exists($enrollibfile)) {
-            throw new moodle_exception('This enrol method does not support web services');
+            $enrollibfile = $CFG->dirroot.'/enrol/'.$params['method'].'/externallib.php';
+            if (!file_exists($enrollibfile)) {
+                throw new moodle_exception('This enrol method does not support web services');
+            }
+            include_once($enrollibfile);
+
+            if (!class_exists($class)) {
+                throw new moodle_exception('This enrol method does not support enrol_users()');
+            }
+
+            // Get all ids depending on sources.
+
+            $enrolment = array(
+                'roleid' => $params['roleid'],
+                'courseid' => $params['courseid'],
+                'userid' => $params['userid'],
+                'timestart' => $params['timestart'],
+                'timeend' => $params['timeend'],
+                'suspend' => $params['suspend']
+            );
+
+            $class::enrol_users(array($enrolment));
+        } else {
+            if (!file_exists($CFG->dirroot.'/enrol/sync/lib.php')) {
+                throw new moodle_exception('Trying to use enrol/sync plugin but not installed here.');
+            }
+
+            include_once($CFG->dirroot.'/enrol/sync/lib.php');
+
+            // Course id has been already checked.
+            $course = $DB->get_record('course', array('id' => $courseid));
+            $status = (!empty($params['suspend'])) ? ENROL_USER_SUSPENDED : ENROL_USER_ACTIVE;
+            \enrol_sync_plugin::static_enrol_user($course, $params['userid'], $params['roleid'],
+                                                  $params['timestart'], $params['timeend'], $status);
         }
-        include_once($enrollibfile);
-
-        if (!class_exists($class)) {
-            throw new moodle_exception('This enrol method does not support enrol_users()');
-        }
-
-        // Get all ids depending on sources.
-
-        $enrolment = array(
-            'roleid' => $params['roleid'],
-            'courseid' => $params['courseid'],
-            'userid' => $params['userid'],
-            'timestart' => $params['timestart'],
-            'timeend' => $params['timeend'],
-            'suspend' => $params['suspend']
-        );
-
-        $class::enrol_users(array($enrolment));
 
         return true;
     }
@@ -187,23 +201,35 @@ class tool_sync_core_ext_external extends external_api {
             'method' => $method);
         $params = self::validate_enrol_parameters(self::unenrol_user_parameters(), $parameters, true);
 
-        $class = 'enrol_'.$params['method'].'_external';
+        if ($method != 'sync') {
+            $class = 'enrol_'.$params['method'].'_external';
 
-        if (!class_exists($class)) {
-            throw new moodle_exception('This enrol method does not support unenrol_users()');
+            if (!class_exists($class)) {
+                throw new moodle_exception('This enrol method does not support unenrol_users()');
+            }
+
+            // Get all ids depending on sources.
+
+            $enrolment = array(
+                'courseid' => $params['courseid'],
+                'userid' => $params['userid']
+            );
+            if (!empty($params['roleidsource'])) {
+                $enrolment['roleid'] = $params['roleid'];
+            }
+
+            $class::unenrol_users(array($enrolment));
+        } else {
+            if (!file_exists($CFG->dirroot.'/enrol/sync/lib.php')) {
+                throw new moodle_exception('Trying to use enrol/sync plugin but not installed here.');
+            }
+            include_once($CFG->dirroot.'/enrol/sync/lib.php');
+
+            // Course id has been already checked.
+            $course = $DB->get_record('course', array('id' => $courseid));
+            $status = (!empty($params['suspend'])) ? ENROL_USER_SUSPENDED : ENROL_USER_ACTIVE;
+            \enrol_sync_plugin::static_unenrol_user($course, $params['userid']);
         }
-
-        // Get all ids depending on sources.
-
-        $enrolment = array(
-            'courseid' => $params['courseid'],
-            'userid' => $params['userid']
-        );
-        if (!empty($params['roleidsource'])) {
-            $enrolment['roleid'] = $params['roleid'];
-        }
-
-        $class::unenrol_users(array($enrolment));
 
         return true;
 
