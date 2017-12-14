@@ -227,7 +227,6 @@ class tool_sync_core_ext_external extends external_api {
 
             // Course id has been already checked.
             $course = $DB->get_record('course', array('id' => $courseid));
-            $status = (!empty($params['suspend'])) ? ENROL_USER_SUSPENDED : ENROL_USER_ACTIVE;
             \enrol_sync_plugin::static_unenrol_user($course, $params['userid']);
         }
 
