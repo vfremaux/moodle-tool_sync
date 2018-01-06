@@ -47,4 +47,15 @@ Add file area cleanup task to keep number of files acceptable in the sync file a
 3.x.0016
 ===================================
 Fixes get_full_users WS when course invoked by shortname
+<<<<<<< HEAD
+>>>>>>> MOODLE_33_STABLE
+=======
+
+X.X.0017 :
+===================================
+- add wildcard input file processing for splitting load
+
+3.x.0019
+===================================
+Adds handling of special enrol/sync plugin when enrolling by WS
 >>>>>>> MOODLE_33_STABLE

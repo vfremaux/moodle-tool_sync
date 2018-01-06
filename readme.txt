@@ -59,3 +59,6 @@ given back to sender and checked for changes.
 
 2017091900 Increment X.X.0017 :
 - add wildcard input file processing for splitting load
+
+Increment 3.x.0019
+Adds handling of special enrol/sync plugin when enrolling by WS

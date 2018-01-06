@@ -55,6 +55,7 @@ $plugin->release = '3.3.0 (Build 2017091901)';
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 $plugin->codeincrement = '3.3.0014';
 >>>>>>> MOODLE_33_STABLE
 =======
@@ -68,5 +69,8 @@ $plugin->codeincrement = '3.3.0017';
 >>>>>>> MOODLE_33_STABLE
 =======
 $plugin->codeincrement = '3.3.0018';
+>>>>>>> MOODLE_33_STABLE
+=======
+$plugin->codeincrement = '3.3.0019';
 >>>>>>> MOODLE_33_STABLE
 $plugin->privacy = 'dualrelease';
