@@ -196,6 +196,7 @@ $string['errorrpcparams'] = 'Error : RPC param error: {$a}';
 $string['errors'] = 'Errors ';
 $string['errorsectioncreate'] = 'Error at line {$a->i}: Could not create topic sections for course with shortname {$a->coursename}';
 $string['errorsettingremoteaccess'] = 'Error openning user remote mnet access : {$a}';
+$string['errorshortnamecollision'] = 'Error at line {$a->i} : new course identified by {$a->courseidentifier} has colliding shortname {$a->coursename} with another existing course.';
 $string['errorsitepermissions'] = 'The site administrator needs to fix the file permissions';
 $string['errorteacherenrolincourse'] = 'Error at line {$a->i}: Could not enrol teachers for course with shortname {$a->coursename}';
 $string['errorteacherrolemissing'] = 'Error at line {$a->i}: Could not find teacher role for course with shortname {$a->coursename}';
