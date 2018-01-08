@@ -806,6 +806,10 @@ class users_sync_manager extends sync_manager {
 
         $newmode = (empty($olduser)) ? 'create' : 'update';
 
+        if (empty($user->idnumber)) {
+            $user->idnumber = '';
+        }
+
         // Pre check we have no username collision.
         if ($identifiedby != 'username') {
             $params = array('mnethostid' => $user->mnethostid,
