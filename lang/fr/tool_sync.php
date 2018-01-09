@@ -188,6 +188,7 @@ $string['errorrpcparams'] = 'Erreur de paramètres RPC : {$a}';
 $string['errors'] = 'Erreurs';
 $string['errorsectioncreate'] = 'Erreur ligne {$a->i} : Erreur pendant la création des sections du cours {$a->coursename}';
 $string['errorsettingremoteaccess'] = 'Erreur de l\'ouverture de droits d\'accès réseau : {$a} ';
+$string['errorshortnamecollision'] = 'Erreur ligne {$a->i} : Un cours à créer identifié par {$a->courseidentifier} a un nom court {$a->coursename} déjà utilisé par un autre cours.';
 $string['errorteacherenrolincourse'] = 'Erreur ligne {$a->i} : Impossible d\'enroler les enseignants du cours {$a->coursename}';
 $string['errorteacherrolemissing'] = 'Erreur ligne {$a->i} : Le rôle enseignant du cours  {$a->coursename} n\'a pas pu être déterminé';
 $string['errortemplatenotfound'] = 'Erreur ligne {$a->i} : Le gabarit de cours {$a->template} n\'a pas pu être trouvé ou n\'a pas d\'archives. Le cours {$a->coursename} n\'a pas pu être créé.';
