@@ -1047,6 +1047,29 @@ class course_sync_manager extends sync_manager {
                 $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
                 if (!$oldcourse = $DB->get_record('course', array($uploadidentifier => $bulkcourse[$uploadidentifier]))) {
 
+                    // We may check for a shortname duplicate if other identifier is used as reference.
+                    if (($uploadidentifier != 'shortname') && array_key_exists('shortname', $bulkcourse)) {
+                        // There is a shortname collision.
+                        if ($oldcourse = $DB->get_record('course', array('shortname' => $bulkcourse['shortname']))) {
+                            $e = new StdClass;
+                            $e->i = $i;
+                            $e->coursename = $bulkcourse['shortname'];
+                            $e->courseidentifier = $bulkcourse[$uploadidentifier];
+
+                            if (!empty($syncconfig->filefailed)) {
+                                $this->feed_tryback($sourcetext[$i]);
+                            }
+
+                            $simulation = '';
+                            if (!empty($syncconfig->simulate)) {
+                                $simulation = 'SIMULATION : ';
+                            }
+
+                            $this->report($simulation.get_string('errorshortnamecollision', 'tool_sync', $e));
+                            continue;
+                        }
+                    }
+
                     $coursetocategory = 0; // Category ID.
 
                     if (is_array($bulkcourse['category'])) {
