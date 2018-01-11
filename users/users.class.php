@@ -34,12 +34,6 @@ require_once($CFG->dirroot.'/group/lib.php');
 
 class users_sync_manager extends sync_manager {
 
-    protected $manualfilerec;
-
-    public function __construct($manualfilerec = null) {
-        $this->manualfilerec = $manualfilerec;
-    }
-
     /**
      * Configure elements for the tool configuration form
      */
@@ -805,6 +799,10 @@ class users_sync_manager extends sync_manager {
         global $DB;
 
         $newmode = (empty($olduser)) ? 'create' : 'update';
+
+        if (empty($user->idnumber)) {
+            $user->idnumber = '';
+        }
 
         // Pre check we have no username collision.
         if ($identifiedby != 'username') {
