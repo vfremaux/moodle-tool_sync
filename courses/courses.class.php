@@ -35,14 +35,12 @@ require_once($CFG->dirroot.'/backup/util/includes/restore_includes.php');
 
 class course_sync_manager extends sync_manager {
 
-    private $manualfilerec;
-
     private $identifieroptions;
 
     public $execute;
 
     public function __construct($execute = SYNC_COURSE_CREATE_DELETE, $manualfilerec = null) {
-        $this->manualfilerec = $manualfilerec;
+        parent::__construct($manualfilerec);
         $this->execute = $execute;
         $this->identifieroptions = array('idnumber' => 'idnumber', 'shortname' => 'shortname', 'id' => 'id');
         $this->catidentifieroptions = array('idnumber' => get_string('idnumber'), 'idname' => get_string('catidname', 'tool_sync'));
