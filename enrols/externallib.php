@@ -98,7 +98,7 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function enrol_user($roleidsource, $roleid, $useridsource, $userid, $courseidsource, $courseid,
                                       $method = 'manual', $timestart = 0, $timeend = 0, $suspend = 0) {
-        global $CFG;
+        global $CFG, $DB;
 
         // Validate parameters.
         $parameters = array('roleidsource' => $roleidsource,
@@ -148,6 +148,7 @@ class tool_sync_core_ext_external extends external_api {
             // Course id has been already checked.
             $course = $DB->get_record('course', array('id' => $courseid));
             $status = (!empty($params['suspend'])) ? ENROL_USER_SUSPENDED : ENROL_USER_ACTIVE;
+            // May fire an exception if something goes wrong internally.
             \enrol_sync_plugin::static_enrol_user($course, $params['userid'], $params['roleid'],
                                                   $params['timestart'], $params['timeend'], $status);
         }
@@ -191,6 +192,7 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function unenrol_user($useridsource, $userid, $courseidsource, $courseid, $roleidsource = '', $roleid = '',
                                         $method = 'manual') {
+        global $CFG, $DB;
 
         $parameters = array('useridsource' => $useridsource,
             'userid' => $userid,

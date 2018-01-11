@@ -39,13 +39,11 @@ require_once($CFG->dirroot.'/admin/tool/sync/classes/sync_manager.class.php');
 
 class cohorts_sync_manager extends sync_manager {
 
-    protected $manualfilerec;
-
     public $execute;
 
     public function __construct($execute = SYNC_COHORT_CREATE_UPDATE, $manualfilerec = null) {
         $this->execute = $execute;
-        $this->manualfilerec = $manualfilerec;
+        parent::__construct($manualfilerec);
     }
 
     public function form_elements(&$frm) {
