@@ -34,6 +34,13 @@ class sync_manager {
     // Keeps tryback lines.
     private $trybackarr;
 
+    // An eventual uploaded file to process
+    protected $manualfilerec;
+
+    public function __construct($manualfilerec = null) {
+        $this->manualfilerec = $manualfilerec;
+    }
+
     /**
      * Adds a report message into the log buffer.
      */

@@ -34,12 +34,6 @@ require_once($CFG->dirroot.'/group/lib.php');
 
 class users_sync_manager extends sync_manager {
 
-    protected $manualfilerec;
-
-    public function __construct($manualfilerec = null) {
-        $this->manualfilerec = $manualfilerec;
-    }
-
     /**
      * Configure elements for the tool configuration form
      */
