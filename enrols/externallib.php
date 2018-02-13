@@ -966,8 +966,8 @@ class tool_sync_core_ext_external extends external_api {
         return $lightusers;
     }
 
-    protected static options_check($options, &$withcapability, &$groupid, &$onlyactive, &$userfields, &$limitfrom, &$limitnumber,
-                                   &$sortby, &$sortparams, &$sortdirection) {
+    protected static function options_check($options, &$withcapability, &$groupid, &$onlyactive, &$userfields, &$limitfrom,
+                                            &$limitnumber, &$sortby, &$sortparams, &$sortdirection) {
         $withcapability = '';
         $groupid = 0;
         $onlyactive = false;
