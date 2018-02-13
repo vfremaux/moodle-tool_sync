@@ -26,51 +26,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-$plugin->version = 2017071701;
-$plugin->requires = 2016112900; // Requires this Moodle version.
-$plugin->component = 'tool_sync'; // Full name of the plugin (used for diagnostics).
-$plugin->maturity = MATURITY_RC;
-$plugin->release = '3.2.0 (Build 2017071701)';
-
-// Non moodle attributes.
-$plugin->codeincrement = '3.2.0012';
-=======
-$plugin->version = 2017073100;
-=======
-$plugin->version = 2017091900;
->>>>>>> MOODLE_33_STABLE
-=======
 $plugin->version = 2017091901;
->>>>>>> MOODLE_33_STABLE
-$plugin->requires = 2017050500; // Requires this Moodle version.
+$plugin->requires = 2017110800; // Requires this Moodle version.
 $plugin->component = 'tool_sync'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_RC;
-$plugin->release = '3.3.0 (Build 2017091901)';
+$plugin->release = '3.4.0 (Build 2017091901)';
 
 // Non moodle attributes.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-$plugin->codeincrement = '3.3.0014';
->>>>>>> MOODLE_33_STABLE
-=======
-$plugin->codeincrement = '3.3.0015';
->>>>>>> MOODLE_33_STABLE
-=======
-$plugin->codeincrement = '3.3.0016';
->>>>>>> MOODLE_33_STABLE
-=======
-$plugin->codeincrement = '3.3.0017';
->>>>>>> MOODLE_33_STABLE
-=======
-$plugin->codeincrement = '3.3.0018';
->>>>>>> MOODLE_33_STABLE
-=======
-$plugin->codeincrement = '3.3.0019';
->>>>>>> MOODLE_33_STABLE
+$plugin->codeincrement = '3.4.0019';
 $plugin->privacy = 'dualrelease';

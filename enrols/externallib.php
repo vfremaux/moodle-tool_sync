@@ -165,15 +165,7 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Operation status');
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // Commit an uploaded file.
-=======
-    // Unenrol a user ---------------------------------------------------------------.
->>>>>>> MOODLE_33_STABLE
-=======
     // Unenrol a user.
->>>>>>> MOODLE_33_STABLE
 
     /**
      * Returns description of method parameters
@@ -253,16 +245,7 @@ class tool_sync_core_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Success status');
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // Role assigns related.
-
-    public function validate_role_paramters($configparamdefs, $inputs) {
-=======
-    // Enrol a set of users --------------------------------------------------------------.
-=======
     // Enrol a set of users.
->>>>>>> MOODLE_33_STABLE
 
     /**
      * Returns description of method parameters
@@ -363,13 +346,13 @@ class tool_sync_core_ext_external extends external_api {
             foreach ($enrols as $enrol) {
                 $result = new Stdclass;
                 $result->userid = $enrol['userid'];
-                $result->status = self::unenrol_user($enrol['roleidsource'],
-                                                        $enrol['roleid'],
-                                                        $enrol['useridsource'],
-                                                        $enrol['userid'],
-                                                        $enrol['courseidsource'],
-                                                        $enrol['courseid'],
-                                                        $enrol['method']);
+                $result->status = self::unenrol_user($enrol['useridsource'],
+                                                     $enrol['userid'],
+                                                     $enrol['courseidsource'],
+                                                     $enrol['courseid'],
+                                                     $enrol['roleidsource'],
+                                                     $enrol['roleid'],
+                                                     $enrol['method']);
                 $results[] = $result;
             }
         }
@@ -399,7 +382,6 @@ class tool_sync_core_ext_external extends external_api {
     // Role assigns related.
 
     public function validate_role_parameters($configparamdefs, $inputs) {
->>>>>>> MOODLE_33_STABLE
         global $DB, $CFG;
 
         $status = self::validate_parameters($configparamdefs, $inputs);

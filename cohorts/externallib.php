@@ -48,8 +48,6 @@ class tool_sync_cohort_ext_external extends external_api {
      * Returns description of method parameters
      *
      * @return external_function_parameters
-<<<<<<< HEAD
-=======
      * @since Moodle 2.5
      */
     public static function get_cohorts_parameters() {
@@ -136,7 +134,6 @@ class tool_sync_cohort_ext_external extends external_api {
      * Returns description of method parameters
      *
      * @return external_function_parameters
->>>>>>> MOODLE_33_STABLE
      */
     public static function bind_cohort_parameters() {
         return new external_function_parameters(
@@ -211,11 +208,7 @@ class tool_sync_cohort_ext_external extends external_api {
                 'chid' => new external_value(PARAM_TEXT, 'The cohort id'),
                 'cidsource' => new external_value(PARAM_TEXT, 'The source for course identification'),
                 'cid' => new external_value(PARAM_TEXT, 'The course identifier'),
-<<<<<<< HEAD
-                'method' => new external_value(PARAM_TEXT, 'The enrol method', VALUE_DEFAULT, 'cohort'),
-=======
                 'method' => new external_value(PARAM_TEXT, 'The enrol method (needs bing a cohort related method)', VALUE_DEFAULT, 'cohort'),
->>>>>>> MOODLE_33_STABLE
             )
         );
     }
@@ -522,8 +515,6 @@ class tool_sync_cohort_ext_external extends external_api {
         return new external_value(PARAM_BOOL, 'Operation status. If false, cohort was not found');
     }
 
-<<<<<<< HEAD
-=======
     /* ---------------------------------------- Wrappers for core_cohort functions -------------------------------.
 
     /**
@@ -688,7 +679,6 @@ class tool_sync_cohort_ext_external extends external_api {
 
     /* ---------------------------------------- Object validators ---------------------------------------.
 
->>>>>>> MOODLE_33_STABLE
     /**
      * @param array $inputs
      * @param bool $blocking if false, may return null or false
@@ -795,8 +785,6 @@ class tool_sync_cohort_ext_external extends external_api {
         }
     }
 
-<<<<<<< HEAD
-=======
     protected static function validate_user_parameters(&$inputs, $blocking = true) {
         global $DB;
 
@@ -836,7 +824,6 @@ class tool_sync_cohort_ext_external extends external_api {
         }
     }
 
->>>>>>> MOODLE_33_STABLE
     protected static function validate_method_parameter($method) {
 
         $supportedmethods = array('cohort', 'delayedcohort', 'cohortrestricted');

@@ -1,10 +1,6 @@
 <?php
 
-<<<<<<< HEAD
-class test_client {
-=======
 class test_client_base {
->>>>>>> MOODLE_33_STABLE
 
     protected $t; // target.
 
