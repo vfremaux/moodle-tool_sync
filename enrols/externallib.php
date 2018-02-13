@@ -715,76 +715,8 @@ class tool_sync_core_ext_external extends external_api {
 
         /* Copy all code of original here. change : avoid validating context as it creates a weird redirection. */
 
-        $withcapability = '';
-        $groupid = 0;
-        $onlyactive = false;
-        $userfields = array();
-        $limitfrom = 0;
-        $limitnumber = 0;
-        $sortby = 'us.id';
-        $sortparams = array();
-        $sortdirection = 'ASC';
-        foreach ($options as $option) {
-            switch ($option['name']) {
-
-                case 'withcapability': {
-                    $withcapability = $option['value'];
-                    break;
-                }
-
-                case 'groupid': {
-                    $groupid = (int)$option['value'];
-                    break;
-                }
-
-                case 'onlyactive': {
-                    $onlyactive = !empty($option['value']);
-                    break;
-                }
-
-                case 'userfields': {
-                    $thefields = explode(',', $option['value']);
-                    foreach ($thefields as $f) {
-                        $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
-                    }
-                    break;
-                }
-
-                case 'limitfrom': {
-                    $limitfrom = clean_param($option['value'], PARAM_INT);
-                    break;
-                }
-
-                case 'limitnumber': {
-                    $limitnumber = clean_param($option['value'], PARAM_INT);
-                    break;
-                }
-
-                case 'sortby': {
-                    $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
-                    if (!in_array($option['value'], $sortallowedvalues)) {
-                        throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
-                            'allowed values are: ' . implode(',', $sortallowedvalues));
-                    }
-                    if ($option['value'] == 'siteorder') {
-                        list($sortby, $sortparams) = users_order_by_sql('us');
-                    } else {
-                        $sortby = 'us.' . $option['value'];
-                    }
-                    break;
-                }
-
-                case 'sortdirection': {
-                    $sortdirection = strtoupper($option['value']);
-                    $directionallowedvalues = array('ASC', 'DESC');
-                    if (!in_array($sortdirection, $directionallowedvalues)) {
-                        throw new invalid_parameter_exception('Invalid value for sortdirection parameter
-                            (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
-                    }
-                    break;
-                }
-            }
-        }
+        self::options_check($options, $withcapability, $groupid, $onlyactive, $userfields, $limitfrom, $limitnumber,
+                            $sortby, $sortparams, $sortdirection);
 
         $course = $DB->get_record('course', array('id' => $params['courseid']), '*', MUST_EXIST);
         $coursecontext = context_course::instance($params['courseid'], IGNORE_MISSING);
@@ -951,77 +883,8 @@ class tool_sync_core_ext_external extends external_api {
 
         /* Copy all code of original here. change : avoid validating context as it creates a weird redirection. */
 
-        $withcapability = '';
-        $groupid = 0;
-        $onlyactive = false;
-        $userfields = array();
-        $limitfrom = 0;
-        $limitnumber = 0;
-        $sortby = 'us.id';
-        $sortparams = array();
-        $sortdirection = 'ASC';
-
-        foreach ($options as $option) {
-
-            switch ($option['name']) {
-                case 'withcapability': {
-                    $withcapability = $option['value'];
-                    break;
-                }
-
-                case 'groupid': {
-                    $groupid = (int)$option['value'];
-                    break;
-                }
-
-                case 'onlyactive': {
-                    $onlyactive = !empty($option['value']);
-                    break;
-                }
-
-                case 'userfields': {
-                    $thefields = explode(',', $option['value']);
-                    foreach ($thefields as $f) {
-                        $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
-                    }
-                    break;
-                }
-
-                case 'limitfrom': {
-                    $limitfrom = clean_param($option['value'], PARAM_INT);
-                    break;
-                }
-
-                case 'limitnumber': {
-                    $limitnumber = clean_param($option['value'], PARAM_INT);
-                    break;
-                }
-
-                case 'sortby': {
-                    $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
-                    if (!in_array($option['value'], $sortallowedvalues)) {
-                        throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
-                            'allowed values are: ' . implode(',', $sortallowedvalues));
-                    }
-                    if ($option['value'] == 'siteorder') {
-                        list($sortby, $sortparams) = users_order_by_sql('us');
-                    } else {
-                        $sortby = 'us.' . $option['value'];
-                    }
-                    break;
-                }
-
-                case 'sortdirection': {
-                    $sortdirection = strtoupper($option['value']);
-                    $directionallowedvalues = array('ASC', 'DESC');
-                    if (!in_array($sortdirection, $directionallowedvalues)) {
-                        throw new invalid_parameter_exception('Invalid value for sortdirection parameter
-                            (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
-                    }
-                    break;
-                }
-            }
-        }
+        self::options_check($options, $withcapability, $groupid, $onlyactive, $userfields, $limitfrom, $limitnumber,
+                            $sortby, $sortparams, $sortdirection);
 
         $course = $DB->get_record('course', array('id' => $params['courseid']), '*', MUST_EXIST);
         $coursecontext = context_course::instance($params['courseid'], IGNORE_MISSING);
@@ -1101,6 +964,81 @@ class tool_sync_core_ext_external extends external_api {
         }
 
         return $lightusers;
+    }
+
+    protected static options_check($options, &$withcapability, &$groupid, &$onlyactive, &$userfields, &$limitfrom, &$limitnumber,
+                                   &$sortby, &$sortparams, &$sortdirection) {
+        $withcapability = '';
+        $groupid = 0;
+        $onlyactive = false;
+        $userfields = array();
+        $limitfrom = 0;
+        $limitnumber = 0;
+        $sortby = 'us.id';
+        $sortparams = array();
+        $sortdirection = 'ASC';
+
+        foreach ($options as $option) {
+
+            switch ($option['name']) {
+                case 'withcapability': {
+                    $withcapability = $option['value'];
+                    break;
+                }
+
+                case 'groupid': {
+                    $groupid = (int)$option['value'];
+                    break;
+                }
+
+                case 'onlyactive': {
+                    $onlyactive = !empty($option['value']);
+                    break;
+                }
+
+                case 'userfields': {
+                    $thefields = explode(',', $option['value']);
+                    foreach ($thefields as $f) {
+                        $userfields[] = clean_param($f, PARAM_ALPHANUMEXT);
+                    }
+                    break;
+                }
+
+                case 'limitfrom': {
+                    $limitfrom = clean_param($option['value'], PARAM_INT);
+                    break;
+                }
+
+                case 'limitnumber': {
+                    $limitnumber = clean_param($option['value'], PARAM_INT);
+                    break;
+                }
+
+                case 'sortby': {
+                    $sortallowedvalues = array('id', 'firstname', 'lastname', 'siteorder');
+                    if (!in_array($option['value'], $sortallowedvalues)) {
+                        throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $option['value'] . '),' .
+                            'allowed values are: ' . implode(',', $sortallowedvalues));
+                    }
+                    if ($option['value'] == 'siteorder') {
+                        list($sortby, $sortparams) = users_order_by_sql('us');
+                    } else {
+                        $sortby = 'us.' . $option['value'];
+                    }
+                    break;
+                }
+
+                case 'sortdirection': {
+                    $sortdirection = strtoupper($option['value']);
+                    $directionallowedvalues = array('ASC', 'DESC');
+                    if (!in_array($sortdirection, $directionallowedvalues)) {
+                        throw new invalid_parameter_exception('Invalid value for sortdirection parameter
+                            (value: ' . $sortdirection . '),' . 'allowed values are: ' . implode(',', $directionallowedvalues));
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     /**

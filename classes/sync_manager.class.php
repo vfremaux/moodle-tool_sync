@@ -34,7 +34,7 @@ class sync_manager {
     // Keeps tryback lines.
     private $trybackarr;
 
-    // An eventual uploaded file to process
+    // An eventual uploaded file to process.
     protected $manualfilerec;
 
     public function __construct($manualfilerec = null) {
