@@ -259,7 +259,7 @@ class cohorts_sync_manager extends sync_manager {
                 // Bind user to cohort.
                 if ($record['cmd'] == 'add') {
 
-                    // $cid can be name, id or idnumber
+                    // Cid can be name, id or idnumber.
 
                     if (empty($record['c'.$cid])) {
                         $e = new StdClass;
@@ -383,7 +383,7 @@ class cohorts_sync_manager extends sync_manager {
 
                 } else if ($record['cmd'] == 'del') {
 
-                    // $cid can be name, id or idnumber
+                    // Cid can be name, id or idnumber.
                     $cohort = $DB->get_record('cohort', array($cid => $record['c'.$cid]));
                     if (!empty($record['userid'])) {
                         $user = $DB->get_record('user', array($uid => $record['userid']));
@@ -579,7 +579,8 @@ class cohorts_sync_manager extends sync_manager {
                     $valuearr['enrol'] = 'cohort';
                 }
 
-                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup, $syncconfig->simulate);
+                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime,
+                                       $endtime, $makegroup, $syncconfig->simulate);
             }
 
             fclose($filereader);
@@ -616,6 +617,8 @@ class cohorts_sync_manager extends sync_manager {
 
     protected function check_category_context($record, $update = false) {
         global $DB;
+
+        $systemcontext = context_system::instance();
 
         if (!empty($record['ccatcontext'])) {
             if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
