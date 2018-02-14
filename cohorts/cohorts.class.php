@@ -374,11 +374,13 @@ class cohorts_sync_manager extends sync_manager {
                             $this->report('SIMULATION: '.get_string('cohortmemberadded', 'tool_sync', $e));
                         }
                     } else {
-                        $simulate = '';
-                        if (!empty($syncconfig->simulate)) {
-                            $simulate = 'SIMULATION: ';
+                        if (array_key_exists('userid', $record)) {
+                            $simulate = '';
+                            if (!empty($syncconfig->simulate)) {
+                                $simulate = 'SIMULATION: ';
+                            }
+                            $this->report($simulate.get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                         }
-                        $this->report($simulate.get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                     }
 
                 } else if ($record['cmd'] == 'del') {
