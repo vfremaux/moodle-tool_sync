@@ -582,7 +582,7 @@ class cohorts_sync_manager extends sync_manager {
                 }
 
                 tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime,
-                                       $endtime, $makegroup, $syncconfig->simulate);
+                                       $endtime, $makegroup, @$syncconfig->simulate);
             }
 
             fclose($filereader);
