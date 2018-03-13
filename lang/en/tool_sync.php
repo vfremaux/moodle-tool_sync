@@ -533,7 +533,7 @@ enrol and setup user\'s course access in several courses. You may use several pa
 2? 3 etc. Leave all values blank for an unused pattern.</p>
 
 <p>Additionnaly you may use additional special fields for adding values in custome profile fields. The general
-form of those fiedls is: <i>user_profile_xxxxx</i></p>
+form of those fields is: <i>user_profile_xxxxx</i></p>
 ';
 
 $string['enrolformat'] = 'Enrol sync file format';
