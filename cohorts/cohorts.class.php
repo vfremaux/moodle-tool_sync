@@ -259,7 +259,7 @@ class cohorts_sync_manager extends sync_manager {
                 // Bind user to cohort.
                 if ($record['cmd'] == 'add') {
 
-                    // $cid can be name, id or idnumber
+                    // Cid can be name, id or idnumber.
 
                     if (empty($record['c'.$cid])) {
                         $e = new StdClass;
@@ -302,7 +302,7 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->component = ''.@$record['component'];
                             $cohort->descriptionformat = FORMAT_MOODLE;
                             if (!$cohort->contextid = $this->check_category_context($record)) {
-                                continue;
+                                $cohort->contextid = \context_system::instance()->id;
                             }
                             $cohort->timecreated = $t;
                             $cohort->timemodified = $t;
@@ -340,9 +340,9 @@ class cohorts_sync_manager extends sync_manager {
                         if (!empty($record['name'])) {
                             $cohort->idnumber = @$record['name'];
                         }
-                        $newcohortid = $this->check_category_context($record, true);
+                        $newcohortcontextid = $this->check_category_context($record, true);
                         if (!is_null($newcohortid)) {
-                            $cohort->contextid = $newcohortid;
+                            $cohort->contextid = $newcohortcontextid;
                         }
                         if (empty($syncconfig->simulate)) {
                             $DB->update_record('cohort', $cohort);
@@ -374,16 +374,18 @@ class cohorts_sync_manager extends sync_manager {
                             $this->report('SIMULATION: '.get_string('cohortmemberadded', 'tool_sync', $e));
                         }
                     } else {
-                        $simulate = '';
-                        if (!empty($syncconfig->simulate)) {
-                            $simulate = 'SIMULATION: ';
+                        if (array_key_exists('userid', $record)) {
+                            $simulate = '';
+                            if (!empty($syncconfig->simulate)) {
+                                $simulate = 'SIMULATION: ';
+                            }
+                            $this->report($simulate.get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                         }
-                        $this->report($simulate.get_string('cohortmissinguser', 'tool_sync', $record['userid']));
                     }
 
                 } else if ($record['cmd'] == 'del') {
 
-                    // $cid can be name, id or idnumber
+                    // Cid can be name, id or idnumber.
                     $cohort = $DB->get_record('cohort', array($cid => $record['c'.$cid]));
                     if (!empty($record['userid'])) {
                         $user = $DB->get_record('user', array($uid => $record['userid']));
@@ -579,7 +581,8 @@ class cohorts_sync_manager extends sync_manager {
                     $valuearr['enrol'] = 'cohort';
                 }
 
-                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime, $endtime, $makegroup, $syncconfig->simulate);
+                tool_sync_execute_bind($valuearr['cmd'], $valuearr['enrol'], $courseid, $cohortid, $roleid, $starttime,
+                                       $endtime, $makegroup, @$syncconfig->simulate);
             }
 
             fclose($filereader);
@@ -616,6 +619,8 @@ class cohorts_sync_manager extends sync_manager {
 
     protected function check_category_context($record, $update = false) {
         global $DB;
+
+        $systemcontext = \context_system::instance();
 
         if (!empty($record['ccatcontext'])) {
             if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {

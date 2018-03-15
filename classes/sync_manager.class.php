@@ -34,7 +34,7 @@ class sync_manager {
     // Keeps tryback lines.
     private $trybackarr;
 
-    // An eventual uploaded file to process
+    // An eventual uploaded file to process.
     protected $manualfilerec;
 
     public function __construct($manualfilerec = null) {
@@ -114,7 +114,11 @@ class sync_manager {
         $parts = pathinfo($originalfilerec->filename);
         $trybackfilename = $parts['filename'].'_tryback_'.date('Ymd-Hi').'.'.$parts['extension'];
 
-        $buffer = implode($config->csvseparator, $this->trybackhead)."\n";
+        if (is_array($this->trybackhead)) {
+            $buffer = implode("\n", $this->trybackhead)."\n";
+        } else {
+            $buffer = $this->trybackhead."\n";
+        }
         $buffer .= implode("\n", $this->trybackarr);
 
         $filerec = $originalfilerec;
