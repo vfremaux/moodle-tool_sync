@@ -302,7 +302,7 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->component = ''.@$record['component'];
                             $cohort->descriptionformat = FORMAT_MOODLE;
                             if (!$cohort->contextid = $this->check_category_context($record)) {
-                                continue;
+                                $cohort->contextid = \context_system::instance()->id;
                             }
                             $cohort->timecreated = $t;
                             $cohort->timemodified = $t;
@@ -340,9 +340,9 @@ class cohorts_sync_manager extends sync_manager {
                         if (!empty($record['name'])) {
                             $cohort->idnumber = @$record['name'];
                         }
-                        $newcohortid = $this->check_category_context($record, true);
+                        $newcohortcontextid = $this->check_category_context($record, true);
                         if (!is_null($newcohortid)) {
-                            $cohort->contextid = $newcohortid;
+                            $cohort->contextid = $newcohortcontextid;
                         }
                         if (empty($syncconfig->simulate)) {
                             $DB->update_record('cohort', $cohort);
@@ -620,7 +620,7 @@ class cohorts_sync_manager extends sync_manager {
     protected function check_category_context($record, $update = false) {
         global $DB;
 
-        $systemcontext = context_system::instance();
+        $systemcontext = \context_system::instance();
 
         if (!empty($record['ccatcontext'])) {
             if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
