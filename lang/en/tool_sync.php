@@ -498,8 +498,7 @@ The first field must identify a course, dpending on the selected course primary 
 <li><i>shortname</i>: Using the course shortname</li>
 <li><i>idnumber</i>: Using the IDNumber of the course</li>
 
-<p>Mandatory fields : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings,
-blog_associations, comments, modules</b>
+<p>Mandatory fields : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings, modules</b>
 
 <p>Usual value is \'yes\' or \'no\' unless :</p>
 <li><i>roles</i>: a list of role shortnames, separed by spaces.</li>
@@ -510,7 +509,7 @@ blog_associations, comments, modules</b>
 <li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
 
 <p>Additional fields can be added for more specific control for modules:
-<b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions,
+<b>blog_associations, comments, forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions,
 assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
 
 ';
@@ -533,7 +532,7 @@ enrol and setup user\'s course access in several courses. You may use several pa
 2? 3 etc. Leave all values blank for an unused pattern.</p>
 
 <p>Additionnaly you may use additional special fields for adding values in custome profile fields. The general
-form of those fiedls is: <i>user_profile_xxxxx</i></p>
+form of those fields is: <i>user_profile_xxxxx</i></p>
 ';
 
 $string['enrolformat'] = 'Enrol sync file format';
@@ -567,15 +566,25 @@ $string['cohortformat_help'] = '
 Cohort creation/update file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
 
-<p>Mandatory fields: <b>cohortid, userid</b></p>
+<p>Mandatory fields: None of the fields are mandatory. Fields usage depend on the operation.</p>
 
-<li><i>cohortid</i>: An identifier, depending on Sync Tools settings. Can be cohort internal id, name or idnumber.</li>
+<p><li><code>\'add\' + cname, cdescription, cidnumber</code> : creates an empty cohort</li>
+<p><li><code>\'add\' + cid(P), userid(P)</code> : add a member</li>
+<p><li><code>\'add\' + userid(P), cname, cdescription, cidnumber</code> : creates a cohort and add a member inside</li>
+<p><li><code>\'add\' + cid(P), cname, cdescription, cidnumber</code> : updates a cohort information</li>
+<p><li><code>\'del\' + cid(P)</code> : deletes a cohort and any dependencies (memberships, enrolments, etc.)</li>
+<p><li><code>\'del\' + cid(P), userid</code> : deletes a cohort membership</li>
+
+(P) Primary object identifier value. If present, object must exist.
+
+<p>Optional fields: <b>cmd, cid, cname, cdescription, cidnumber, userid</b></p>
+
+<li><i>cid</i>: An identifier, depending on Sync Tools settings. Can be cohort internal id, name or idnumber.</li>
 <li><i>userid</i>: A primary identifier for the user. Can be internal id, username, email or idnumber.</li>
-
-<p>Optional fields: <b>cdescription, cidnumber</b></p>
-
+<li><i>cname</i>: If cohort needs to be created, the cohort name.</li>
 <li><i>cdescription</i>: If cohort needs to be created, a textuel description for it.</li>
 <li><i>cidnumber</i>: If cohort needs to be created, the id number. In that case, should the primary cohort id be choosen as \'name\'.</li>
+<li><i>cmd</i>: Implicitely \'add\'. You may explicit a \'del\' value for deleting cohorts or memberships.</li>
 ';
 
 $string['userpicturesformat'] = 'User pictures file format';
@@ -589,7 +598,8 @@ A password has been created for you: {$a}
 
 $string['allowrename_help'] = 'If checked, username can be changed. an "oldusername" column needs to be present to match the old identity.';
 
-$string['protectemails_help'] = 'If checked, import will not change user emails when they have one in their account. Missing emails will be completed from the file data.';
+$string['protectemails_help'] = 'If checked, import will not change user emails when they have one in their account. Missing emails will
+be completed from the file data.';
 
 $string['createpasswords_help'] = 'If checked, missing password will be created when password column is missing.';
 
