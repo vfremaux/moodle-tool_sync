@@ -620,7 +620,7 @@ class cohorts_sync_manager extends sync_manager {
     protected function check_category_context($record, $update = false) {
         global $DB;
 
-        $systemcontext = context_system::instance();
+        $systemcontext = \context_system::instance();
 
         if (!empty($record['ccatcontext'])) {
             if ($DB->record_exists('course_categories', array('id' => $record['ccatcontext']))) {
