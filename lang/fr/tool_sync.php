@@ -415,12 +415,18 @@ $string['coursesync_help'] = '
 ';
 
 $string['userpicturesync_help'] = '
-Si votre système de gestion stocke des avatars d\'utilisateurs (trombinoscope), ce service permet d\'organiser une synchronisation des images associées aux utilisateurs de Moodle. Il automatise la fonction Administration > Utilisateurs > Comptes > Déposer des utilisateurs de la version standard de Moodle.
-Pour synchroniser des avatars d\'utilisateurs, vous devez constituer un fichier archive compressé (ZIP) avec les fichiers images. Vous pouvez choisir l\'un des champs d\'identification des utilisateurs qui sont proposés dans la configuration du service. Les noms d\'image doivent à ce moment être construits sur cette base :
+Si votre système de gestion stocke des avatars d\'utilisateurs (trombinoscope), ce service permet d\'organiser une
+synchronisation des images associées aux utilisateurs de Moodle. Il automatise la fonction Administration >
+Utilisateurs > Comptes > Déposer des utilisateurs de la version standard de Moodle. Pour synchroniser des avatars
+d\'utilisateurs, vous devez constituer un fichier archive compressé (ZIP) avec les fichiers images. Vous pouvez
+choisir l\'un des champs d\'identification des utilisateurs qui sont proposés dans la configuration du service.
+Les noms d\'image doivent à ce moment être construits sur cette base :
 
 <pre>&lt;%valeurid%&gt;.gif ou &lt;%valeurid%&gt;.jpg</pre>
 
-Le fichier zip doit comporter un préfixe reconnaissable que vous pouvez configurer par le paramètre userpictures_fileprefix. L\'ordre d\'évaluation est l\'ordre alphabetique du nom de fichier (physique). Vous pouvez cadencer un examen successif de plusieurs mises à jour si par exemple vous nommez vos fichiers selon une séquence temporelle :
+Le fichier zip doit comporter un préfixe reconnaissable que vous pouvez configurer par le paramètre userpictures_fileprefix.
+L\'ordre d\'évaluation est l\'ordre alphabetique du nom de fichier (physique). Vous pouvez cadencer un examen successif
+de plusieurs mises à jour si par exemple vous nommez vos fichiers selon une séquence temporelle :
 
 Exemple :
 
@@ -430,12 +436,15 @@ userpictures_20111203.zip
 ...
 </pre>
 ';
-$string['enrolsync_help'] = 'Cette fonction est un complément du systeme d\'enrollement par fichier plat. Il gère les groupes et permet de créer des rôles en attribution cachée.
-Le fichier des enrolements présente un certain nombre d\'ordres ou opérations qui conduisent à la modification des assignations de rôle des utilisateurs dans les cours.
+
+$string['enrolsync_help'] = 'Cette fonction est un complément du systeme d\'enrollement par fichier plat. Il gère les
+groupes et permet de créer des rôles en attribution cachée. Le fichier des enrolements présente un certain nombre
+d\'ordres ou opérations qui conduisent à la modification des assignations de rôle des utilisateurs dans les cours.
 ';
 
 $string['syncconfig_help'] = '
-<p>Ces paramètres déterminent les options d\'automatisation et de planification des opérations de synchronisation gérées par ce composant.</p>
+<p>Ces paramètres déterminent les options d\'automatisation et de planification des opérations de synchronisation
+gérées par ce composant.</p>
 
 <p><b>Choix des services</b></p>
 <p>Chaque service de synchronnisaton peut être inclus ou non dans l\'automatisation.</p>
@@ -452,7 +461,8 @@ Vous allez supprimer toutes les catégories vides de Moodle. Cette commande est 
 mode récursif et détruira toutes les "banches vides".
 ';
 
-$string['boxdescription'] = 'Outil de gestion des synchronisations de cours, d\'utilisateurs et de groupe à l\'aide de fichiers txt et csv appelés par le cron.<br/><br/>
+$string['boxdescription'] = 'Outil de gestion des synchronisations de cours, d\'utilisateurs et de groupe à l\'aide
+de fichiers txt et csv appelés par le cron.<br/><br/>
     Il suffit de préciser les chemins des quatre fichiers (à partir de la racine de "moodledata" :<br/>
     <ol>
         <li>Le fichier .txt pour la suppression de cours.
@@ -467,54 +477,63 @@ $string['boxdescription'] = 'Outil de gestion des synchronisations de cours, d\'
 ';
 
 $string['coursecreateformat'] = 'Format de fichier de création de cours';
+
 $string['coursecreateformat_help'] = '
-Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration locale de l\'outil de synchronisation.
-La première ligne doit comporter les titres de champs dans un ordre quelconque.
+Le fichier de réinitialisation de cours doit être un fichier texte CSV encodé ISO ou UTF-8 format selon la configuration
+locale de l\'outil de synchronisation. La première ligne doit comporter les titres de champs dans un ordre quelconque.
 
 <p>Champs obligatoires : <b>shortname, fullname</b>.
 
 <li><i>shortname</i> : Doit être unique dans Moodle et ne doit donc pas correspondre à un cours existant.
 
-<p>Champs optionnels : <b>category, sortorder, summary, format, idnumber, showgrades, newsitems, startdate, marker, maxbytes, legacyfiles, showreports, visible, visibleold, groupmode, groupmodeforce, defaultgroupingid, lang, theme, timecreated, timemodified, self, guest, template</b></p>
-
+<p>Champs optionnels : <b>category, sortorder, summary, format, idnumber, showgrades, newsitems, startdate, marker,
+maxbytes, legacyfiles, showreports, visible, visibleold, groupmode, groupmodeforce, defaultgroupingid, lang,
+theme, timecreated, timemodified, self, guest, template</b></p>
 ';
 
 $string['coursedeleteformat'] = 'Format de fichier de suppression de cours';
+
 $string['coursedeleteformat_help'] = '
-Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à détruire, tel que défini dans la configuration locale de l\'outil de synchronisation.
+Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à détruire, tel
+que défini dans la configuration locale de l\'outil de synchronisation.
 ';
 
 $string['coursecheckformat'] = 'Format de fichier de test d\'existence de cours';
+
 $string['coursecheckformat_help'] = '
-Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à vérifier, tel que défini dans la configuration locale de l\'outil de synchronisation.
+Ce fichier est une simple liste textuelle (un item par ligne) des identifiants primaires de cours à vérifier, tel
+que défini dans la configuration locale de l\'outil de synchronisation.
 ';
 
 $string['coursereinitializeformat'] = 'Format de fichier de réinitialisation de cours';
+
 $string['coursereinitializeformat_help'] = '
-Course reinitialisation file must be in ISO or UTF-8 format depending on Sync Tool settings.
-The first line must hold column titles in any order.
-The first field must identify a course, depending on the selected course primary identifier in configuration :
+Le fichier de commande de réinitialisation de cours peut être un fichier encodé en ISO8859-1 (latin1) ou UTF-8 suivant la configuration
+générale de l\'outil. La première ligne doit faire figurer les noms de colonnes dans un ordre quelconque à part pour le premier
+champ qui doit désigner un cours par son identifiant primaire défini dans la configuration :
 
-<li><i>id</i>: Using the numeric internal DN identifier of the course.</li>
-<li><i>shortname</i>: Using the course shortname</li>
-<li><i>idnumber</i>: Using the IDNumber of the course</li>
+<li><i>id</i>: L\'identifiant nuérique interne du cours</li>
+<li><i>shortname</i>: Le nom court du cours</li>
+<li><i>idnumber</i>: Le numéro d\'identification du cours</li>
 
-<p>Mandatory fields : <b>events, logs, notes, completion, grades, roles, local_roles, groups, groupings, blog_associations, comments, modules</b>
+<p>Champs obligatoires : <b>events, logs, notes, completion, grades, roles, local_roles, groups,
+groupings, modules</b>
 
-<p>Usual value is \'yes\' or \'no\' unless :</p>
-<li><i>roles</i>: a list of role shortnames, separed by spaces.</li>
-<li><i>local_roles</i>: \'all\' (roles and overrides), \'roles\' or \'overrides\'.</li>
-<li><i>grades</i>: \'all\' (items and grades), \'items\' or \'grades\'.</li>
-<li><i>groups</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
-<li><i>groupings</i>: \'all\' (groups and members), \'groups\' or \'members\'.</li>
-<li><i>modules</i>: \'all\' (reset all modules), or a list of module shortnames to reset.</li>
+<p>La valeur usuellement attendue est \'yes\' ou \'no\' sauf pour :</p>
+<li><i>roles</i>: une liste de codes de roles, séparée par des espaces.</li>
+<li><i>local_roles</i>: \'all\' (rôles et surcharges de rôle), \'roles\' ou \'overrides\'.</li>
+<li><i>grades</i>: \'all\' (items et scores), \'items\' ou \'grades\'.</li>
+<li><i>groups</i>: \'all\' (groupes et membres), \'groups\' ou \'members\'.</li>
+<li><i>groupings</i>: \'all\' (groupements et membres), \'groupings\' ou \'members\'.</li>
+<li><i>modules</i>: \'all\' (tous les modules), ou une liste de codes de modules à réinitialiser.</li>
 
-<p>Additional fields can be added for more specific control for modules:
-<b>forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions, assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
-
+<p>Des champs additionnels peuvent être ajoutés pour un contrôl fin sur les modules :
+<b>blog_associations, comments, forum_all, forum_subscriptions, glossary_all, chat, data, slots (scheduler), apointments, assignment_submissions,
+assign_submissions, survey_answers, lesson, choice, scorm, quiz_attempts</b></p>
 ';
 
 $string['userformat'] = 'Format du fichier de synchronisation des utilisateurs';
+
 $string['userformat_help'] = '
 Le fichier de synchronisation des utilisateurs doit être un fichier text encodé en ISO ou UTF-8
 selon la configuration générale de l\'outil de synchronisation.
@@ -523,18 +542,26 @@ Le premier champ doit identifier un utilisateur par son \'username\'.
 
 <p>Champs obligatoires : <b>username, firstname, lastname, email</b></p>
 
-<p>Champs facultatifs : <b>idnumber, email, auth, icq, phone1, phone2, address, url, description, mailformat, maildisplay, htmleditor, autosubscribe, cohort, cohortid, course1, group1, type1, role1, enrol1, start1, end1, wwwroot1, password, oldusername</b></p>
+<p>Champs facultatifs : <b>idnumber, email, auth, icq, phone1, phone2, address, url, description, mailformat,
+maildisplay, htmleditor, autosubscribe, cohort, cohortid, course1, group1, type1, role1, enrol1, start1, end1,
+wwwroot1, password, oldusername</b></p>
 
-<p>Les "patterns" sont des groupes de champs qui doivent être utilisés ensemble, et suivis d\'un index numérique (nomchamp<n>).</p>
+<p>Les "patterns" sont des groupes de champs qui doivent être utilisés ensemble, et suivis d\'un index
+numérique (nomchamp<n>).</p>
 
-<p>Pattern d\'inscription : <b>course, group, type, role, enrol, start, end, wwwroot</b>. Ce pattern permet d\'inscrire immédiatement les utilisateurs créés ou modifiés à des cours. Vous pouvez utiliser plusieurs fois ce motif avec des indexes suivis (1, 2, 3...) etc. On peut ne pas utiliser sur une ligne l\'un des patterns mentionnés en laissant les champs vides.</p>
+<p>Pattern d\'inscription : <b>course, group, type, role, enrol, start, end, wwwroot</b>. Ce pattern permet d\'inscrire
+immédiatement les utilisateurs créés ou modifiés à des cours. Vous pouvez utiliser plusieurs fois ce motif avec des
+indexes suivis (1, 2, 3...) etc. On peut ne pas utiliser sur une ligne l\'un des patterns mentionnés en laissant les champs vides.</p>
 
-<p>Il est possible d\'utiliser quelques formes supplémentaires pour ajouter des valeurs aux champs customisés de profil. La forme générale de ces champs est <i>user_profile_xxxxx</i></p>
+<p>Il est possible d\'utiliser quelques formes supplémentaires pour ajouter des valeurs aux champs customisés de profil.
+La forme générale de ces champs est <i>user_profile_xxxxx</i></p>
 ';
 
 $string['enrolformat'] = 'Format de fichier d\'inscriptions';
+
 $string['enrolformat_help'] = '
-Le fichier d\'inscriptions est un fichier texte CSV encodé en UTF-8 ou ISO selon la configuration de l\'outil et automatise les entrées/sorties d\'inscriptions dans Moodle.
+Le fichier d\'inscriptions est un fichier texte CSV encodé en UTF-8 ou ISO selon la configuration de l\'outil et automatise
+les entrées/sorties d\'inscriptions dans Moodle.
 
 <p>Champs obligatoires : <b>rolename, uid, cid</b></p>
 
@@ -544,44 +571,67 @@ Le fichier d\'inscriptions est un fichier texte CSV encodé en UTF-8 ou ISO selo
 
 <p>Champs facultatifs : <b>hidden, starttime, endtime, enrol, cmd, g1 à g9</b></p>
 
-<li><i>cmd</i> : implicitement \'add\', mais peut valoir \'del\' pour désincription. \'shift\' supprimera auparavent tous les anciens rôles de l\'utilisateur concerné dans le cours.</li>
+<li><i>cmd</i> : implicitement \'add\', mais peut valoir \'del\' pour désincription. \'shift\' supprimera auparavent tous les anciens
+rôles de l\'utilisateur concerné dans le cours.</li>
 <li><i>hidden</i> :</li>
 <li><i>starttime, endtime</i> : Un temps linux en secondes.</li>
-<li><i>enrol</i> : la méthode d\'inscription (manual, mnet, cohort, etc...). Si cette colonne n\'existe pas, alors l\'opération ne fera qu\'ajouter des "autres rôles", sans inscription.</li>
-<li><i>gcmd</i> : \'gadd\' ou \'gaddcreate\', \'greplace\' ou \'greplacecreate\', mais peut être \'gdel\' pour une suppression de l\'appartenance au groupe.</li>
-<li><i>g1 to g9</i> : up to 9 goupnames the enrolled user will be member of. The group is created if missing and using a \'gaddcreate\' or a \'greplacecreate\'.</li>
+<li><i>enrol</i> : la méthode d\'inscription (manual, mnet, cohort, etc...). Si cette colonne n\'existe pas, alors l\'opération
+ne fera qu\'ajouter des "autres rôles", sans inscription.</li>
+<li><i>gcmd</i> : \'gadd\' ou \'gaddcreate\', \'greplace\' ou \'greplacecreate\', mais peut être \'gdel\' pour une suppression
+de l\'appartenance au groupe.</li>
+<li><i>g1 à g9</i> : jusqu\'à 9 noms de groupes auxquel l\'utilisateur doit appartenir. Les gorupes manquants sont créés si la
+commande est \'gaddcreate\' ou \'greplacecreate\'.</li>
 ';
 
 $string['cohortformat'] = 'Format de fichier d\'alimentation de cohortes';
+
 $string['cohortformat_help'] = '
-Le fichier de création de cohortes est un fichier texte ISO ou UTF-8 suivant la configuration locale.
-The first line must hold column titles in any order.
+Le fichier de création de cohortes est un fichier texte ISO ou UTF-8 suivant la configuration locale. La première
+ligne contient les noms de colonnes.
 
-<p>Mandatory fields: <b>cohortid, userid</b></p>
+<p>Champs obligatoires : Tous les champs dépendent du mode ou de la commande de traitement choisie.</p>
 
-<li><i>cohortid</i> : Un identifiant de cohorte, selon la configuration de l\'outil de synchronisation. Peut être l\'id, le nom, ou l\'idnumber.</li>
-<li><i>userid</i> : Un identifiant d\'utilisateur selon la configuration de l\'outil de synchonisation. Peut être l\'id, l\'email, le username, ou l\'idnumber.</li>
+<p><li><code>\'add\' + cname, cdescription, cidnumber</code> : crée une cohorte</li>
+<p><li><code>\'add\' + cid(P), userid</code> : ajoute un membre</li>
+<p><li><code>\'add\' + userid, cname, cdescription, cidnumber</code> : crée une cohorte avec un membre dedans</li>
+<p><li><code>\'add\' + cid(P), cname, cdescription, cidnumber</code> : met à jour une chorte sur la base de l\'identifiant primaire de cohorte</li>
+<p><li><code>\'del\' + cid(P)</code> : supprime une cohorte et toutes les dépendances (membres, inscriptions)</li>
+<p><li><code>\'del\' + cid(P), userid</code> : supprime un membre dans une cohorte</li>
 
-<p>Optional fields: <b>cdescription, cidnumber</b></p>
+(P) : valeur de l\'identifiant primaire.
 
+<p>Champs optionnels : <b>cid, userid, cname, cdescription, cidnumber, cmd</b></p>
+
+<li><i>cid</i> : Un identifiant de cohorte, selon la configuration de l\'outil de synchronisation. Peut être
+l\'id, le nom, ou l\'idnumber.</li>
+<li><i>userid</i> : Un identifiant d\'utilisateur selon la configuration de l\'outil de synchonisation. Peut être
+l\'id, l\'email, le username, ou l\'idnumber.</li>
+<li><i>cname</i> : Si la cohorte doit être créée, le nom de la cohorte.</li>
 <li><i>cdescription</i> : Si la cohorte doit être créée, une description textuelle.</li>
 <li><i>cidnumber</i> : Si la cohorte doit être créée, l\'idnumber. Dans ce cas, l\'identifiant devra être choisi comme \'name\'.</li>
+<li><i>cmd</i> : Par défaut cette colonne vaut implicitement \'add\'. Elle peut être explictement renseignée à \'del\' pour effectuer
+une suppression de membres (avec userid) ou de cohortes entières (sans userid).</li>
 ';
 
 $string['userpicturesformat'] = 'Format de transfert d\'images d\'avatars';
 $string['userpicturesformat_help'] = '
-Le fichier des avatars utilisateurs est une archive ZIP sans sous-répertoires avec la liste d\'images png, jpg ou gif des avatars utilisateurs, nommés par l\'identifiant primaire
-de l\'utilisateur désigné par la configuraton de l\'outil de synchronisation.
+Le fichier des avatars utilisateurs est une archive ZIP sans sous-répertoires avec la liste d\'images png, jpg ou
+gif des avatars utilisateurs, nommés par l\'identifiant primaire de l\'utilisateur désigné par la configuraton
+de l\'outil de synchronisation.
 ';
 
 $string['passwordnotification_tpl'] = '
 Un mot de passe vous a été attribué : {$a}
 ';
 
-$string['allowrename_help'] = 'Si actif, les identifiants de connexion peuvent être changés. Une colonne "oldusername" doit être rajoutée pour fournir la correspondance avec l\'ancien identifiant.';
+$string['allowrename_help'] = 'Si actif, les identifiants de connexion peuvent être changés. Une colonne "oldusername" doit
+être rajoutée pour fournir la correspondance avec l\'ancien identifiant.';
 
-$string['protectemails_help'] = 'Si actif, les adresses de courriel exprimées des utilisateurs resteront inchangées. Les adresses vides seront complétées par les données du fichier.';
+$string['protectemails_help'] = 'Si actif, les adresses de courriel exprimées des utilisateurs resteront inchangées.
+Les adresses vides seront complétées par les données du fichier.';
 
-$string['createpasswords_help'] = 'Si actif et que la colonne "password" n\'est pas fournie, les mots de passe seront générés et envoyés par Moodle.';
+$string['createpasswords_help'] = 'Si actif et que la colonne "password" n\'est pas fournie, les mots de passe
+seront générés et envoyés par Moodle.';
 
-$string['sendpasswordtousers_help'] = 'Si actif et que les mots de passes sont fournis par le fichier, ils seront notifiés aux utilisateur sur l\'adresse de courriel fournie.';
+$string['sendpasswordtousers_help'] = 'Si actif et que les mots de passes sont fournis par le fichier, ils seront notifiés aux
+utilisateur sur l\'adresse de courriel fournie.';
