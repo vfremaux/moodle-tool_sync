@@ -296,7 +296,7 @@ class course_sync_manager extends sync_manager {
                         continue;
                     }
 
-                    $records = tool_sync_extract($headers, $text, $syncconfig);
+                    $record = tool_sync_extract($headers, $text, $syncconfig);
                     $data['reset_start_date'] = 0;
 
                     // Adaptative identifier.
