@@ -97,6 +97,6 @@ class InputFileLoadForm extends moodleform {
 
         $form->addElement('checkbox', 'simulate', get_string('simulate', 'tool_sync'));
 
-        $this->add_action_buttons();
+        $this->add_action_buttons(true, get_string('runnow', 'tool_sync'));
     }
 }

@@ -1256,19 +1256,27 @@ class course_sync_manager extends sync_manager {
 
             if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
                 $this->store_report_file($filerec);
+            } else {
+                $this->report(get_string('reportdisabledbyconf', 'tool_sync'));
             }
 
             if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
                 $this->write_tryback($filerec);
+            } else {
+                $this->report(get_string('trybackdisabledbyconf', 'tool_sync'));
             }
 
             if (empty($syncconfig->simulate)) {
                 if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
                     $this->archive_input_file($filerec);
+                } else {
+                    $this->report(get_string('archivingdisabledbyconf', 'tool_sync'));
                 }
 
                 if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
                     $this->cleanup_input_file($filerec);
+                } else {
+                    $this->report(get_string('cleanupdisabledbyconf', 'tool_sync'));
                 }
             }
 

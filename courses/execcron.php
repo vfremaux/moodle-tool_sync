@@ -78,16 +78,22 @@ if ($form->is_cancelled()) {
 
 if ($data = $form->get_data()) {
     if (!empty($data->uselocal)) {
-        // Use the server side stored file.
+        // Use the server side stored file on one unique operation.
         $coursesmanager = new \tool_sync\course_sync_manager($action);
-        $processedfile = $syncconfig->courses_fileuploadlocation;
+        if ($action & SYNC_COURSE_CHECK) {
+            $processedfile = $syncconfig->courses_fileexsitlocation;
+        } else if ($action & SYNC_COURSE_DELETE) {
+            $processedfile = $syncconfig->courses_filedeletelocation;
+        } else if ($action & SYNC_COURSE_CREATE) {
+            $processedfile = $syncconfig->courses_fileuploadlocation;
+        }
         $canprocess = true;
     } else if (!empty($data->runlocalfiles)) {
+        // Run all course related operations in one shot, using locally configured files.
         $coursesmanager = new \tool_sync\course_sync_manager($action);
         $canprocess = true;
     } else {
         // Use the just uploaded file.
-
         $fs = get_file_storage();
         $usercontext = context_user::instance($USER->id);
 
@@ -105,56 +111,41 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading_with_help(get_string('coursesync', 'tool_sync'), 'coursesync', 'tool_sync');
 
-$formdata = new StdClass;
-$formdata->action = $action;
-$form->set_data($formdata);
-$form->display();
+If (!empty($errormes)) {
+    echo $OUTPUT->notification($errormes, 'notifyfailure');
+    echo $renderer->print_run_again_button('courses', $action);
+}
 
 if ($canprocess) {
 
     $coursemgtmanual = get_string('coursemgtmanual', 'tool_sync');
-    echo "<br/><fieldset><legend><strong>$coursemgtmanual</strong></legend>";
-
-    if ($action & SYNC_COURSE_CHECK) {
-        if ($syncconfig->courses_fileexistlocation) {
-            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->courses_fileexistlocation);
-            echo "<center>$taskrunmsg</center>";
-        } else {
-            $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
-            echo "<center>$taskrunmsg</center>";
-        }
+    echo '<br/>';
+    echo '<fieldset>';
+    echo "<legend><strong>$coursemgtmanual</strong></legend>";
+    if (empty($data->runlocalfiles)) {
+        $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
+    } else {
+        $taskrunmsg = get_string('alltasksrunmsg', 'tool_sync');
     }
-
-    if ($action & SYNC_COURSE_DELETE) {
-        if ($syncconfig->courses_filedeletelocation) {
-            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->courses_filedeletelocation);
-            echo "<center>$taskrunmsg</center>";
-        } else {
-            $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
-            echo "<center>$taskrunmsg</center>";
-        }
-    }
-
-    if ($action & SYNC_COURSE_CREATE) {
-        if ($syncconfig->courses_fileuploadlocation) {
-            $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $syncconfig->courses_fileuploadlocation);
-            echo "<center>$taskrunmsg</center>";
-        } else {
-            $taskrunmsg = get_string('taskrunmsgnofile', 'tool_sync');
-            echo "<center>$taskrunmsg</center>";
-        }
-    }
-
+    echo "<center>$taskrunmsg</center>";
     echo '</fieldset>';
+
     echo '<pre>';
+
     try {
         $coursesmanager->cron($syncconfig);
+        echo '</pre>';
     } catch (Exception $ex) {
+        echo '</pre>';
         echo $OUTPUT->notification(get_string('processerror', 'tool_sync', $ex->getMessage()), 'notifyproblem');
-        $returnurl = new moodle_url('/admin/tool/sync/index.php');
-        echo $OUTPUT->continue_button($returnurl);
     }
-    echo '</pre>';
+
+    echo $renderer->print_run_again_button('courses', $action);
+} else {
+    $formdata = new StdClass;
+    $formdata->action = $action;
+    $form->set_data($formdata);
+    $form->display();
 }
 
 // Always return to main tool view.
