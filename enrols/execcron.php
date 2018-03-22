@@ -85,7 +85,10 @@ echo $OUTPUT->header();
 
 echo $OUTPUT->heading_with_help(get_string('enrolmgtmanual', 'tool_sync'), 'enrolsync', 'tool_sync');
 
-$form->display();
+If (!empty($errormes)) {
+    echo $OUTPUT->notification($errormes, 'notifyfailure');
+    echo $renderer->print_run_again_button('enrols', '');
+}
 
 if ($canprocess) {
     $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
@@ -97,16 +100,18 @@ if ($canprocess) {
     echo '<pre>';
     try {
         $enrolsmanager->cron($syncconfig);
+        echo '</pre>';
     } catch (Exception $ex) {
+        echo '</pre>';
         echo $OUTPUT->notification(get_string('processerror', 'tool_sync', $ex->getMessage()), 'notifyproblem');
-        $returnurl = new moodle_url('/admin/tool/sync/index.php');
-        echo $OUTPUT->continue_button($returnurl);
     }
-    echo '</pre>';
+
+    echo $renderer->print_run_again_button('enrols', '');
 
     echo '</fieldset>';
+} else {
+    $form->display();
 }
-
 
 // Always return to main tool view.
 echo $renderer->print_return_button();
