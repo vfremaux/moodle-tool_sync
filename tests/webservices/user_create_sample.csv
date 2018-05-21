@@ -1,3 +1,4 @@
+# unit test only accepts en user lang
 username;firstname;lastname;email;country;lang
 john.doe;John;Doe;johndoe@foo.com;GB;en
 amelie.dupont;Amélie;Dupont;adupont@foo.com;FR;en
@@ -10,7 +11,15 @@ todelete3;To;Delete3;todelete3@foo.com;FR;en
 tosuspend1;To;Suspend1;tosuspend1@foo.com;FR;en
 tosuspend2;To;Suspend2;tosuspend2@foo.com;FR;en
 tosuspend3;To;Suspend3;tosuspend3@foo.com;FR;en
-toenrol1;To;Enrol1;toenrol1@foo.com;FR;fr
-toenrol2;To;Enrol2;toenrol2@foo.com;FR;fr
-toenrol3;To;Enrol3;toenrol3@foo.com;FR;fr
-toenrol4;To;Enrol4;toenrol4@foo.com;FR;fr
+toenrol1;To;Enrol1;toenrol1@foo.com;FR;en
+toenrol2;To;Enrol2;toenrol2@foo.com;FR;en
+toenrol3;To;Enrol3;toenrol3@foo.com;FR;en
+toenrol4;To;Enrol4;toenrol4@foo.com;FR;en
+ugr1;User;Group1;ugr1@foo.com;GB;en
+ugr2;User;Group2;ugr1@foo.com;GB;en
+ugr3;User;Group3;ugr1@foo.com;GB;en
+ugr4;User;Group4;ugr1@foo.com;GB;en
+ugr10;User0;Group1;u0gr1@foo.com;GB;en
+ugr20;User0;Group2;u0gr1@foo.com;GB;en
+ugr30;User0;Group3;u0gr1@foo.com;GB;en
+ugr40;User0;Group4;u0gr1@foo.com;GB;en
