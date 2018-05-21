@@ -4,3 +4,11 @@ amelie.dupont;U0002;Amélie;Dupont;adupont@foobar.com;FR;en
 jack.duf;U0003;Jack;Duff;jack.duff@foobar.com;US;en
 ggrass;U0004;Günter;Grass;ggrass@foobar.com;DE;en
 yyang;U0005;Yum;Yang;yyang@foobar.com;CN;en
+ugr1;UGR1;User;Group1;ugr1@foo.com;GB;en
+ugr2;UGR2;User;Group2;ugr1@foo.com;GB;en
+ugr3;UGR3;User;Group3;ugr1@foo.com;GB;en
+ugr4;UGR4;User;Group4;ugr1@foo.com;GB;en
+ugr10;UGR11;User0;Group1;u0gr1@foo.com;GB;en
+ugr20;UGR12;User0;Group2;u0gr1@foo.com;GB;en
+ugr30;UGR13;User0;Group3;u0gr1@foo.com;GB;en
+ugr40;UGR14;User0;Group4;u0gr1@foo.com;GB;en

@@ -53,7 +53,6 @@ $PAGE->set_heading($SITE->fullname);
 
 $action = optional_param('what', 'process', PARAM_TEXT);
 
-
 echo $OUTPUT->header();
 
 if (!optional_param('confirm', false, PARAM_BOOL)) {

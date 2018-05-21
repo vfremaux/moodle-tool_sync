@@ -176,7 +176,6 @@ class users_sync_manager extends sync_manager {
                 'cohortid' => 1,
                 'course1' => 1,
                 'group1' => 1,
-                'type1' => 1,
                 'role1' => 1,
                 'enrol1' => 1,
                 'start1' => 1,
@@ -189,7 +188,6 @@ class users_sync_manager extends sync_manager {
 
         $patterns = array('course', // Patternized items are iterative items with indexing integer appended.
                 'group',
-                'type',
                 'role',
                 'enrol',
                 'start',
@@ -234,7 +232,7 @@ class users_sync_manager extends sync_manager {
                 if ($value == 'adminvalue') {
                     $user->$key = $adminuser->$key;
                 } else {
-                    $user->$key = $value;
+                    $user->$key = trim($value);
                 }
             }
 
@@ -243,6 +241,7 @@ class users_sync_manager extends sync_manager {
              * Note: semicolon within a field should be encoded as &#59 (for semicolon separated csv files)
              */
             $text = tool_sync_read($filereader, 1024, $syncconfig);
+            $text = trim($text); // Remove all trailing CRs
             if (tool_sync_is_empty_line_or_format($text, false)) {
                 $i++;
                 continue;
@@ -327,7 +326,6 @@ class users_sync_manager extends sync_manager {
                 $ci = 1;
                 $courseix = 'course'.$ci;
                 $groupix = 'group'.$ci;
-                $typeix = 'type'.$ci;
                 $roleix = 'role'.$ci;
                 $enrolix = 'enrol'.$ci;
                 $startix = 'start'.$ci;
@@ -338,7 +336,6 @@ class users_sync_manager extends sync_manager {
                     $coursetoadd = new \StdClass;
                     $coursetoadd->idnumber = $user->$courseix;
                     $coursetoadd->group = isset($user->$groupix) ? $user->$groupix : null;
-                    $coursetoadd->type = isset($user->$typeix) ? $user->$typeix : null;  // Deprecated. Not more used.
                     $coursetoadd->role = isset($user->$roleix) ? $user->$roleix : null;
                     $coursetoadd->enrol = isset($user->$enrolix) ? $user->$enrolix : null;
                     $coursetoadd->start = isset($user->$startix) ? $user->$startix : 0;
@@ -348,7 +345,6 @@ class users_sync_manager extends sync_manager {
                     $ci++;
                     $courseix = 'course'.$ci;
                     $groupix = 'group'.$ci;
-                    $typeix = 'type'.$ci;
                     $roleix = 'role'.$ci;
                     $startix = 'start'.$ci;
                     $endix = 'end'.$ci;
