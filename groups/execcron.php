@@ -17,15 +17,14 @@
 /**
  * @package     tool_sync
  * @category    tool
- * @author      Funck Thibaut
+ * @author      Valery Fremaux
  * @copyright   2010 Valery Fremaux <valery.fremaux@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/enrollib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/enrols/groups.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 // Security.
@@ -44,14 +43,14 @@ raise_memory_limit('512M');
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
 
-$url = new moodle_url('/admin/tool/sync/enrols/execcron.php');
+$url = new moodle_url('/admin/tool/sync/groups/execcron.php');
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
-$PAGE->navigation->add(get_string('enrolmgtmanual', 'tool_sync'));
+$PAGE->navigation->add(get_string('groupsmgtmanual', 'tool_sync'));
 $PAGE->set_url($url);
 $PAGE->set_title("$SITE->shortname");
 $PAGE->set_heading($SITE->fullname);
 
-$form = new InputfileLoadform($url, array('localfile' => @$syncconfig->enrols_filelocation));
+$form = new InputfileLoadform($url, array('localfile' => @$syncconfig->groups_filelocation));
 
 $canprocess = false;
 
@@ -65,8 +64,8 @@ if ($data = $form->get_data()) {
 
     if (!empty($data->uselocal)) {
         // Use the server side stored file.
-        $enrolsmanager = new \tool_sync\enrol_sync_manager();
-        $processedfile = $syncconfig->enrols_filelocation;
+        $groupsmanager = new \tool_sync\group_sync_manager();
+        $processedfile = $syncconfig->groups_filelocation;
         $canprocess = true;
     } else {
         // Use the just uploaded file.
@@ -75,7 +74,7 @@ if ($data = $form->get_data()) {
             $errormes = "Failed loading a file";
         } else {
             $processedfile = $manualfilerec->filename;
-            $enrolsmanager = new \tool_sync\enrol_sync_manager($manualfilerec);
+            $groupsmanager = new \tool_sync\group_sync_manager($manualfilerec);
             $canprocess = true;
         }
     }
@@ -83,30 +82,30 @@ if ($data = $form->get_data()) {
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading_with_help(get_string('enrolmgtmanual', 'tool_sync'), 'enrolsync', 'tool_sync');
+echo $OUTPUT->heading_with_help(get_string('groupmgtmanual', 'tool_sync'), 'enrolsync', 'tool_sync');
 
-If (!empty($errormes)) {
+if (!empty($errormes)) {
     echo $OUTPUT->notification($errormes, 'notifyfailure');
-    echo $renderer->print_run_again_button('enrols', '');
+    echo $renderer->print_run_again_button('groups', '');
 }
 
 if ($canprocess) {
-    $enrolmgtmanual = get_string('enrolmgtmanual', 'tool_sync');
+    $groupmgtmanual = get_string('groupmgtmanual', 'tool_sync');
     $taskrunmsg = get_string('taskrunmsg', 'tool_sync', $processedfile);
 
-    echo "<br/><fieldset><legend><strong>$enrolmgtmanual</strong></legend>";
+    echo "<br/><fieldset><legend><strong>$groupmgtmanual</strong></legend>";
     echo "<center>$taskrunmsg</center>";
 
     echo '<pre>';
     try {
-        $enrolsmanager->cron($syncconfig);
+        $groupsmanager->cron($syncconfig);
         echo '</pre>';
     } catch (Exception $ex) {
         echo '</pre>';
         echo $OUTPUT->notification(get_string('processerror', 'tool_sync', $ex->getMessage()), 'notifyproblem');
     }
 
-    echo $renderer->print_run_again_button('enrols', '');
+    echo $renderer->print_run_again_button('groups', '');
 
     echo '</fieldset>';
 } else {

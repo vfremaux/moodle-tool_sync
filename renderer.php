@@ -26,7 +26,6 @@ defined('MOODLE_INTERNAL') || die;
 class tool_sync_renderer extends plugin_renderer_base {
 
     public function print_return_button() {
-        global $OUTPUT;
 
         $str = '<center>';
         $str .= '<hr/>';
@@ -34,8 +33,18 @@ class tool_sync_renderer extends plugin_renderer_base {
         $url = new moodle_url('/admin/tool/sync/index.php', array('sesskey' => sesskey()));
         $text = get_string('returntotools', 'tool_sync');
         $button = new single_button($url, $text, 'get');
-        $str .= $OUTPUT->render($button);
+        $str .= $this->output->render($button);
         $str .= '<br/>';
+        $str .= '</center>';
+
+        return $str;
+    }
+
+    public function print_run_again_button($service, $action) {
+
+        $str = '<center>';
+        $returnurl = new moodle_url('/admin/tool/sync/'.$service.'/execcron.php', array('action' => $action));
+        $str .= $this->output->single_button($returnurl, get_string('runagain', 'tool_sync'));
         $str .= '</center>';
 
         return $str;
