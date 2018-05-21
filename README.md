@@ -35,7 +35,7 @@ Add mass enrol/unenrol web services.
 
 Add file area cleanup task to keep number of files acceptable in the sync file area.
 
-3.x.0016
+X.X.0016
 ===================================
 Fixes get_full_users WS when course invoked by shortname
 
@@ -43,6 +43,14 @@ X.X.0017 :
 ===================================
 - add wildcard input file processing for splitting load
 
-3.x.0019
+X.X.0019
 ===================================
 Adds handling of special enrol/sync plugin when enrolling by WS
+
+X.X.0021
+===================================
+Clean the manual tool cinematics. Fix the refresh loading file issue.
+
+X.X.0022
+===================================
+Add the group and grouping toolkit.

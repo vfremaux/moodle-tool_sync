@@ -1,0 +1,9 @@
+courseid;name;idnumber;description;selfgrouping;grouping
+TESTCOURSE1;Group 1;TC1_GR1;Test group for creation 1;0;Grouping A
+TESTCOURSE1;Group 2;TC1_GR2;Test group for creation 2;0;Grouping A
+TESTCOURSE1;Group 3;TC1_GR3;Test group for creation 3;0;Grouping B
+TESTCOURSE1;Group 4;TC1_GR4;Test group for creation 4;0;Grouping B
+TESTCOURSE2;Group 1;TC2_GR1;Test group for creation 1;1;
+TESTCOURSE2;Group 2;TC2_GR2;Test group for creation 2;1;
+TESTCOURSE2;Group 3;TC2_GR3;Test group for creation 3;1;
+TESTCOURSE2;Group 4;TC2_GR4;Test group for creation 4;1;

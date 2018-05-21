@@ -1,0 +1,10 @@
+# Group membership by courseid:shortname, groupid:idnumber and userid:username
+cmd;courseid;groupid;userid
+shift;TESTCOURSE1;TC1_GR2;ugr1
+shift;TESTCOURSE1;TC1_GR3;ugr2
+shift;TESTCOURSE1;TC1_GR4;ugr3
+shift;TESTCOURSE1;TC1_GR1;ugr4
+shift;TESTCOURSE1;TC1_GR2;ugr10
+shift;TESTCOURSE1;TC1_GR3;ugr10
+shift;TESTCOURSE1;TC1_GR4;ugr10
+shift;TESTCOURSE1;TC1_GR1;ugr10
