@@ -688,6 +688,7 @@ class course_sync_manager extends sync_manager {
                 }
 
                 foreach ($identifiers as $cid) {
+                    $cid = trim($cid);
                     if (!($c = $DB->get_record('course', array($identifiername => $cid)))) {
                         $this->report(get_string('coursenotfound', 'tool_sync', $cid));
                         if (!empty($syncconfig->filefailed)) {

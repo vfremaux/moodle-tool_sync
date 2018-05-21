@@ -29,6 +29,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/groups/groups.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/tool.php');
 
 class ToolForm extends moodleform {
@@ -40,6 +41,7 @@ class ToolForm extends moodleform {
         $userpicturemanager = new \tool_sync\userpictures_sync_manager();
         $enrolmanager = new \tool_sync\enrol_sync_manager();
         $cohortmanager = new \tool_sync\cohorts_sync_manager();
+        $groupmanager = new \tool_sync\group_sync_manager();
         $mainmanager = new \tool_sync\tool_plugin_sync();
 
         $mform = $this->_form;
@@ -68,6 +70,10 @@ class ToolForm extends moodleform {
         $mform->addElement('header', 'h6', get_string('cohortsync', 'tool_sync'));
         $mform->addHelpButton('h6', 'cohortformat', 'tool_sync');
         $cohortmanager->form_elements($mform);
+
+        $mform->addElement('header', 'h7', get_string('groupsync', 'tool_sync'));
+        $mform->addHelpButton('h7', 'groupformat', 'tool_sync');
+        $groupmanager->form_elements($mform);
 
         $mainmanager->form_elements($mform);
 
