@@ -24,8 +24,8 @@
 
 $string['sync:configure'] = 'Configurer les synchronisations';
 
-$string['addedtogroup'] = 'L\'utilisateur {$a->myuser} a été ajouté au groupe {$a->group}';
-$string['addedtogroupnot'] = 'L\'utilisateur {$a->myuser} n\'a pas été ajouté au groupe {$a->group}';
+$string['addedtogroup'] = 'L\'utilisateur {$a->myuser} a été ajouté au groupe {$a->mygroup}';
+$string['addedtogroupnot'] = 'L\'utilisateur {$a->myuser} n\'a pas été ajouté au groupe {$a->mygroup}';
 $string['allowrename'] = 'Permettre le changement d\'identifiant';
 $string['alltasksrunmsg'] = ' toutes les commandes préconfigurées';
 $string['alreadyassigned'] = 'L\'utilisateur {$a->myuser} est déjà assigné au role {$a->myrole} dans le cours {$a->mycourse}';
@@ -251,6 +251,20 @@ $string['groupassigndeleted'] = 'Les assignations de groupe sont supprimées pou
 $string['groupcreated'] = 'Le groupe {$a->group} a été créé dans le cours {$a->mycourse}';
 $string['groupnotaddederror'] = 'Erreur de création de groupe : {$a}';
 $string['groupunknown'] = 'Le groupe {$a->group} n\'existe pas dans {$a->mycourse} et la commande ne permet pas la création.';
+$string['groupsync'] = 'Synchroniser les groupes de cours';
+$string['groupcourseidentifier'] = 'Identifiant de cours';
+$string['groupfilelocation'] = 'Emplacement du fichier de groupes';
+$string['groupmembersfilelocation'] = 'Emplacement du fichier des membres de groupes';
+$string['groupuseridentifier'] = 'Identifiant d\'utilisateur';
+$string['groupidentifier'] = 'Identifiant de groupe';
+$string['groupautogrouping'] = 'Mettre les groupes créés en groupement';
+$string['groupemailcourseadmins'] = 'Notifier les enseignants gestionnaires de cours des imports';
+$string['grouppurgeempty'] = 'Purger les groupes vides';
+$string['purgenone'] = 'Pas de purge';
+$string['purgegroups'] = 'Purger les groupes vides';
+$string['purgeall'] = 'Purger les groupes et les gorupements vides';
+$string['manualgrouprun'] = 'Importer manuellement des groupes';
+$string['manualgroupmembersrun'] = 'Alimenter manuellement des groupes';
 $string['hiddenroleadded'] = 'Rôle masqué ajouté dans le contexte :';
 $string['hour'] = 'heure';
 $string['ignoresubcats'] = 'Ignorer les sous-categories vides';
@@ -314,6 +328,8 @@ $string['remoteenrolled'] = 'Utilisateur {$a->username} inscrit en tant que {$a-
 $string['remoteserviceerror'] = 'Erreur du service distant';
 $string['removedfromgroup'] = 'Utilisateur {$a->myuser} supprimé du groupe {$a->group}';
 $string['removedfromgroupnot'] = 'Utilisateur {$a->myuser} non supprimé du groupe {$a->group} (le groupe n\'existe peut être pas)';
+$string['removedemptygroup'] = 'Groupe vide {$a->name} supprimé';
+$string['removedemptygrouping'] = 'Groupement vide {$a->name} supprimé';
 $string['report'] = 'Rapport';
 $string['reportdisabledbyconf'] = 'Rapport non sauvegardé (désactivé dans la configuration)';
 $string['resetfile'] = 'Fichier de reinitialisation';
@@ -597,18 +613,18 @@ $string['cohortformat_help'] = '
 Le fichier de création de cohortes est un fichier texte ISO ou UTF-8 suivant la configuration locale. La première
 ligne contient les noms de colonnes.
 
-<p>Champs obligatoires : Tous les champs dépendent du mode ou de la commande de traitement choisie.</p>
+Champs obligatoires : Tous les champs dépendent du mode ou de la commande de traitement choisie.
 
-<p><li><code>\'add\' + cname, cdescription, cidnumber</code> : crée une cohorte</li>
-<p><li><code>\'add\' + cid(P), userid</code> : ajoute un membre</li>
-<p><li><code>\'add\' + userid, cname, cdescription, cidnumber</code> : crée une cohorte avec un membre dedans</li>
-<p><li><code>\'add\' + cid(P), cname, cdescription, cidnumber</code> : met à jour une chorte sur la base de l\'identifiant primaire de cohorte</li>
-<p><li><code>\'del\' + cid(P)</code> : supprime une cohorte et toutes les dépendances (membres, inscriptions)</li>
-<p><li><code>\'del\' + cid(P), userid</code> : supprime un membre dans une cohorte</li>
+<li><code>\'add\' + cname, cdescription, cidnumber</code> : crée une cohorte</li>
+<li><code>\'add\' + cid(P), userid</code> : ajoute un membre</li>
+<li><code>\'add\' + userid, cname, cdescription, cidnumber</code> : crée une cohorte avec un membre dedans</li>
+<li><code>\'add\' + cid(P), cname, cdescription, cidnumber</code> : met à jour une chorte sur la base de l\'identifiant primaire de cohorte</li>
+<li><code>\'del\' + cid(P)</code> : supprime une cohorte et toutes les dépendances (membres, inscriptions)</li>
+<li><code>\'del\' + cid(P), userid</code> : supprime un membre dans une cohorte</li>
 
 (P) : valeur de l\'identifiant primaire.
 
-<p>Champs optionnels : <b>cid, userid, cname, cdescription, cidnumber, cmd</b></p>
+Champs optionnels : <b>cid, userid, cname, cdescription, cidnumber, cmd</b>
 
 <li><i>cid</i> : Un identifiant de cohorte, selon la configuration de l\'outil de synchronisation. Peut être
 l\'id, le nom, ou l\'idnumber.</li>
@@ -619,6 +635,26 @@ l\'id, l\'email, le username, ou l\'idnumber.</li>
 <li><i>cidnumber</i> : Si la cohorte doit être créée, l\'idnumber. Dans ce cas, l\'identifiant devra être choisi comme \'name\'.</li>
 <li><i>cmd</i> : Par défaut cette colonne vaut implicitement \'add\'. Elle peut être explictement renseignée à \'del\' pour effectuer
 une suppression de membres (avec userid) ou de cohortes entières (sans userid).</li>
+
+# Inscription des cohortes aux cours
+
+Le fichier de configuration des liaisons des cohortes au cours est un fichier CSV plat avec les champs suivants :
+
+Champs obligatoires :
+
+<li><i>cohort</i> : Un identifiant de cohorte, selon la configuration de l\'outil de synchronisation. Peut être
+l\'id, le nom, ou le numéro d\'identification.</li>
+<li><i>course</i> : Un identifiant de cours, selon la configuration de l\'outil de synchronisation. Peut être
+l\'id, le nom court, ou le numéro d\'identification.</li>
+
+Champs facultatifs :
+
+<li><i>enrol</i> : Le type de méthode d\'inscription. Par défaut \'cohort\', mais d\'autres méthodes d\'inscription non standard
+liées aux cohortes peuvent être utilisées si elles sont installées.</li>
+<li><i>enrolstart</i> : La date de début de l\'inscription (timestamp).</li>
+<li><i>enrolend</i> : La date de fin de l\'inscription (timestamp).</li>
+<li><i>role</i> : Le nom du rôle à attribuer.</li>
+<li><i>makegroup</i> : Si mis à 1, la création automatique du groupe représentant la cohorte sera activée.</li>
 ';
 
 $string['userpicturesformat'] = 'Format de transfert d\'images d\'avatars';

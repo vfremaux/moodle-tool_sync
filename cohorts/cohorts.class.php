@@ -256,6 +256,9 @@ class cohorts_sync_manager extends sync_manager {
                 $cid = $syncconfig->cohorts_cohortidentifier;
                 $uid = $syncconfig->cohorts_useridentifier;
 
+                $userid = @$record['userid'];
+                $this->report("Processing {$record['cmd']} by $cid:{$record['c'.$cid]} for {$uid}:{$userid}");
+
                 // Bind user to cohort.
                 if ($record['cmd'] == 'add') {
 
@@ -281,7 +284,7 @@ class cohorts_sync_manager extends sync_manager {
                     if (!$cohort) {
                         // Cohort is new.
                         if (!$autocreatecohorts) {
-                            // Creation is forbidden. Nust report the case.
+                            // Creation is forbidden. Must report the case.
                             // TODO track in log, push in runback file.
                             $e = new StdClass;
                             $e->cid = $cid;
@@ -341,7 +344,7 @@ class cohorts_sync_manager extends sync_manager {
                             $cohort->idnumber = @$record['name'];
                         }
                         $newcohortcontextid = $this->check_category_context($record, true);
-                        if (!is_null($newcohortid)) {
+                        if (!is_null($newcohortcontextid)) {
                             $cohort->contextid = $newcohortcontextid;
                         }
                         if (empty($syncconfig->simulate)) {
@@ -482,13 +485,18 @@ class cohorts_sync_manager extends sync_manager {
                 'cohort' => 1,
                 'course' => 1,
             );
-            $optionaldefaults = array();
+            $optionaldefaults = array(
+                'enrol' => 'cohort',
+                'enrolstart' => time(),
+                'enrolend' => 0,
+            );
             $optional = array(
                 'cmd' => 1,
                 'enrolstart' => 1,
                 'enrolend' => 1,
-                'enrol' => 'cohort',
+                'enrol' => 1,
                 'role' => 1,
+                'makegroup' => 1,
             );
             $patterns = array();
             $metas = array();

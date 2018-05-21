@@ -37,6 +37,8 @@ define('SYNC_COURSE_CREATE_DELETE', 0x006);
 
 define('SYNC_COHORT_CREATE_UPDATE', 0x1001);
 define('SYNC_COHORT_BIND_COURSES', 0x1002);
+define('SYNC_COURSE_GROUPS', 0x1004);
+define('SYNC_GROUP_MEMBERS', 0x1008);
 
 /**
  * Tells wether a feature is supported or not. Gives back the
@@ -46,7 +48,7 @@ define('SYNC_COHORT_BIND_COURSES', 0x1002);
 function tool_sync_supports_feature($feature) {
     static $supports;
 
-    $config = get_config('report_trainingsessions');
+    $config = get_config('tool_sync');
 
     if (!isset($supports)) {
         $supports = array(
