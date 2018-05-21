@@ -31,6 +31,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/cohorts/cohorts.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/groups/groups.class.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 
 /**
@@ -45,9 +46,11 @@ class admin_tool_sync_testcase extends advanced_testcase {
      *
      */
     public function test_sync() {
-        global $DB;
+        global $DB, $CFG;
 
         $this->resetAfterTest();
+
+        set_config('trace', $CFG->dirroot.'/trace.log');
 
         // Setup moodle content environment.
 
@@ -79,6 +82,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->load_file('webservices/user_suspend_sample.csv');
         $this->load_file('webservices/user_update_sample.csv');
         $this->load_file('webservices/enrol_sample.csv');
+        $this->load_file('webservices/groups.csv');
+        $this->load_file('webservices/groups_update.csv');
+        $this->load_file('webservices/group_members.csv');
+        $this->load_file('webservices/shift_group_members.csv');
 
         // Set component config for tests.
         set_config('csvseparator', ';', 'tool_sync');
@@ -129,6 +136,15 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('enrols_useridentifier', 'username', 'tool_sync');
         set_config('enrols_protectgroups', 1, 'tool_sync');
 
+        // Configure group tool.
+        set_config('groups_filelocation', 'groups.csv', 'tool_sync');
+        set_config('groupmembers_filelocation', 'group_members.csv', 'tool_sync');
+        set_config('groups_courseidentifier', 'shortname', 'tool_sync');
+        set_config('groups_groupidentifier', 'idnumber', 'tool_sync');
+        set_config('groups_useridentifier', 'username', 'tool_sync');
+        set_config('groups_autogrouping', 0, 'tool_sync');
+        set_config('groups_mailadmins', 0, 'tool_sync');
+
         // Get updated config.
         $config = get_config('tool_sync');
 
@@ -136,9 +152,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_CREATE);
         $coursemanager->cron($config);
-        $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
-        $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
-        $this->assertNotEmpty($DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
+
+        $this->assertNotEmpty($course1 = $DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
+        $this->assertNotEmpty($course2 = $DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
+        $this->assertNotEmpty($course3 = $DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
 
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_METAS);
         $coursemanager->cron($config);
@@ -155,6 +172,11 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertNotEmpty($user3 = $DB->get_record('user', array('username' => 'jack.duf')));
         $this->assertNotEmpty($user4 = $DB->get_record('user', array('username' => 'ggrass')));
         $this->assertNotEmpty($user5 = $DB->get_record('user', array('username' => 'yyang')));
+        $this->assertNotEmpty($groupuser1 = $DB->get_record('user', array('username' => 'ugr1')));
+        $this->assertNotEmpty($groupuser2 = $DB->get_record('user', array('username' => 'ugr2')));
+        $this->assertNotEmpty($groupuser3 = $DB->get_record('user', array('username' => 'ugr3')));
+        $this->assertNotEmpty($groupuser4 = $DB->get_record('user', array('username' => 'ugr4')));
+        $this->assertNotEmpty($groupuser10 = $DB->get_record('user', array('username' => 'ugr10')));
 
         $this->assertNotEmpty($deleted1 = $DB->get_record('user', array('username' => 'todelete1')));
         $this->assertNotEmpty($deleted2 = $DB->get_record('user', array('username' => 'todelete2')));
@@ -222,12 +244,16 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $this->assertTrue($DB->count_records('cohort') == 0);
 
+        echo "\nTest unit : building cohorts\n";
+
         // Combined creation / feeding.
         set_config('cohorts_filelocation', 'cohort_create_sample.csv', 'tool_sync');
         $config = get_config('tool_sync');
         $cohortmanager->cron($config);
 
         echo $cohortmanager->log;
+
+        echo "\nTest unit : building cohorts Testing\n";
 
         $cohort1 = $DB->get_record('cohort', array('name' => 'COHORT1'));
         $cohort2 = $DB->get_record('cohort', array('name' => 'COHORT2'));
@@ -243,6 +269,8 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort1->id, 'userid' => $user2->id))));
         $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user3->id))));
         $this->assertTrue(is_object($DB->get_record('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id))));
+
+        echo "\nTest unit : feeding cohorts\n";
 
         set_config('cohorts_filelocation', 'cohort_free_cohorts_by_idnumber.csv', 'tool_sync');
         $config = get_config('tool_sync');
@@ -273,15 +301,57 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertEquals($DB->count_records('cohort_members', array('cohortid' => $cohort2->id, 'userid' => $user4->id)), 0);
 
         // Binding courses.
+        echo "\nTest unit : binding courses to cohorts\n";
 
         $cohortmanager = new \tool_sync\cohorts_sync_manager(SYNC_COHORT_BIND_COURSES);
         $cohortmanager->cron($config);
+
+        // Enrolling users.
+        echo "\nTest unit : enrolling users\n";
 
         // Enrolling.
         $enrolmanager = new \tool_sync\enrol_sync_manager();
         $enrolmanager->cron($config);
 
+        // Group operations.
+        echo "\nTest unit : Creating / syncing groups\n";
+
+        $groupmanager = new \tool_sync\group_sync_manager(SYNC_COURSE_GROUPS);
+        $groupmanager->cron($config);
+
+        $this->assertTrue(is_object($group1 = $DB->get_record('groups', array('courseid' => $course1->id, 'idnumber' => 'TC1_GR1'))));
+        $this->assertTrue(is_object($group2 = $DB->get_record('groups', array('courseid' => $course1->id, 'idnumber' => 'TC1_GR2'))));
+        $this->assertTrue(is_object($group3 = $DB->get_record('groups', array('courseid' => $course1->id, 'idnumber' => 'TC1_GR3'))));
+        $this->assertTrue(is_object($group4 = $DB->get_record('groups', array('courseid' => $course1->id, 'idnumber' => 'TC1_GR4'))));
+        $this->assertTrue(is_object($DB->get_record('groups', array('courseid' => $course2->id, 'idnumber' => 'TC2_GR1'))));
+        $this->assertTrue(is_object($DB->get_record('groups', array('courseid' => $course2->id, 'idnumber' => 'TC2_GR2'))));
+        $this->assertTrue(is_object($DB->get_record('groups', array('courseid' => $course2->id, 'idnumber' => 'TC2_GR3'))));
+        $this->assertTrue(is_object($DB->get_record('groups', array('courseid' => $course2->id, 'idnumber' => 'TC2_GR4'))));
+
+        $this->assertTrue(is_object($groupingA = $DB->get_record('groupings', array('courseid' => $course1->id, 'name' => 'Grouping A'))));
+        $this->assertTrue(is_object($DB->get_record('groupings_groups', array('groupid' => $group1->id, 'groupingid' => $groupingA->id))));
+
+        echo "\nTest unit : Syncing group members\n";
+
+        $groupmanager = new \tool_sync\group_sync_manager(SYNC_GROUP_MEMBERS);
+        $groupmanager->cron($config);
+
+        $this->assertTrue(is_object($DB->get_record('groups_members', array('groupid' => $group1->id, 'userid' => $groupuser1->id))));
+        $this->assertTrue(is_object($DB->get_record('groups_members', array('groupid' => $group4->id, 'userid' => $groupuser4->id))));
+
+        echo "\nTest unit : Shifting group members (changing group)\n";
+
+        set_config('groupmembers_filelocation', 'shift_group_members.csv', 'tool_sync');
+
+        $groupmanager = new \tool_sync\group_sync_manager(SYNC_GROUP_MEMBERS);
+        $config->groupmembers_filelocation = 'shift_group_members.csv'; // Change in memory config.
+        $groupmanager->cron($config);
+
+        $this->assertTrue(is_object($DB->get_record('groups_members', array('groupid' => $group2->id, 'userid' => $groupuser1->id))));
+        $this->assertTrue(is_object($DB->get_record('groups_members', array('groupid' => $group1->id, 'userid' => $groupuser4->id))));
+
         // Users deletion.
+        echo "\nTest unit : User deletion\n";
 
         set_config('users_filelocation', 'user_delete_sample.csv');
         $config->users_filelocation = 'user_delete_sample.csv';
@@ -305,9 +375,10 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $coursemanager = new \tool_sync\course_sync_manager(SYNC_COURSE_DELETE);
         $coursemanager->cron($config);
 
-        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE1')));
-        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE2')));
-        $this->assertTrue(false == $DB->get_record('course', array('shortname' => 'TESTCOURSE3')));
+        $deletedcourse1 = $DB->get_record('course', array('shortname' => 'TESTCOURSE1'));
+        $this->assertTrue(!is_object($deletedcourse1));
+        $this->assertTrue(!is_object($DB->get_record('course', array('shortname' => 'TESTCOURSE2'))));
+        $this->assertTrue(!is_object($DB->get_record('course', array('shortname' => 'TESTCOURSE3'))));
     }
 
     protected function load_file($filepath) {

@@ -49,4 +49,8 @@ Adds handling of special enrol/sync plugin when enrolling by WS
 
 X.X.0021
 ===================================
-Clean the manual tool cynematics. Fix the refresh loading file issue.
+Clean the manual tool cinematics. Fix the refresh loading file issue.
+
+X.X.0022
+===================================
+Add the group and grouping toolkit.

@@ -24,8 +24,8 @@
 
 $string['sync:configure'] = 'Configure the synchronisation manager';
 
-$string['addedtogroup'] = 'User {$a->myuser} added to group {$a->group}';
-$string['addedtogroupnot'] = 'User {$a->myuser} NOT added to group {$a->group}';
+$string['addedtogroup'] = 'User {$a->myuser} added to group {$a->mygroup}';
+$string['addedtogroupnot'] = 'User {$a->myuser} NOT added to group {$a->mygroup}';
 $string['allowrename'] = 'Allow renaming users';
 $string['alltasksrunmsg'] = 'all configured tasks';
 $string['alreadyassigned'] = 'User {$a->myuser} already assigned to {$a->myrole} in course {$a->mycourse}';
@@ -259,7 +259,21 @@ $string['group_cleanex'] = 'Clear groups that are present in moodle but empty of
 $string['groupassigndeleted'] = 'Previous group assignments deleted for {$a->myuser} in course {$a->mycourse}';
 $string['groupcreated'] = 'Group {$a->group} created in course {$a->mycourse}';
 $string['groupnotaddederror'] = 'Error on group assignation : {$a}';
+$string['groupsync'] = 'Course group operations';
+$string['groupcourseidentifier'] = 'Course identifier';
+$string['groupfilelocation'] = 'Group file location';
+$string['groupmembersfilelocation'] = 'Group members file location';
+$string['groupuseridentifier'] = 'User identifier';
+$string['groupidentifier'] = 'Group identifier';
+$string['groupautogrouping'] = 'Auto grouping groups';
 $string['groupunknown'] = 'This group {$a->group} is not known in {$a->mycourse} and cannot be created.';
+$string['groupemailcourseadmins'] = 'Email course administors with import results';
+$string['grouppurgeempty'] = 'Purge empty groups';
+$string['purgenone'] = 'No purge';
+$string['purgegroups'] = 'Empty groups';
+$string['purgeall'] = 'Empty groups and groupings';
+$string['manualgrouprun'] = 'Run manualy a group import';
+$string['manualgroupmembersrun'] = 'Run manualy a group membership import';
 $string['hiddenroleadded'] = 'Hidden role added on context:';
 $string['hour'] = 'hour';
 $string['ignoresubcats'] = 'Ignore subcategories (if empty)';
@@ -325,6 +339,8 @@ $string['remoteserviceerror'] = 'Remote service error';
 $string['removedfromgroup'] = 'User {$a->myuser} removed from group {$a->group}';
 $string['removedfromgroupnot'] = 'User {$a->myuser} not removed from group {$a->group} (may not exist)';
 $string['reportdisabledbyconf'] = 'Not storing report (disabled by config)';
+$string['removedemptygroup'] = 'Group {$a->name} removed because empty';
+$string['removedemptygrouping'] = 'Grouping {$a->name} removed because empty';
 $string['resetfile'] = 'Course Reset command file';
 $string['resetfilebuilder'] = 'Course Reset CSV file generator';
 $string['resetfileidentifier'] = 'Reinitialisation selection identifier';
@@ -374,7 +390,7 @@ $string['taskrunmsgnofile'] = 'No file<br/>.';
 $string['testcourseexist'] = 'Test if courses exist in Moodle';
 $string['title'] = '<center><h1>Synchronization manager : configuration</h1></center>';
 $string['toolindex'] = 'Tool index';
-$string['totaltime'] = 'Total Execution Time: ';
+$string['totaltime'] = 'Total Execution Time:&ensp;';
 $string['trybackdisabledbyconf'] = 'Not storing tryback (disabled by config)';
 $string['unassign'] = 'The {$a->myrole} role asignation deletion for {$a->myuser} in course {$a->mycourse}';
 $string['unassignall'] = 'All role deletion for {$a->myuser} in course {$a->mycourse}';
@@ -419,8 +435,8 @@ $string['userpicturesync'] = 'User pictures synchronisation';
 $string['userrevived'] = 'User was revived : {$a}';
 $string['usersconfig'] = 'Configuration for user synchronisation';
 $string['userscronconfig'] = 'Enable synchronization cron users';
-$string['usersfile'] = 'File for syncing users ';
-$string['usersupdated'] = 'Users updated ';
+$string['usersfile'] = 'File for syncing users&nbsp;';
+$string['usersupdated'] = 'Users updated&nbsp;';
 $string['usersync'] = 'Users synchronization';
 $string['userunknownremotely'] = 'User {$a} unkown on remote end';
 $string['userupdatecollision'] = 'Error : User username collision when updating {$a}';
@@ -574,18 +590,18 @@ $string['cohortformat_help'] = '
 Cohort creation/update file must be in ISO or UTF-8 format depending on Sync Tool settings.
 The first line must hold column titles in any order.
 
-<p>Mandatory fields: None of the fields are mandatory. Fields usage depend on the operation.</p>
+Mandatory fields: None of the fields are mandatory. Fields usage depend on the operation.
 
-<p><li><code>\'add\' + cname, cdescription, cidnumber</code> : creates an empty cohort</li>
-<p><li><code>\'add\' + cid(P), userid(P)</code> : add a member</li>
-<p><li><code>\'add\' + userid(P), cname, cdescription, cidnumber</code> : creates a cohort and add a member inside</li>
-<p><li><code>\'add\' + cid(P), cname, cdescription, cidnumber</code> : updates a cohort information</li>
-<p><li><code>\'del\' + cid(P)</code> : deletes a cohort and any dependencies (memberships, enrolments, etc.)</li>
-<p><li><code>\'del\' + cid(P), userid</code> : deletes a cohort membership</li>
+<li><code>\'add\' + cname, cdescription, cidnumber</code> : creates an empty cohort</li>
+<li><code>\'add\' + cid(P), userid(P)</code> : add a member</li>
+<li><code>\'add\' + userid(P), cname, cdescription, cidnumber</code> : creates a cohort and add a member inside</li>
+<li><code>\'add\' + cid(P), cname, cdescription, cidnumber</code> : updates a cohort information</li>
+<li><code>\'del\' + cid(P)</code> : deletes a cohort and any dependencies (memberships, enrolments, etc.)</li>
+<li><code>\'del\' + cid(P), userid</code> : deletes a cohort membership</li>
 
 (P) Primary object identifier value. If present, object must exist.
 
-<p>Optional fields: <b>cmd, cid, cname, cdescription, cidnumber, userid</b></p>
+Optional fields: <b>cmd, cid, cname, cdescription, cidnumber, userid</b>
 
 <li><i>cid</i>: An identifier, depending on Sync Tools settings. Can be cohort internal id, name or idnumber.</li>
 <li><i>userid</i>: A primary identifier for the user. Can be internal id, username, email or idnumber.</li>
@@ -593,11 +609,54 @@ The first line must hold column titles in any order.
 <li><i>cdescription</i>: If cohort needs to be created, a textuel description for it.</li>
 <li><i>cidnumber</i>: If cohort needs to be created, the id number. In that case, should the primary cohort id be choosen as \'name\'.</li>
 <li><i>cmd</i>: Implicitely \'add\'. You may explicit a \'del\' value for deleting cohorts or memberships.</li>
+
+# Cohort to course bindings :
+
+The cohort to course bindings file is a CSV flat file with the following fields:
+
+Mandatory fields:
+
+<li><i>cohort</i>: An identifier of the cohort, depending on Sync Tools settings. Can be cohort internal id, name or idnumber.</li>
+<li><i>course</i>: An identifier of the cohort, depending on Sync Tools settings. Can be course internal id, shortname or idnumber.</li>
+
+Optional fields:
+
+<li><i>enrol</i>: The type of enrol method used. Defaults to \'cohort\', but other non standard cohort related methods might be used if
+they are installed.</li>
+<li><i>enrolstart</i>: The start date of the enrol validity time (timestamp).</li>
+<li><i>enrolend</i>: The end of enrol validity time (timestamp).</li>
+<li><i>role</i>: The role name the enrol method will act for.</li>
+<li><i>makegroup</i>: If set to 1, will ask the enrol method to generate the cohort group.</li>
+
 ';
 
 $string['userpicturesformat'] = 'User pictures file format';
 $string['userpicturesformat_help'] = '
 The User Pictures feeding file must be a zip with png, jpg or gif images for users, named using their primary identifier.
+';
+
+$string['groupformat'] = 'Group operation file formats';
+$string['groupformat_help'] = '
+Group operation files are CSV files UTF8 or ANSI encoded with a simple structure :
+
+# Group file
+
+<li><i>courseid</i>: An identifier for the course, depending on Sync Tools settings. Can be course internal id, shortname or idnumber.</li>
+<li><i>name</i>: The group name.</li>
+
+Optional fields:
+
+<li><i>description</i>: If group needs to be created, a textual description for it.</li>
+<li><i>selfgrouping</i>: If present, will autoselfgroup the group in a grouping with same name.</li>
+<li><i>grouping</i>: If present, will autoselfgroup the group in a grouping with same name.</li>
+
+# Group members file
+
+<li><i>gcmd</i>: A commmand for membership operation : add (default), shift, or del</li>
+<li><i>courseid</i>: An identifier for the course, depending on Sync Tools settings. Can be course internal id, shortname or idnumber.</li>
+<li><i>groupid</i>: The identifier to the group, Can be name or idnumber.</li>
+<li><i>userid</i>: A primary identifier for the user. Can be internal id, username, email or idnumber.</li>
+
 ';
 
 $string['passwordnotification_tpl'] = '
