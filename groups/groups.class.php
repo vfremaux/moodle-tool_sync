@@ -74,7 +74,7 @@ class group_sync_manager extends sync_manager {
 
         $key = 'tool_sync/groups_purgeemptygroups';
         $label = get_string('grouppurgeempty', 'tool_sync');
-        $opts = array(0 => get_string('purgenone', 'toolsync'),
+        $opts = array(0 => get_string('purgenone', 'tool_sync'),
                       1 => get_string('purgegroups', 'tool_sync'),
                       2 => get_string('purgeall', 'tool_sync'));
         $frm->addElement('select', $key, $label, $opts, 0);
