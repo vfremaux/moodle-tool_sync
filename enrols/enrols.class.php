@@ -56,6 +56,10 @@ class enrol_sync_manager extends sync_manager {
         $label = get_string('enrolprotectgroups', 'tool_sync');
         $frm->addElement('advcheckbox', $key, $label, '', array('group' => 1), array(0, 1));
 
+        $key = 'tool_sync/enrols_enableenrolondisabled';
+        $label = get_string('enableenrolondisabled', 'tool_sync');
+        $frm->addElement('advcheckbox', $key, $label, '', array('group' => 3), array(0, 1));
+
         $key = 'tool_sync/enrols_mailadmins';
         $label = get_string('enrolemailcourseadmins', 'tool_sync');
         $frm->addElement('advcheckbox', $key, $label, '', array('group' => 2), array(0, 1));
@@ -284,7 +288,10 @@ class enrol_sync_manager extends sync_manager {
 
             if ($record['enrol'] != 'sync') {
                 $enrol = enrol_get_plugin('manual');
-                $params = array('enrol' => $record['enrol'], 'courseid' => $course->id, 'status' => ENROL_INSTANCE_ENABLED);
+                $params = array('enrol' => $record['enrol'], 'courseid' => $course->id);
+                if (empty($syncconfig->enrols_enableenrolondisabled)) {
+                    $params['status'] = ENROL_INSTANCE_ENABLED;
+                }
                 if (!$enrols = $DB->get_records('enrol', $params, 'sortorder ASC')) {
                     $this->report(get_string('errornoenrolmethod', 'tool_sync'));
                     $record['enrol'] = '';
