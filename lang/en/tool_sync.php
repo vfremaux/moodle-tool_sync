@@ -139,6 +139,7 @@ $string['emptygroupsdeleted'] = 'Empty groups deleted';
 $string['encoding'] = 'Source file encoding';
 $string['endofprocess'] = 'End of process<br/>';
 $string['endofreport'] = 'end of report';
+$string['enableenrolondisabled'] = 'Allow enrol on disabled instances';
 $string['enrolcourseidentifier'] = 'Course identifier field';
 $string['enrolcronprocessing'] = 'Enrol cron processing';
 $string['enroldefault'] = 'Default processing';
