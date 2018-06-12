@@ -68,3 +68,6 @@ Inrement X.X.0021
 
 Increment X.X.0022
 - Adds the group and grouping toolkit.
+
+Increment X.X.0023
+Enrol tool : allow pursuing enrolling on disabled plugin instances (global tool config).
