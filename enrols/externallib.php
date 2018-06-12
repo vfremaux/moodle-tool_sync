@@ -585,7 +585,7 @@ class tool_sync_core_ext_external extends external_api {
     /**
      * assign a role to a user
      *
-     * @return the user enrolment id
+     * @return the user enrolment id.
      */
     public static function assign_role($roleidsource, $roleid, $useridsource, $userid, $contexttype, $instanceidsource, $instanceid) {
 
