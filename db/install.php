@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_tool_sync_install() {
     global $DB;
 
-    // Will add a custom user info field to stroe avatar checksum.
+    // Will add a custom user info field to store avatar checksum.
 
     if (!$DB->record_exists('user_info_field', array('shortname' => 'userpicturehash'))) {
         $rec = new StdClass();
