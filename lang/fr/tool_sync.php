@@ -259,6 +259,7 @@ $string['groupfilelocation'] = 'Emplacement du fichier de groupes';
 $string['groupmembersfilelocation'] = 'Emplacement du fichier des membres de groupes';
 $string['groupuseridentifier'] = 'Identifiant d\'utilisateur';
 $string['groupidentifier'] = 'Identifiant de groupe';
+$string['groupingidentifier'] = 'Identifiant de groupement';
 $string['groupautogrouping'] = 'Mettre les groupes créés en groupement';
 $string['groupemailcourseadmins'] = 'Notifier les enseignants gestionnaires de cours des imports';
 $string['grouppurgeempty'] = 'Purger les groupes vides';

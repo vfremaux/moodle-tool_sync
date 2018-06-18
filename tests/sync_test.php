@@ -84,6 +84,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->load_file('webservices/enrol_sample.csv');
         $this->load_file('webservices/groups.csv');
         $this->load_file('webservices/groups_update.csv');
+        $this->load_file('webservices/groupings_update.csv');
         $this->load_file('webservices/group_members.csv');
         $this->load_file('webservices/shift_group_members.csv');
 
@@ -141,6 +142,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         set_config('groupmembers_filelocation', 'group_members.csv', 'tool_sync');
         set_config('groups_courseidentifier', 'shortname', 'tool_sync');
         set_config('groups_groupidentifier', 'idnumber', 'tool_sync');
+        set_config('groups_groupingidentifier', 'idnumber', 'tool_sync');
         set_config('groups_useridentifier', 'username', 'tool_sync');
         set_config('groups_autogrouping', 0, 'tool_sync');
         set_config('groups_mailadmins', 0, 'tool_sync');
@@ -319,6 +321,8 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $groupmanager = new \tool_sync\group_sync_manager(SYNC_COURSE_GROUPS);
         $groupmanager->cron($config);
 
+        $this->assertTrue(is_object($groupingA = $DB->get_record('groupings', array('courseid' => $course1->id, 'name' => 'Grouping A'))));
+
         $this->assertTrue(is_object($group1 = $DB->get_record('groups', array('courseid' => $course1->id, 'idnumber' => 'TC1_GR1'))));
         $this->assertTrue(is_object($group2 = $DB->get_record('groups', array('courseid' => $course1->id, 'idnumber' => 'TC1_GR2'))));
         $this->assertTrue(is_object($group3 = $DB->get_record('groups', array('courseid' => $course1->id, 'idnumber' => 'TC1_GR3'))));
@@ -328,7 +332,6 @@ class admin_tool_sync_testcase extends advanced_testcase {
         $this->assertTrue(is_object($DB->get_record('groups', array('courseid' => $course2->id, 'idnumber' => 'TC2_GR3'))));
         $this->assertTrue(is_object($DB->get_record('groups', array('courseid' => $course2->id, 'idnumber' => 'TC2_GR4'))));
 
-        $this->assertTrue(is_object($groupingA = $DB->get_record('groupings', array('courseid' => $course1->id, 'name' => 'Grouping A'))));
         $this->assertTrue(is_object($DB->get_record('groupings_groups', array('groupid' => $group1->id, 'groupingid' => $groupingA->id))));
 
         echo "\nTest unit : Syncing group members\n";
@@ -342,6 +345,7 @@ class admin_tool_sync_testcase extends advanced_testcase {
         echo "\nTest unit : Shifting group members (changing group)\n";
 
         set_config('groupmembers_filelocation', 'shift_group_members.csv', 'tool_sync');
+        $config = get_config('tool_sync'); // Reload config with changes.
 
         $groupmanager = new \tool_sync\group_sync_manager(SYNC_GROUP_MEMBERS);
         $config->groupmembers_filelocation = 'shift_group_members.csv'; // Change in memory config.
@@ -349,6 +353,27 @@ class admin_tool_sync_testcase extends advanced_testcase {
 
         $this->assertTrue(is_object($DB->get_record('groups_members', array('groupid' => $group2->id, 'userid' => $groupuser1->id))));
         $this->assertTrue(is_object($DB->get_record('groups_members', array('groupid' => $group1->id, 'userid' => $groupuser4->id))));
+
+        // Updating groups (using default type)
+        echo "\nTest unit : Updating group definition\n";
+
+        set_config('groups_filelocation', 'groups_update.csv', 'tool_sync');
+        $config = get_config('tool_sync'); // Reload config with changes.
+
+        $groupmanager = new \tool_sync\group_sync_manager(SYNC_COURSE_GROUPS);
+        $groupmanager->cron($config);
+
+        $this->assertTrue(is_object($groupingA = $DB->get_record('groups', array('courseid' => $course1->id, 'name' => 'Group 1 Updated'))));
+
+        // Updating groupings (explicit type)
+        echo "\nTest unit : Updating grouping definition\n";
+        set_config('groups_filelocation', 'groupings_update.csv', 'tool_sync');
+        $config = get_config('tool_sync'); // Reload config with changes.
+
+        $groupmanager = new \tool_sync\group_sync_manager(SYNC_COURSE_GROUPS);
+        $groupmanager->cron($config);
+
+        $this->assertTrue(is_object($groupingA = $DB->get_record('groupings', array('courseid' => $course1->id, 'name' => 'Grouping A Updated'))));
 
         // Users deletion.
         echo "\nTest unit : User deletion\n";
