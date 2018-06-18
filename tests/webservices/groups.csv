@@ -1,9 +1,11 @@
-courseid;name;idnumber;description;selfgrouping;grouping
-TESTCOURSE1;Group 1;TC1_GR1;Test group for creation 1;0;Grouping A
-TESTCOURSE1;Group 2;TC1_GR2;Test group for creation 2;0;Grouping A
-TESTCOURSE1;Group 3;TC1_GR3;Test group for creation 3;0;Grouping B
-TESTCOURSE1;Group 4;TC1_GR4;Test group for creation 4;0;Grouping B
-TESTCOURSE2;Group 1;TC2_GR1;Test group for creation 1;1;
-TESTCOURSE2;Group 2;TC2_GR2;Test group for creation 2;1;
-TESTCOURSE2;Group 3;TC2_GR3;Test group for creation 3;1;
-TESTCOURSE2;Group 4;TC2_GR4;Test group for creation 4;1;
+type;courseid;name;idnumber;description;selfgrouping;grouping
+grouping;TESTCOURSE1;Grouping A;GRPA;Test grouping for creation A;;
+grouping;TESTCOURSE1;Grouping B;GRPB;Test grouping for creation B;;
+group;TESTCOURSE1;Group 1;TC1_GR1;Test group for creation 1;0;GRPA
+group;TESTCOURSE1;Group 2;TC1_GR2;Test group for creation 2;0;GRPA
+group;TESTCOURSE1;Group 3;TC1_GR3;Test group for creation 3;0;GRPB
+group;TESTCOURSE1;Group 4;TC1_GR4;Test group for creation 4;0;GRPB
+group;TESTCOURSE2;Group 1B;TC2_GR1;Test group for creation 1;1;
+group;TESTCOURSE2;Group 2B;TC2_GR2;Test group for creation 2;1;
+group;TESTCOURSE2;Group 3B;TC2_GR3;Test group for creation 3;1;
+group;TESTCOURSE2;Group 4B;TC2_GR4;Test group for creation 4;1;

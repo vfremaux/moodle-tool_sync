@@ -68,6 +68,10 @@ class group_sync_manager extends sync_manager {
         $label = get_string('groupidentifier', 'tool_sync');
         $frm->addElement('select', $key, $label, $this->get_groupfields());
 
+        $key = 'tool_sync/groups_groupingidentifier';
+        $label = get_string('groupingidentifier', 'tool_sync');
+        $frm->addElement('select', $key, $label, $this->get_groupingfields());
+
         $key = 'tool_sync/groups_autogrouping';
         $label = get_string('groupautogrouping', 'tool_sync');
         $frm->addElement('advcheckbox', $key, $label, '', array('group' => 1), array(0, 1));
@@ -114,6 +118,12 @@ class group_sync_manager extends sync_manager {
                      'name' => get_string('name'));
     }
 
+    public function get_groupingfields() {
+        return array('id' => 'id',
+                     'idnumber' => 'idnumber',
+                     'name' => get_string('name'));
+    }
+
     public function cron($syncconfig) {
         global $CFG, $DB;
 
@@ -152,12 +162,14 @@ class group_sync_manager extends sync_manager {
                     'courseid' => 1,
                     'name' => 1);
             $optional = array(
+                    'type' => 1,
                     'idnumber' => 1,
-                    'groupid' => 1,
+                    'updateid' => 1,
                     'selfgrouping' => 1,
                     'grouping' => 1,
                     'description' => 1);
             $optionaldefaults = array(
+                    'type' => 'group',
                     'idnumber' => '',
                     'selfgrouping' => 0,
                     'grouping' => false,
@@ -179,7 +191,6 @@ class group_sync_manager extends sync_manager {
             array_walk($headers, 'trim_array_values');
 
             foreach ($headers as $h) {
-                $header[] = trim($h); // Remove whitespace.
                 if (!(isset($required[$h]) or isset($optional[$h]))) {
                     $this->report(get_string('errorinvalidcolumnname', 'tool_sync', $h));
                     set_config('lastrunning_group', null, 'tool_sync');
@@ -225,7 +236,7 @@ class group_sync_manager extends sync_manager {
                 }
                 foreach ($line as $key => $value) {
                     // Decode encoded commas.
-                    $record[$header[$key]] = trim($value);
+                    $record[$headers[$key]] = trim($value);
                 }
 
                 // Set defaults.
@@ -268,65 +279,168 @@ class group_sync_manager extends sync_manager {
                     echo "Grouping...\n";
                 }
 
-                if (!empty($headers['groupid'])) {
-                    $this->report('with explicit groupid');
-                    $gidentifiername = @$syncconfig->groups_groupidentifier;
-                    $params = array($gidentifiername => $record['groupid']);
-                    if ($oldrec = $DB->get_record('groups', $params)) {
-                        $oldrec->name = @$record['name'];
-                        $oldrec->description = @$record['description'];
-                        $oldrec->idnumber = @$record['idnumber'];
-                        $DB->update_record('groups', $oldrec);
-                        $updatedgroups[$oldrec->courseid][] = $olrec->name;
-                        $group = $oldrec;
+                if (in_array('updateid', $headers)) {
+                    // UPDATES.
+                    $this->report('With explicit group or grouping id for Updates.');
+
+                    if ($record['type'] == 'group') {
+                        $gidentifiername = @$syncconfig->groups_groupidentifier;
+                        $params = array($gidentifiername => $record['updateid']);
+                        if ($oldrec = $DB->get_record('groups', $params)) {
+
+                            if ($oldrec->courseid != $course->id) {
+                                $this->report('course '.$course->id.' do not match with existing group for '.$record['name']);
+                                continue;
+                            }
+                            $this->report("Updating group ");
+                            $oldrec->name = $record['name'];
+                            $oldrec->description = @$record['description'];
+                            $oldrec->idnumber = @$record['idnumber'];
+                            if (empty($syncconfig->simulate)) {
+                                $DB->update_record('groups', $oldrec);
+                                $this->report("group updated in DB ".print_r($oldrec, true));
+                                $updatedgroups[$oldrec->courseid][] = $oldrec->name;
+                                $group = $oldrec;
+                                $this->report('Group "'.$group->name.'" updated in course '.$oldrec->courseid);
+                            } else {
+                                $this->report('SIMULATE: Group "'.$group->name.'" updated in course '.$oldrec->courseid);
+                            }
+                        } else {
+                            $group = new StdClass;
+                            $group->name = @$record['name'];
+                            $group->courseid = @$record['courseid'];
+                            $group->description = @$record['description'];
+                            $group->idnumber = @$record['idnumber'];
+
+                            if (!empty($record['grouping'])) {
+                                $groupingid = $DB->get_field('groupings', 'id', array('idnumber' => $record['grouping']));
+                                if ($groupingid) {
+                                    $group->grouping = $groupingid;
+                                }
+                            }
+
+                            if (empty($syncconfig->simulate)) {
+                                $group->id = $DB->insert_record('groups', $group);
+                                $createdgroups[$group->courseid][] = $group->name;
+                                $this->report('Group "'.$group->name.'" created in course '.$group->courseid);
+                            } else {
+                                $this->report('SIMULATION: Group "'.$group->name.'" created in course '.$group->courseid);
+                            }
+                        }
                     } else {
-                        $this->report('group not exists and cannot create');
+                        // Groupings.
+                        $gpidentifiername = @$syncconfig->groups_groupingidentifier;
+                        $params = array($gpidentifiername => $record['updateid']);
+                        if ($oldrec = $DB->get_record('groupings', $params)) {
+
+                            if ($oldrec->courseid != $course->id) {
+                                $this->report('Course '.$course->id.' do not match with existing grouping for '.$record['name']);
+                                continue;
+                            }
+                            $this->report('Updating grouping');
+                            if ($gpidentifiername != 'name') {
+                                $oldrec->name = $record['name'];
+                            }
+                            $oldrec->description = @$record['description'];
+
+                            if ($gpidentifiername != 'idnumber') {
+                                $oldrec->idnumber = @$record['idnumber'];
+                            }
+
+                            if (empty($syncconfig->simulate)) {
+                                $this->report('Updating grouping in DB');
+                                $DB->update_record('groupings', $oldrec);
+                                $this->report('Grouping "'.$oldrec->idnumber.'" updated in course '.$oldrec->courseid);
+                                $updatedgroupings[$oldrec->courseid][] = $oldrec->name;
+                                $grouping = $oldrec;
+                            } else {
+                                $this->report('SIMULATION: Grouping "'.$oldrec->idnumber.'" updated in course '.$oldrec->courseid);
+                            }
+                        } else {
+                            $grouping = new StdClass;
+                            $grouping->name = $record['name'];
+                            $grouping->courseid = @$record['courseid'];
+                            $grouping->description = @$record['description'];
+
+                            if (empty($record['idnumber'])) {
+                                $this->report('Grouping '.$grouping->name.' has no idnumber and will not be addressable in further group lines.');
+                            }
+                            $grouping->idnumber = @$record['idnumber'];
+
+                            if (empty($syncconfig->simulate)) {
+                                $grouping->id = $DB->insert_record('groupings', $grouping);
+                                $createdgroupings[$course->id][] = $grouping->name;
+                                $this->report('Grouping "'.$grouping->name.'" created in course '.$course->id);
+                            } else {
+                                $this->report('SIMULATION: Grouping "'.$grouping->name.'" created in course '.$course->id);
+                            }
+                        }
+                        // Groupings terminate here.
                         continue;
                     }
                 } else {
                     $this->report('without explicit groupid (addonly)');
-                    $group = new StdClass;
-                    $group->name = @$record['name'];
-                    $group->description = @$record['description'];
-                    $group->descriptionformat = 0;
-                    $group->idnumber = @$record['idnumber'];
-                    $group->courseid = $course->id;
-                    if (!empty($record['idnumber'])) {
-                        $params = array('idnumber' => $record['idnumber']);
-                    } else if (!empty($record['name'])) {
-                        $params = array('name' => $record['name']);
-                    }
-                    $oldgroup = $DB->get_record('groups', $params);
-                    if ($oldgroup) {
-                        // Group exists, takes old group.
-                        $group = $oldgroup;
-                    }
 
-                    if (empty($group->id)) {
-                        $group->id = $DB->insert_record('groups', $group);
+                    if ($record['type'] == 'group') {
+                        $this->report('Group type');
+                        $group = new StdClass;
+                        $group->name = @$record['name'];
+                        $group->description = @$record['description'];
+                        $group->descriptionformat = 0;
+                        $group->idnumber = @$record['idnumber'];
+                        $group->courseid = $course->id;
+                        if (!empty($record['idnumber'])) {
+                            $params = array('courseid' => $course->id, 'idnumber' => $record['idnumber']);
+                        } else if (!empty($record['name'])) {
+                            $params = array('courseid' => $course->id, 'name' => $record['name']);
+                        }
+                        $oldgroup = $DB->get_record('groups', $params);
+                        if ($oldgroup) {
+                            // Group exists, take old group.
+                            $group = $oldgroup;
+                        }
+
+                        if (empty($group->id)) {
+                            // Thus not old group.
+                            if (empty($syncconfig->simulate)) {
+                                $group->id = $DB->insert_record('groups', $group);
+                                $createdgroups[$course->id][] = $group->name;
+                                $this->report('Group '.$group->name.' created in course '.$group->courseid);
+                            } else {
+                                $this->report('SIMULATION: Group '.$group->name.' created in course '.$group->courseid);
+                            }
+                        }
+                    } else {
+                        $this->report('Grouping type');
+                        $params = array('name' => $record['name'], 'courseid' => $course->id);
+                        if (!$oldgrouping = $DB->get_record('groupings', $params)) {
+                            $this->report('Making new');
+                            $grouping = new StdClass;
+                            $grouping->courseid = $course->id;
+                            $grouping->name = $record['name'];
+                            $grouping->idnumber = $record['idnumber'];
+                            $grouping->timecreated = time();
+                            $grouping->timemodified = time();
+                            $grouping->description = $record['description'];
+                            $grouping->descriptionformat = FORMAT_HTML;
+                            $this->report('Saving');
+                            if (empty($syncconfig->simulate)) {
+                                $grouping->id = $DB->insert_record('groupings', $grouping);
+                                $this->report('making new grouping '.$grouping->name.' in course '.$course->id);
+                                $createdgroupings[$course->id][] = $grouping->name;
+                            } else {
+                                $this->report('SIMULATION: making new grouping '.$grouping->name.' in course '.$course->id);
+                            }
+                        }
+                        // Groupings terminate here.
+                        $this->report('Groupings done.');
+                        continue;
                     }
-                    $createdgroups[$group->courseid][] = $group->name;
                 }
 
-                $grouping = false;
+                // Process self grouping.
 
-                // Process explicit grouping.
-
-                if (!empty($record['grouping'])) {
-                    $params = array('name' => $record['grouping'], 'courseid' => $group->courseid);
-                    if (!$grouping = $DB->get_record('groupings', $params)) {
-                        $this->report('making new grouping '.$record['grouping']);
-                        $grouping = new \StdClass;
-                        $grouping->courseid = $course->id;
-                        $grouping->name = $record['grouping'];
-                        $grouping->idnumber = $group->idnumber;
-                        $grouping->timecreated = time();
-                        $grouping->timemodified = time();
-                        $grouping->description = $group->description;
-                        $grouping->descriptionformat = $group->descriptionformat;
-                        $grouping->id = $DB->insert_record('groupings', $grouping);
-                    }
-                } else {
+                if ($record['type'] == 'group') {
 
                     /*
                      * Process self grouping if required. Explicit grouping superseeds.
@@ -336,7 +450,6 @@ class group_sync_manager extends sync_manager {
                         $this->report('selfgrouping');
                         $params = array('name' => $group->name, 'courseid' => $group->courseid);
                         if (!$grouping = $DB->get_record('groupings', $params)) {
-                            $this->report('making new grouping');
                             $grouping = new \StdClass;
                             $grouping->courseid = $course->id;
                             $grouping->name = $group->name;
@@ -345,21 +458,35 @@ class group_sync_manager extends sync_manager {
                             $grouping->timemodified = time();
                             $grouping->description = $group->description;
                             $grouping->descriptionformat = $group->descriptionformat;
-                            $grouping->id = $DB->insert_record('groupings', $grouping);
+                            if (empty($syncconfig->simulate)) {
+                                $grouping->id = $DB->insert_record('groupings', $grouping);
+                                $this->report('Self-grouping group '.$group->name);
+                            } else {
+                                $this->report('SIMULATION: Self-grouping group '.$group->name);
+                            }
                         }
                     }
-                }
 
-                // Check and bind group to grouping.
-                if ($grouping) {
-                    $this->report('binding grouping');
-                    $params = array('groupid' => $group->id, 'groupingid' => $grouping->id);
-                    if (!$oldbinding = $DB->get_record('groupings_groups', $params)) {
-                        $binding = new \StdClass;
-                        $binding->groupingid = $grouping->id;
-                        $binding->groupid = $group->id;
-                        $binding->timeadded = time();
-                        $DB->insert_record('groupings_groups', $binding);
+                    // Check and bind group to grouping.
+                    if (!empty($record['grouping'])) {
+                        $grouping = $DB->get_record('groupings', array('idnumber' => $record['grouping'], 'courseid' => $course->id));
+                        if ($grouping) {
+                            $params = array('groupid' => $group->id, 'groupingid' => $grouping->id);
+                            if (!$oldbinding = $DB->get_record('groupings_groups', $params)) {
+                                $binding = new \StdClass;
+                                $binding->groupingid = $grouping->id;
+                                $binding->groupid = $group->id;
+                                $binding->timeadded = time();
+                                if (empty($syncconfig->simulate)) {
+                                    $this->report('Binding group '.$group->name.' to grouping '.$grouping->id);
+                                    $DB->insert_record('groupings_groups', $binding);
+                                } else {
+                                    $this->report('SIMULATION: Binding group '.$group->name.' to grouping '.$grouping->id);
+                                }
+                            }
+                        } else {
+                            $this->report('ERROR: Unkown grouping IDNumber '.$record['grouping']);
+                        }
                     }
                 }
 
@@ -407,7 +534,6 @@ class group_sync_manager extends sync_manager {
             array_walk($headers, 'trim_array_values');
 
             foreach ($headers as $h) {
-                $header[] = trim($h); // Remove whitespace.
                 if (!(isset($required[$h]) or isset($optional[$h]))) {
                     $this->report(get_string('errorinvalidcolumnname', 'tool_sync', $h));
                     set_config('lastrunning_group', null, 'tool_sync');
@@ -450,7 +576,7 @@ class group_sync_manager extends sync_manager {
                 }
                 foreach ($line as $key => $value) {
                     // Decode encoded commas.
-                    $record[$header[$key]] = trim($value);
+                    $record[$headers[$key]] = trim($value);
                 }
 
                 $e = new \StdClass;
