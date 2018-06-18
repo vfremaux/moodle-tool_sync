@@ -266,6 +266,7 @@ $string['groupfilelocation'] = 'Group file location';
 $string['groupmembersfilelocation'] = 'Group members file location';
 $string['groupuseridentifier'] = 'User identifier';
 $string['groupidentifier'] = 'Group identifier';
+$string['groupingidentifier'] = 'Grouping identifier';
 $string['groupautogrouping'] = 'Auto grouping groups';
 $string['groupunknown'] = 'This group {$a->group} is not known in {$a->mycourse} and cannot be created.';
 $string['groupemailcourseadmins'] = 'Email course administors with import results';
