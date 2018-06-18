@@ -1,0 +1,3 @@
+type;courseid;name;updateid;description
+grouping;TESTCOURSE1;Grouping A Updated;GRPA;Test grouping for creation A has been updated
+grouping;TESTCOURSE1;Grouping B Updated;GRPB;Test grouping for creation B has been updated
