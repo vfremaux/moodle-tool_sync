@@ -191,6 +191,7 @@ class group_sync_manager extends sync_manager {
             array_walk($headers, 'trim_array_values');
 
             foreach ($headers as $h) {
+                $header[] = trim($h); // Remove whitespace.
                 if (!(isset($required[$h]) or isset($optional[$h]))) {
                     $this->report(get_string('errorinvalidcolumnname', 'tool_sync', $h));
                     set_config('lastrunning_group', null, 'tool_sync');
