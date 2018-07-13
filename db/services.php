@@ -115,11 +115,29 @@ $functions = array(
         'capabilities' => ''
     ),
 
+    'tool_sync_enrol_role_assigns' => array(
+        'classname' => 'tool_sync_core_ext_external',
+        'methodname' => 'assign_roles',
+        'classpath' => 'admin/tool/sync/enrols/externallib.php',
+        'description' => 'Add or shifts a bulk of users/contexts',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
     'tool_sync_enrol_role_unassign' => array(
         'classname' => 'tool_sync_core_ext_external',
         'methodname' => 'unassign_role',
         'classpath' => 'admin/tool/sync/enrols/externallib.php',
         'description' => 'Remove role assignation(s) of user in some context',
+        'type' => 'write',
+        'capabilities' => ''
+    ),
+
+    'tool_sync_enrol_role_unassigns' => array(
+        'classname' => 'tool_sync_core_ext_external',
+        'methodname' => 'unassign_roles',
+        'classpath' => 'admin/tool/sync/enrols/externallib.php',
+        'description' => 'Remove a bulk of role assignation(s)',
         'type' => 'write',
         'capabilities' => ''
     ),
