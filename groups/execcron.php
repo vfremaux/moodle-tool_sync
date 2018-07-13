@@ -24,7 +24,7 @@
 
 require('../../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->dirroot.'/admin/tool/sync/enrols/groups.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/groups/groups.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
 // Security.
