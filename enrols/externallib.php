@@ -32,6 +32,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir.'/externallib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 require_once($CFG->dirroot.'/enrol/externallib.php');
+require_once($CFG->dirroot.'/admin/tool/sync/externallib.php');
 
 /**
  * Tool Sync control functions
@@ -46,6 +47,8 @@ class tool_sync_core_ext_external extends external_api {
 
     protected static $enroluserset;
 
+    protected static $roleassignset;
+
     protected static function init_user_set() {
         self::$enroluserset = array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
             'roleid' => new external_value(PARAM_TEXT, 'The role id'),
@@ -57,6 +60,18 @@ class tool_sync_core_ext_external extends external_api {
             'timestart' => new external_value(PARAM_INT, 'Time start of the enrol period', VALUE_DEFAULT, 0),
             'timeend' => new external_value(PARAM_INT, 'Time end of the enrol period', VALUE_DEFAULT, 0),
             'suspend' => new external_value(PARAM_INT, 'Suspension', VALUE_DEFAULT, 0),
+        );
+    }
+
+    protected static function init_roleassign_set() {
+        self::$roleassignset = array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
+            'roleid' => new external_value(PARAM_TEXT, 'The role id'),
+            'useridsource' => new external_value(PARAM_TEXT, 'The source for user identification'),
+            'userid' => new external_value(PARAM_TEXT, 'The user id'),
+            'contexttype' => new external_value(PARAM_TEXT, 'The context type'),
+            'instanceidsource' => new external_value(PARAM_TEXT, 'The source for the context attached instance'),
+            'instanceid' => new external_value(PARAM_TEXT, 'The instance identifier'),
+            'shiftrole' => new external_value(PARAM_BOOL, 'If true, will remove other roles', VALUE_OPTIONAL),
         );
     }
 
@@ -269,6 +284,8 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function enrol_users($enrols) {
 
+		raise_memory_limit(MEMORY_HUGE);
+
         $results = array();
         if (!empty($enrols)) {
             foreach ($enrols as $enrol) {
@@ -341,6 +358,8 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function unenrol_users($enrols) {
 
+        raise_memory_limit(MEMORY_HUGE);
+
         $results = array();
         if (!empty($enrols)) {
             foreach ($enrols as $enrol) {
@@ -394,9 +413,9 @@ class tool_sync_core_ext_external extends external_api {
             'block' => CONTEXT_BLOCK,
             'user' => CONTEXT_USER);
 
-        if (!is_numeric($params['contexttype'])) {
-            $originaltype = $params['contextytype'];
-            $params['contexttype'] = $contexttypestxt[strtolower($params['contextype'])];
+        if (!is_numeric($inputs['contexttype'])) {
+            $originaltype = $inputs['contextytype'];
+            $inputs['contexttype'] = $contexttypestxt[strtolower($inputs['contextype'])];
         }
 
         $validkeys = array(
@@ -412,25 +431,25 @@ class tool_sync_core_ext_external extends external_api {
             ),
         );
 
-        if (!in_array($inputs['instanceidsource'], $validkeys['instance'][$params['contexttype']])) {
+        if (!in_array($inputs['instanceidsource'], $validkeys['instance'][$inputs['contexttype']])) {
             throw new invalid_parameter_exception('Context source not in acceptable ranges for contexttype '.$originaltype);
         }
 
-        $status['roleid'] = self::validate_role_param($inputs, $validkeys);
-        $status['userid'] = self::validate_user_param($inputs, $validkeys);
+        $status['roleid'] = self::validate_role_param($inputs, $validkeys['role']);
+        $status['userid'] = self::validate_user_param($inputs, $validkeys['user']);
 
         if ($params['contexttype'] == CONTEXT_SYSTEM) {
             $status['contextid'] = context_system::instance()->id;
         } else {
             switch ($inputs['instanceidsource']) {
                 case 'id': {
-                    switch ($params['contexttype']) {
+                    switch ($inputs['contexttype']) {
                         case CONTEXT_COURSECAT: {
                             if (!$instance = $DB->get_record('course_categories', array('id' => $inputs['instanceid']))) {
                                 throw new invalid_parameter_exception('Instance not found by id: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_coursecat::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_COURSE: {
@@ -438,7 +457,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by id: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_course::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_MODULE: {
@@ -446,7 +465,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by id: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_module::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_BLOCK: {
@@ -454,7 +473,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by id: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_block::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_USER: {
@@ -462,7 +481,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by id: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_user::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
                     }
                 }
@@ -482,7 +501,7 @@ class tool_sync_core_ext_external extends external_api {
                         // We check the instanceref has modname§id syntax.
                         throw new invalid_parameter_exception('Malformed instance ref: '.$inputs['instanceid']);
                     }
-                    list($modname, $instanceid) = explode('§', $params['instanceid']);
+                    list($modname, $instanceid) = explode('§', $inputs['instanceid']);
                     if (!$instance = get_coursemodule_from_instance($modname, $instanceid)) {
                         throw new invalid_parameter_exception('Course not found by shortname: '.$inputs['instanceid']);
                     }
@@ -491,13 +510,13 @@ class tool_sync_core_ext_external extends external_api {
                 }
 
                 case 'idnumber': {
-                    switch ($params['contexttype']) {
+                    switch ($inputs['contexttype']) {
                         case CONTEXT_COURSECAT: {
                             if (!$instance = $DB->get_record('course_categories', array('idnumber' => $inputs['instanceid']))) {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_coursecat::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_COURSE: {
@@ -505,7 +524,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_course::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_MODULE: {
@@ -513,7 +532,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_module::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_BLOCK: {
@@ -521,7 +540,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_block::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
 
                         case CONTEXT_USER: {
@@ -529,7 +548,7 @@ class tool_sync_core_ext_external extends external_api {
                                 throw new invalid_parameter_exception('Instance not found by idnumber: '.$inputs['instanceid']);
                             }
                             $status['contextid'] = context_user::instance($instance->id)->id;
-                            break;
+                            break 2;
                         }
                     }
                 }
@@ -569,17 +588,8 @@ class tool_sync_core_ext_external extends external_api {
      * @return external_function_parameters
      */
     public static function assign_role_parameters() {
-        return new external_function_parameters(
-            array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
-                'roleid' => new external_value(PARAM_TEXT, 'The role id'),
-                'useridsource' => new external_value(PARAM_TEXT, 'The source for user identification'),
-                'userid' => new external_value(PARAM_TEXT, 'The user id'),
-                'contexttype' => new external_value(PARAM_TEXT, 'The context type'),
-                'instanceidsource' => new external_value(PARAM_TEXT, 'The source for the context attached instance'),
-                'instanceid' => new external_value(PARAM_TEXT, 'The instance identifier'),
-
-            )
-        );
+        self::init_roleassign_set();
+        return new external_function_parameters(self::$roleassignset);
     }
 
     /**
@@ -587,7 +597,8 @@ class tool_sync_core_ext_external extends external_api {
      *
      * @return the user enrolment id.
      */
-    public static function assign_role($roleidsource, $roleid, $useridsource, $userid, $contexttype, $instanceidsource, $instanceid) {
+    public static function assign_role($roleidsource, $roleid, $useridsource, $userid, $contexttype, $instanceidsource, $instanceid, $shiftrole = false) {
+        global $DB;
 
         // Validate parameters.
         $parameters = array('roleidsource' => $roleidsource,
@@ -596,10 +607,36 @@ class tool_sync_core_ext_external extends external_api {
             'userid' => $userid,
             'contexttype' => $contexttype,
             'instanceidsource' => $instanceidsource,
-            'instanceid' => $instanceid);
-        $params = self::validate_role_parameters(self::role_assign_parameters(), $parameters);
+            'instanceid' => $instanceid,
+            'shiftrole' => $shiftrole,
+        );
+        $params = self::validate_role_parameters(self::assign_role_parameters(), $parameters);
 
-        return role_assign($params['roleid'], $params['userid'], $params['contextid']);
+        $return = role_assign($params['roleid'], $params['userid'], $params['contextid']);
+
+        if ($shiftrole) {
+            // Get all previous roles and unassign them.
+            $sql = "
+                SELECT
+                    r.*
+                FROM
+                    {role} r,
+                    {role_assignements} ra
+                WHERE
+                    r.id = ra.roleid AND
+                    ra.roleid != ? AND
+                    ra.userid = ? AND
+                    ra.contextid = ?
+            ";
+            $otherroles = $DB->get_records('role', array($params['roleid'], $params['userid'], $params['contextid']));
+            if ($otherroles) {
+                foreach ($otherroles as $r) {
+                    role_unassign($r->id, $params['userid'], $params['contextid']);
+                }
+            }
+        }
+
+        return $return;
     }
 
     /**
@@ -616,6 +653,66 @@ class tool_sync_core_ext_external extends external_api {
      *
      * @return external_function_parameters
      */
+    public static function assign_roles_parameters() {
+        self::init_roleassign_set();
+        return new external_function_parameters(
+            array('roleassigns' => new external_multiple_structure(
+                    new external_single_structure(self::$roleassignset)
+                ),
+            )
+        );
+    }
+
+    /**
+     * Operates a set of roleassigns
+     *
+     * @return an array of operation status
+     */
+    public static function assign_roles($roleassigns) {
+
+        $results = array();
+        if (!empty($roleassigns)) {
+            foreach ($roleassigns as $assign) {
+                $result = new Stdclass;
+                $result->userid = $assign['userid'];
+                $result->status = self::assign_role($assign['roleidsource'],
+                                                        $assign['roleid'],
+                                                        $assign['useridsource'],
+                                                        $assign['userid'],
+                                                        $assign['contexttype'],
+                                                        $assign['instanceidsource'],
+                                                        $assign['instanceid'],
+                                                        $assign['shiftrole']);
+
+                $results[] = $result;
+            }
+        }
+
+        return $results;
+
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     */
+    public static function assign_roles_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'userid' => new external_value(PARAM_TEXT, 'User identifier'),
+                    'status' => new external_value(PARAM_BOOL, 'Success status')
+                )
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     */
     public static function unassign_role_parameters() {
         return new external_function_parameters(
             array('roleidsource' => new external_value(PARAM_TEXT, 'The source for role identification'),
@@ -625,7 +722,6 @@ class tool_sync_core_ext_external extends external_api {
                 'contexttype' => new external_value(PARAM_TEXT, 'The context type'),
                 'instanceidsource' => new external_value(PARAM_TEXT, 'The source for the context attached instance'),
                 'instanceid' => new external_value(PARAM_TEXT, 'The instance identifier'),
-
             )
         );
     }
@@ -644,8 +740,9 @@ class tool_sync_core_ext_external extends external_api {
             'userid' => $userid,
             'contexttype' => $contexttype,
             'instanceidsource' => $instanceidsource,
-            'instanceid' => $instanceid);
-        $params = self::validate_role_parameters(self::role_unassign_parameters(), $parameters);
+            'instanceid' => $instanceid,
+            );
+        $params = self::validate_role_parameters(self::unassign_role_parameters(), $parameters);
 
         if ($params['roleid'] == '*') {
             $rparams = array('userid' => $params['userid'], 'contextid' => $params['contextid']);
@@ -664,6 +761,65 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function unassign_role_returns() {
         return new external_value(PARAM_BOOL, 'Operation status');
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     */
+    public static function unassign_roles_parameters() {
+        self::init_roleassign_set();
+        return new external_function_parameters(
+            array('roleunassigns' => new external_multiple_structure(
+                    new external_single_structure(self::$roleassignset)
+                ),
+            )
+        );
+    }
+
+    /**
+     * Operates a set of role deassignations
+     *
+     * @return an array of operation status
+     */
+    public static function unassign_roles($roleunassigns) {
+
+        $results = array();
+        if (!empty($roleunassigns)) {
+            foreach ($roleunassigns as $unassign) {
+                $result = new Stdclass;
+                $result->userid = $unassign['userid'];
+                $result->status = self::unassign_role($unassign['roleidsource'],
+                                                        $unassign['roleid'],
+                                                        $unassign['useridsource'],
+                                                        $unassign['userid'],
+                                                        $unassign['contexttype'],
+                                                        $unassign['instanceidsource'],
+                                                        $unassign['instanceid']);
+
+                $results[] = $result;
+            }
+        }
+
+        return $results;
+
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     */
+    public static function unassign_roles_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'userid' => new external_value(PARAM_TEXT, 'User identifier'),
+                    'status' => new external_value(PARAM_BOOL, 'Success status')
+                )
+            )
+        );
     }
 
     /**
@@ -1064,7 +1220,7 @@ class tool_sync_core_ext_external extends external_api {
         global $DB;
 
         if (!in_array($inputs['roleidsource'], $validkeys)) {
-            throw new invalid_parameter_exception('Role source not in acceptable ranges.');
+            throw new invalid_parameter_exception('Role source '.$inputs['roleidsource'].' not in acceptable ranges.');
         }
 
         switch ($inputs['roleidsource']) {
