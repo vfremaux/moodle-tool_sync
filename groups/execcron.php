@@ -106,7 +106,7 @@ if ($canprocess) {
     try {
         $groupsmanager->cron($syncconfig);
 
-        cache_helper::invalidate_by_definition('core', 'groupdata', array(), array());
+        purge_all_caches();
         echo '</pre>';
     } catch (Exception $ex) {
         echo '</pre>';

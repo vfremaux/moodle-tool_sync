@@ -473,7 +473,7 @@ d\'ordres ou opérations qui conduisent à la modification des assignations de r
 
 $string['groupsync_help'] = 'Cette fonction permet de manipuler les groupes et groupements par fichier plat. Il permet
 de créer des groupes et des groupements, de rattacher les groupes sur les groupements créés dans les lignes précédentes,
-d'auto générer éventuellement un groupe et son groupement propre, et enfin de peupler les groupes avec un 
+d\'auto générer éventuellement un groupe et son groupement propre, et enfin de peupler les groupes avec un 
 deuxième format de fichier.
 ';
 
