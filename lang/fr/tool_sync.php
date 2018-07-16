@@ -256,6 +256,8 @@ $string['groupunknown'] = 'Le groupe {$a->group} n\'existe pas dans {$a->mycours
 $string['groupsync'] = 'Synchroniser les groupes de cours';
 $string['groupcourseidentifier'] = 'Identifiant de cours';
 $string['groupfilelocation'] = 'Emplacement du fichier de groupes';
+$string['groupsmgtmanual'] = 'Création manuelle des groupes';
+$string['groupmembersmgtmanual'] = 'Alimentation manuelle des groupes';
 $string['groupmembersfilelocation'] = 'Emplacement du fichier des membres de groupes';
 $string['groupuseridentifier'] = 'Identifiant d\'utilisateur';
 $string['groupidentifier'] = 'Identifiant de groupe';
@@ -464,9 +466,15 @@ userpictures_20111203.zip
 </pre>
 ';
 
-$string['enrolsync_help'] = 'Cette fonction est un complément du systeme d\'enrollement par fichier plat. Il gère les
+$string['enrolsync_help'] = 'Cette fonction est un complément du systeme d\'inscription par fichier plat. Il gère les
 groupes et permet de créer des rôles en attribution cachée. Le fichier des enrolements présente un certain nombre
 d\'ordres ou opérations qui conduisent à la modification des assignations de rôle des utilisateurs dans les cours.
+';
+
+$string['groupsync_help'] = 'Cette fonction permet de manipuler les groupes et groupements par fichier plat. Il permet
+de créer des groupes et des groupements, de rattacher les groupes sur les groupements créés dans les lignes précédentes,
+d'auto générer éventuellement un groupe et son groupement propre, et enfin de peupler les groupes avec un 
+deuxième format de fichier.
 ';
 
 $string['syncconfig_help'] = '
