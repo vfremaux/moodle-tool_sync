@@ -72,6 +72,7 @@ class tool_sync_core_ext_external extends external_api {
             'instanceidsource' => new external_value(PARAM_TEXT, 'The source for the context attached instance'),
             'instanceid' => new external_value(PARAM_TEXT, 'The instance identifier'),
             'shiftrole' => new external_value(PARAM_BOOL, 'If true, will remove other roles', VALUE_OPTIONAL),
+            'component' => new external_value(PARAM_TEXT, 'If set, allow forcing a targer component', VALUE_OPTIONAL),
         );
     }
 
@@ -284,7 +285,7 @@ class tool_sync_core_ext_external extends external_api {
      */
     public static function enrol_users($enrols) {
 
-		raise_memory_limit(MEMORY_HUGE);
+        raise_memory_limit(MEMORY_HUGE);
 
         $results = array();
         if (!empty($enrols)) {
@@ -597,7 +598,8 @@ class tool_sync_core_ext_external extends external_api {
      *
      * @return the user enrolment id.
      */
-    public static function assign_role($roleidsource, $roleid, $useridsource, $userid, $contexttype, $instanceidsource, $instanceid, $shiftrole = false) {
+    public static function assign_role($roleidsource, $roleid, $useridsource, $userid, $contexttype, $instanceidsource,
+                                       $instanceid, $shiftrole = false, $component = false) {
         global $DB;
 
         // Validate parameters.
@@ -609,10 +611,21 @@ class tool_sync_core_ext_external extends external_api {
             'instanceidsource' => $instanceidsource,
             'instanceid' => $instanceid,
             'shiftrole' => $shiftrole,
+            'component' => $component,
         );
         $params = self::validate_role_parameters(self::assign_role_parameters(), $parameters);
 
-        $return = role_assign($params['roleid'], $params['userid'], $params['contextid']);
+        if (($component === false) &&
+                file_exists($CFG->dirroot.'/enrol/sync') &&
+                        enrol_is_enabled('sync')) {
+            // True if no forcing by param and enrol_sync is installed and enabled.
+            $component = 'enrol_sync';
+        }
+        if (($component === false)) {
+            $component = '';
+        }
+
+        $return = role_assign($params['roleid'], $params['userid'], $params['contextid'], $component);
 
         if ($shiftrole) {
             // Get all previous roles and unassign them.
@@ -621,17 +634,17 @@ class tool_sync_core_ext_external extends external_api {
                     r.*
                 FROM
                     {role} r,
-                    {role_assignements} ra
+                    {role_assignments} ra
                 WHERE
                     r.id = ra.roleid AND
-                    ra.roleid != ? AND
-                    ra.userid = ? AND
-                    ra.contextid = ?
+                    ra.roleid != :roleid AND
+                    ra.userid = :userid AND
+                    ra.contextid = :contextid
             ";
-            $otherroles = $DB->get_records('role', array($params['roleid'], $params['userid'], $params['contextid']));
+            $otherroles = $DB->get_records_sql($sql, array('roleid' => $params['roleid'], 'userid' => $params['userid'], 'contextid' => $params['contextid']));
             if ($otherroles) {
                 foreach ($otherroles as $r) {
-                    role_unassign($r->id, $params['userid'], $params['contextid']);
+                    role_unassign($r->id, $params['userid'], $params['contextid'], $component);
                 }
             }
         }
@@ -682,7 +695,8 @@ class tool_sync_core_ext_external extends external_api {
                                                         $assign['contexttype'],
                                                         $assign['instanceidsource'],
                                                         $assign['instanceid'],
-                                                        $assign['shiftrole']);
+                                                        $assign['shiftrole'],
+                                                        $assign['component']);
 
                 $results[] = $result;
             }
@@ -722,6 +736,7 @@ class tool_sync_core_ext_external extends external_api {
                 'contexttype' => new external_value(PARAM_TEXT, 'The context type'),
                 'instanceidsource' => new external_value(PARAM_TEXT, 'The source for the context attached instance'),
                 'instanceid' => new external_value(PARAM_TEXT, 'The instance identifier'),
+                'component' => new external_value(PARAM_TEXT, 'If set, forces the component scope of the assignation', VALUE_OPTIONAL),
             )
         );
     }
@@ -731,7 +746,8 @@ class tool_sync_core_ext_external extends external_api {
      *
      * @return the user enrolment id
      */
-    public static function unassign_role($roleidsource, $roleid, $useridsource, $userid, $contexttype, $instanceidsource, $instanceid) {
+    public static function unassign_role($roleidsource, $roleid, $useridsource, $userid, $contexttype, $instanceidsource, $instanceid, $component = false) {
+        global $CFG, $DB;
 
         // Validate parameters.
         $parameters = array('roleidsource' => $roleidsource,
@@ -741,14 +757,54 @@ class tool_sync_core_ext_external extends external_api {
             'contexttype' => $contexttype,
             'instanceidsource' => $instanceidsource,
             'instanceid' => $instanceid,
+            'component' => $component,
             );
         $params = self::validate_role_parameters(self::unassign_role_parameters(), $parameters);
 
+        if (($component === false) &&
+                file_exists($CFG->dirroot.'/enrol/sync') &&
+                        enrol_is_enabled('sync')) {
+            // True if no forcing by param and enrol_sync is installed and enabled.
+            $component = 'enrol_sync';
+        }
+        if ($component === false) {
+            $component = '';
+        }
+
         if ($params['roleid'] == '*') {
-            $rparams = array('userid' => $params['userid'], 'contextid' => $params['contextid']);
-            role_unassign_all($rparams, false, false);
+            $rparams = array('userid' => $params['userid'], 'contextid' => $params['contextid'], 'component' => $component);
+            if (function_exists('debug_trace')) {
+                debug_trace("Unassigning all roles in $component ".print_r($params, true));
+            }
+            $ras = $DB->get_records('role_assignments', $rparams);
+            if ($ras) {
+                foreach ($ras as $ra) {
+                    $DB->delete_records('role_assignments', array('id' => $ra->id));
+                    if ($context = context::instance_by_id($ra->contextid, IGNORE_MISSING)) {
+                        // this is a bit expensive but necessary
+                        $context->mark_dirty();
+                        coursecat::role_assignment_changed($ra->roleid, $context);
+                    }
+                }
+                unset($ras);
+            }
         } else {
-            role_unassign($params['roleid'], $params['userid'], $params['contextid']);
+            $rparams = array('roleid' => $params['roleid'], 'userid' => $params['userid'], 'contextid' => $params['contextid'], 'component' => $component);
+            if (function_exists('debug_trace')) {
+                debug_trace("Unassigning in $component ".print_r($rparams, true));
+            }
+            $ras = $DB->get_records('role_assignments', $rparams);
+            if ($ras) {
+                foreach ($ras as $ra) {
+                    $DB->delete_records('role_assignments', array('id' => $ra->id));
+                    if ($context = context::instance_by_id($ra->contextid, IGNORE_MISSING)) {
+                        // this is a bit expensive but necessary
+                        $context->mark_dirty();
+                        coursecat::role_assignment_changed($ra->roleid, $context);
+                    }
+                }
+                unset($ras);
+            }
         }
 
         return true;
@@ -796,7 +852,8 @@ class tool_sync_core_ext_external extends external_api {
                                                         $unassign['userid'],
                                                         $unassign['contexttype'],
                                                         $unassign['instanceidsource'],
-                                                        $unassign['instanceid']);
+                                                        $unassign['instanceid'],
+                                                        $unassign['component']);
 
                 $results[] = $result;
             }
