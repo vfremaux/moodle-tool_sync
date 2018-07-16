@@ -47,7 +47,7 @@ $action = optional_param('action', SYNC_COHORT_CREATE_UPDATE, PARAM_INT);
 $cohortsmanager = new \tool_sync\cohorts_sync_manager($action, null);
 $syncconfig = get_config('tool_sync');
 
-$url = new moodle_url('/admin/tool/sync/cohorts/execcron.php');
+$url = new moodle_url('/admin/tool/sync/cohorts/execcron.php', array('action' => $action));
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
 $PAGE->navigation->add(get_string('cohortmgtmanual', 'tool_sync'));
 $PAGE->set_url($url);

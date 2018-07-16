@@ -35,9 +35,6 @@ class InputFileLoadForm extends moodleform {
 
         $fileoptions = array('maxfiles' => 1);
 
-        $form->addElement('hidden', 'action');
-        $form->setType('action', PARAM_TEXT);
-
         // Process localfile name.
         $allfilerecs = array();
         $wildcard = false;
@@ -97,6 +94,6 @@ class InputFileLoadForm extends moodleform {
 
         $form->addElement('checkbox', 'simulate', get_string('simulate', 'tool_sync'));
 
-        $this->add_action_buttons(true, get_string('runnow', 'tool_sync'));
+        $this->add_action_buttons(false, get_string('runnow', 'tool_sync'));
     }
 }
