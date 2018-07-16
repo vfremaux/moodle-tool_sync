@@ -263,6 +263,8 @@ $string['groupnotaddederror'] = 'Error on group assignation : {$a}';
 $string['groupsync'] = 'Course group operations';
 $string['groupcourseidentifier'] = 'Course identifier';
 $string['groupfilelocation'] = 'Group file location';
+$string['groupsmgtmanual'] = 'Group synchronisation';
+$string['groupmembersmgtmanual'] = 'Group membership synchronisation';
 $string['groupmembersfilelocation'] = 'Group members file location';
 $string['groupuseridentifier'] = 'User identifier';
 $string['groupidentifier'] = 'Group identifier';
@@ -467,8 +469,11 @@ It extends the standard pictures upload script with automation capability.
 ';
 
 $string['enrolsync_help'] = '
-<p>This service allows synchronising user\'s pictures using a Zip file with images.
-It extends the standard pictures upload script with automation capability.
+This service allows synchronising enrolments and roles using single CSV file format.
+';
+
+$string['groupsync_help'] = '
+This service allows synchronising groups and groupings using 2 distinct group file formats.
 ';
 
 $string['cohortsync_help'] = '
