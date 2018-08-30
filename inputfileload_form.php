@@ -39,7 +39,7 @@ class InputFileLoadForm extends moodleform {
         $allfilerecs = array();
         $wildcard = false;
         if (tool_sync_supports_feature('fileloading/wildcard') &&
-                preg_match('#\\*#', $this->_customdata['localfile'])) {
+                preg_match('#\\*#', @$this->_customdata['localfile'])) {
 
             $wildcard = true;
             include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
@@ -61,7 +61,7 @@ class InputFileLoadForm extends moodleform {
                 $localfile = preg_replace('#^/#', '', $localfile); // Normalise.
             }
         } else {
-            $localfile = $this->_customdata['localfile'];
+            $localfile = @$this->_customdata['localfile'];
         }
 
         if (!empty($localfile)) {

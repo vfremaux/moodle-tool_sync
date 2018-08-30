@@ -805,7 +805,21 @@ class users_sync_manager extends sync_manager {
             $params = array('mnethostid' => $user->mnethostid,
                             'username' => $user->username,
                             $identifiedby => $user->$identifiedby);
-            $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
+            $select = " mnethostid = :mnethostid AND username = :username AND $identifiedby <> :$identifiedby ";
+            // Same username exists with a different identifier.
+            if ($otherusers = $DB->get_records_select('user', $select, $params)) {
+                if (empty($olduser)) {
+                    $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $this->report(get_string('usercreatecollision', 'tool_sync', $message));
+                } else {
+                    $message = "({$olduser->id}) $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $this->report(get_string('userupdatecollision', 'tool_sync', $message));
+                }
+                return true;
+            }
+
+            $select = " mnethostid = :mnethostid AND username <> :username AND $identifiedby = :$identifiedby ";
+            // Other username is used with this identifier.
             if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                 if (empty($olduser)) {
                     $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
@@ -822,7 +836,20 @@ class users_sync_manager extends sync_manager {
         if ($identifiedby != 'email') {
             if (!empty($user->email)) {
                 $params = array('mnethostid' => $user->mnethostid, 'email' => $user->email, $identifiedby => $user->$identifiedby);
-                $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
+                $select = " mnethostid = :mnethostid AND email = :email AND $identifiedby <> :$identifiedby";
+                // Same email is used with this identifier.
+                if ($otherusers = $DB->get_records_select('user', $select, $params)) {
+                    if (empty($olduser)) {
+                        $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $this->report(get_string('usercreatemailcollision', 'tool_sync', $message));
+                    } else {
+                        $message = "({$olduser->id}) , $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $this->report(get_string('userupdatemailcollision', 'tool_sync', $message));
+                    }
+                    return true;
+                }
+
+                $select = " mnethostid = :mnethostid AND email <> :email AND $identifiedby = :$identifiedby ";
                 if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                     if (empty($olduser)) {
                         $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
