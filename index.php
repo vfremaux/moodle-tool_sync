@@ -119,7 +119,7 @@ $config = get_config('tool_sync');
 echo $OUTPUT->heading(get_string('title', 'tool_sync'));
 
 if ($message = optional_param('resultmessage', '', PARAM_TEXT)) {
-    echo $OUTPUT->box_start('center', '100%', '', 5, 'informationbox');
+    echo $OUTPUT->box_start('informationbox');
     echo $message;
     echo $OUTPUT->box_end();
 }
