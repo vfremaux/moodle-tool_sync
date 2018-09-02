@@ -140,10 +140,11 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
         $first = false;
     }
 
-    $checktext = preg_replace("/\n?\r?/", '', $text);
+    $checktext = preg_replace("/\r/", '', $text);
+    $checktext = preg_replace("/\n/", '', $checktext);
 
     if (@$config->encoding != 'UTF-8') {
-        $checktext = utf8_encode($text);
+        $checktext = utf8_encode($checktext);
     }
 
     return preg_match('/^$/', $checktext) || preg_match('/^(\(|\[|-|#|\/| )/', $checktext);
