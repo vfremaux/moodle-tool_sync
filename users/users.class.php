@@ -61,10 +61,17 @@ class users_sync_manager extends sync_manager {
 
         $identifieroptions = $this->get_userfields();
         $key = 'tool_sync/users_primaryidentity';
-        $label = get_string('primaryidentity', 'tool_sync');
+        $label = get_string('userprimaryidentity', 'tool_sync');
         $frm->addElement('select', $key, $label, $identifieroptions);
         $frm->setDefault('tool_sync/users_primaryidentity', 'idnumber');
         $frm->setType('tool_sync/users_primaryidentity', PARAM_TEXT);
+
+        $identifieroptions = $this->get_coursefields();
+        $key = 'tool_sync/courses_primaryidentity';
+        $label = get_string('courseprimaryidentity', 'tool_sync');
+        $frm->addElement('select', $key, $label, $identifieroptions);
+        $frm->setDefault('tool_sync/courses_primaryidentity', 'shortname');
+        $frm->setType('tool_sync/courses_primaryidentity', PARAM_TEXT);
 
         $cronurl = new \moodle_url('/admin/tool/sync/users/execcron.php');
         $params = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
@@ -77,6 +84,12 @@ class users_sync_manager extends sync_manager {
                      'idnumber' => 'idnumber',
                      'username' => 'username',
                      'email' => 'email');
+    }
+
+    public function get_coursefields() {
+        return array('id' => 'id',
+                     'idnumber' => 'idnumber',
+                     'shortname' => 'shortname');
     }
 
     // Override the get_access_icons() function.
@@ -98,6 +111,10 @@ class users_sync_manager extends sync_manager {
 
         if (!$adminuser = get_admin()) {
             return;
+        }
+
+        if (empty($syncconfig->courses_primaryidentity)) {
+            $syncconfig->courses_primaryidentity = 'idnumber';
         }
 
         if (empty($this->manualfilerec)) {
@@ -222,6 +239,7 @@ class users_sync_manager extends sync_manager {
         $userserrors  = 0;
         $renames      = 0;
         $renameerrors = 0;
+        $forcepasswordchange = 1;
 
         // Take some from admin profile, other fixed by hardcoded defaults.
         while (!feof($filereader)) {
@@ -332,9 +350,10 @@ class users_sync_manager extends sync_manager {
                 $endix = 'end'.$ci;
                 $wwwrootix = 'wwwroot'.$ci;
                 $addcourses = array();
+                $courseidentifier = $syncconfig->courses_primaryidentity;
                 while (isset($user->$courseix)) {
                     $coursetoadd = new \StdClass;
-                    $coursetoadd->idnumber = $user->$courseix;
+                    $coursetoadd->$courseidentifier = $user->$courseix;
                     $coursetoadd->group = isset($user->$groupix) ? $user->$groupix : null;
                     $coursetoadd->role = isset($user->$roleix) ? $user->$roleix : null;
                     $coursetoadd->enrol = isset($user->$enrolix) ? $user->$enrolix : null;
@@ -468,13 +487,13 @@ class users_sync_manager extends sync_manager {
                             if (empty($user->password) && $createpassword) {
                                 // Passwords will be created and sent out on cron.
                                 $pref = new \StdClass();
-                                $pref->userid = $newuser->id;
+                                $pref->userid = $user->id;
                                 $pref->name = 'create_password';
                                 $pref->value = 1;
                                 $DB->insert_record('user_preferences', $pref);
 
                                 $pref = new \StdClass();
-                                $pref->userid = $newuser->id;
+                                $pref->userid = $user->id;
                                 $pref->name = 'auth_forcepasswordchange';
                                 $pref->value = $forcepasswordchange;
                                 $DB->insert_record('user_preferences', $pref);
@@ -547,11 +566,19 @@ class users_sync_manager extends sync_manager {
                             continue;
                         }
 
+                        if (empty($c->start)) {
+                            $c->start = time();
+                        }
+                        if (empty($c->end)) {
+                            $c->end = 0;
+                        }
+
                         if (empty($c->wwwroot)) {
                             // Course binding is local.
 
-                            if (!$crec = $DB->get_record('course', array('idnumber' => $c->idnumber))) {
-                                $this->report(get_string('unknowncourse', 'error', $c->idnumber));
+                            $courseidentifier = $syncconfig->courses_primaryidentity ;
+                            if (!$crec = $DB->get_record('course', array($courseidentifier => $c->$courseidentifier))) {
+                                $this->report(get_string('unknowncourse', 'error', $c->$courseidentifier));
                                 continue;
                             }
 
@@ -574,11 +601,11 @@ class users_sync_manager extends sync_manager {
 
                                     $e = new \StdClass();
                                     $e->myuser = $user->username; // User identifier.
-                                    $e->mycourse = $crec->idnumber; // Course identifier.
+                                    $e->mycourse = $crec->$courseidentifier; // Course identifier.
 
                                     try {
                                         if (empty($syncconfig->simulate)) {
-                                            $enrolplugin->enrol_user($enrol, $user->id, $role->id, time(), 0, ENROL_USER_ACTIVE);
+                                            $enrolplugin->enrol_user($enrol, $user->id, $role->id, $c->start, $c->end, ENROL_USER_ACTIVE);
                                             $this->report(get_string('enrolled', 'tool_sync', $e));
                                         } else {
                                             $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
@@ -609,10 +636,10 @@ class users_sync_manager extends sync_manager {
                                 if (!empty($c->enrol)) {
                                     $role = $DB->get_record('role', array('shortname' => 'student'));
                                     $e = new \StdClass();
-                                    $e->mycourse = $c->idnumber;
+                                    $e->mycourse = $c->$courseidentifier;
                                     $e->myuser = $user->username;
                                     if (empty($syncconfig->simulate)) {
-                                        $enrolplugin->enrol_user($enrol, $user->id, $role->id, time(), 0, ENROL_USER_ACTIVE);
+                                        $enrolplugin->enrol_user($enrol, $user->id, $role->id, $c->start, $c->end, ENROL_USER_ACTIVE);
                                         $this->report(get_string('enrolled', 'tool_sync', $e));
                                     } else {
                                         $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
@@ -622,7 +649,7 @@ class users_sync_manager extends sync_manager {
                             if (!@$ret) {
                                 // OK.
                                 $e = new \StdClass();
-                                $e->mycourse = $c->idnumber;
+                                $e->mycourse = $c->$courseidentifier;
                                 $e->myuser = $user->username;
                                 $this->report(get_string('enrollednot', 'tool_sync', $e));
                             }
@@ -805,7 +832,21 @@ class users_sync_manager extends sync_manager {
             $params = array('mnethostid' => $user->mnethostid,
                             'username' => $user->username,
                             $identifiedby => $user->$identifiedby);
-            $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
+            $select = " mnethostid = :mnethostid AND username = :username AND $identifiedby <> :$identifiedby ";
+            // Same username exists with a different identifier.
+            if ($otherusers = $DB->get_records_select('user', $select, $params)) {
+                if (empty($olduser)) {
+                    $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $this->report(get_string('usercreatecollision', 'tool_sync', $message));
+                } else {
+                    $message = "({$olduser->id}) $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $this->report(get_string('userupdatecollision', 'tool_sync', $message));
+                }
+                return true;
+            }
+
+            $select = " mnethostid = :mnethostid AND username <> :username AND $identifiedby = :$identifiedby ";
+            // Other username is used with this identifier.
             if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                 if (empty($olduser)) {
                     $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
@@ -822,7 +863,20 @@ class users_sync_manager extends sync_manager {
         if ($identifiedby != 'email') {
             if (!empty($user->email)) {
                 $params = array('mnethostid' => $user->mnethostid, 'email' => $user->email, $identifiedby => $user->$identifiedby);
-                $select = " mnethostid = ? AND username = ? AND $identifiedby <> ?";
+                $select = " mnethostid = :mnethostid AND email = :email AND $identifiedby <> :$identifiedby";
+                // Same email is used with this identifier.
+                if ($otherusers = $DB->get_records_select('user', $select, $params)) {
+                    if (empty($olduser)) {
+                        $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $this->report(get_string('usercreatemailcollision', 'tool_sync', $message));
+                    } else {
+                        $message = "({$olduser->id}) , $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $this->report(get_string('userupdatemailcollision', 'tool_sync', $message));
+                    }
+                    return true;
+                }
+
+                $select = " mnethostid = :mnethostid AND email <> :email AND $identifiedby = :$identifiedby ";
                 if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                     if (empty($olduser)) {
                         $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";

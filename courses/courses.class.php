@@ -117,23 +117,30 @@ class course_sync_manager extends sync_manager {
         $label = get_string('syncforcecourseupdate', 'tool_sync');
         $frm->addGroup($rarr, 'courses_updategroup', $label, array('&nbsp;&nbsp;&nbsp;&nbsp;'), false);
 
+        $rarr = array();
+        $rarr[] = $frm->createElement('radio', 'tool_sync/courses_template_mode', '', get_string('noprocess', 'tool_sync'), 0);
+        $rarr[] = $frm->createElement('radio', 'tool_sync/courses_template_mode', '', get_string('addcontent', 'tool_sync'), 1);
+        $rarr[] = $frm->createElement('radio', 'tool_sync/courses_template_mode', '', get_string('replacecontent', 'tool_sync'), 2);
+        $label = get_string('synctemplateprocessingmode', 'tool_sync');
+        $frm->addGroup($rarr, 'courses_template_modegroup', $label, array('&nbsp;&nbsp;&nbsp;&nbsp;'), false);
+
         $frm->addElement('static', 'coursesst1', '<hr>');
 
         $barr = array();
         $deletecreatorurl = new \moodle_url('/admin/tool/sync/courses/deletecourses_creator.php');
-        $attribs = array('onclick' => 'document.location.href= \''.$deletecreatorurl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$deletecreatorurl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualdeletecourses', get_string('makedeletefile', 'tool_sync'), $attribs);
 
         $resetcreatorurl = new \moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
-        $attribs = array('onclick' => 'document.location.href= \''.$resetcreatorurl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$resetcreatorurl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualcreatecourses', get_string('makeresetfile', 'tool_sync'), $attribs);
 
         $existurl = new \moodle_url('/admin/tool/sync/courses/checkcourses.php');
-        $attribs = array('onclick' => 'document.location.href= \''.$existurl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$existurl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualcheckcourses', get_string('testcourseexist', 'tool_sync'), $attribs);
 
         $cleancaturl = new \moodle_url('/admin/tool/sync/courses/cleancategories.php');
-        $attribs = array('onclick' => 'document.location.href= \''.$cleancaturl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$cleancaturl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualcleancats', get_string('cleancategories', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'utilities', get_string('utilities', 'tool_sync'), array('&nbsp;&nbsp;'), false);
@@ -142,29 +149,25 @@ class course_sync_manager extends sync_manager {
 
         $barr = array();
         $reseturl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_RESET));
-        $attribs = array('onclick' => 'document.location.href= \''.$reseturl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$reseturl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualreset', get_string('reinitialisation', 'tool_sync'), $attribs);
 
         $createurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_CREATE));
-        $attribs = array('onclick' => 'document.location.href= \''.$createurl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$createurl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualcreate', get_string('manualuploadrun', 'tool_sync'), $attribs);
 
         $deleteurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_DELETE));
-        $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualdelete', get_string('manualdeleterun', 'tool_sync'), $attribs);
 
         if (enrol_is_enabled('meta')) {
             $deleteurl = new \moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => SYNC_COURSE_METAS));
-            $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'');
+            $attribs = array('onclick' => 'document.location.href= \''.$deleteurl.'\'; return false;');
             $barr[] = $frm->createElement('button', 'manualmetas', get_string('manualmetasrun', 'tool_sync'), $attribs);
         }
 
-        $clearcaturl = new \moodle_url('/admin/tool/sync/courses/clearemptycategories.php');
-        $attribs = array('onclick' => 'document.location.href= \''.$clearcaturl.'\'');
-        $barr[] = $frm->createElement('button', 'manualclearcats', get_string('manualcleancategories', 'tool_sync'), $attribs);
-
         $courseurl = new \moodle_url('/admin/tool/sync/courses/execcron.php');
-        $attribs = array('onclick' => 'document.location.href= \''.$courseurl.'\'');
+        $attribs = array('onclick' => 'document.location.href= \''.$courseurl.'\'; return false;');
         $barr[] = $frm->createElement('button', 'manualdoall', get_string('executecoursecronmanually', 'tool_sync'), $attribs);
 
         $frm->addGroup($barr, 'manualcourses', get_string('manualhandling', 'tool_sync'), array('&nbsp;&nbsp;'), false);
@@ -230,7 +233,14 @@ class course_sync_manager extends sync_manager {
                         'scorm' => 1,
                         'quiz_attempts' => 1);
 
+                // Create activation for all subreset vars.
+                /*
+                 *  NOTE : Value of 1 default assign will not be significant. We just
+                 * want explicit suboptions being accepted in the header parsing to
+                 * override internal module's defaults.
+                 */
                 if ($allmods = $DB->get_records('modules') ) {
+                    // If there are some modules to reset in the course.
                     foreach ($allmods as $mod) {
                         $modname = $mod->name;
                         $modfile = $CFG->dirroot."/mod/{$modname}/resetlib.php";
@@ -452,12 +462,15 @@ class course_sync_manager extends sync_manager {
                             }
                             $modlist[$modname] = 1;
                             $modfile = $CFG->dirroot."/mod/$modname/lib.php";
-                            $modresetcourseformdefinition = $modname.'_reset_course_form_defaults';
+                            $modresetcourseformdefaults = $modname.'_reset_course_form_defaults';
                             $modresetuserdata = $modname.'_reset_userdata';
                             if (file_exists($modfile)) {
                                 include_once($modfile);
-                                if (function_exists($modresetcourseformdefinition)) {
-                                    $modmap[$modname] = $modresetcourseformdefinition($data['id']);
+                                if (function_exists($modresetcourseformdefaults)) {
+                                    /*
+                                     * Now we get the real internal defaults from module implementation.
+                                     */
+                                    $modmap[$modname] = $modresetcourseformdefaults($data['id']);
                                 }
                             } else {
                                 debugging('Missing lib.php in '.$modname.' module');
@@ -514,12 +527,15 @@ class course_sync_manager extends sync_manager {
                             $data['reset_quiz_attempts'] = 1;
                         }
                     } else {
+                        // Decode the module list, that can be the single keyword "all".
                         $mods = explode(' ', $record['modules']);
                         $modlist = array();
                         foreach ($mods as $mod) {
                             $modlist[$mod] = 1;
                         }
+
                         if (isset($modlist['all']) && ($modlist['all'] == 1)) {
+                            // If single keyword "all", get all modules and all suboption defaults in the reset structure.
                             foreach ($availablemods as $modname => $fcts) {
                                 foreach ($fcts as $fct => $value) {
                                     $data[$fct] = $value;
@@ -919,6 +935,11 @@ class course_sync_manager extends sync_manager {
                     $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
                     $oldcourse = $DB->get_record('course', array($uploadidentifier => $keyedvalues[$uploadidentifier]));
 
+                    // If there is an old course, load the ocurse id in the bulkcourse to allow template addition.
+                    if ($oldcourse) {
+                        $coursetocreate['id'] = $oldcourse->id;
+                    }
+
                     // Set course array to defaults.
                     // Fix Edunao eiffel-10.
                     foreach ($optional as $key => $value) {
@@ -1098,91 +1119,13 @@ class course_sync_manager extends sync_manager {
                         continue;
                     } else {
                         if (empty($syncconfig->simulate)) {
-                            $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $syncconfig);
-                            $e = new StdClass;
-                            $e->coursename = $bulkcourse['shortname'];
-                            $e->shortname = $bulkcourse['shortname'];
-                            $e->fullname = $bulkcourse['fullname'];
-                            $e->i = $i;
-                            $e->error = $result;
-                            switch ($result) {
-                                case 1:
-                                    $this->report(get_string('coursecreated', 'tool_sync', $e));
-                                    $n++; // Succeeded.
-                                break;
-                                case -1:
-                                    $this->report(get_string('errorinputconditions', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                case -20:
-                                case -21:
-                                case -22:
-                                case -23:
-                                case -24:
-                                    $this->report(get_string('errorbackupfile', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                case -3:
-                                    $this->report(get_string('errorsectioncreate', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                case -4:
-                                    $this->report(get_string('errorteacherenrolincourse', 'tool_sync', $e));
-                                    if (!empty($CFG->sync_filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                case -5:
-                                    $this->report(get_string('errorteacherrolemissing', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                case -6:
-                                    $this->report(get_string('errorcoursemisconfiguration', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                case -7:
-                                    $e->template = $bulkcourse['template'];
-                                    $this->report(get_string('errortemplatenotfound', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                case -8:
-                                    $this->report(get_string('errorrestoringtemplatesql', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                    $p++;
-                                break;
-                                default:
-                                    $this->report(get_string('errorrestoringtemplate', 'tool_sync', $e));
-                                    if (!empty($syncconfig->filefailed)) {
-                                        $this->feed_tryback($sourcetext[$i]);
-                                    }
-                                break;
-                            }
+                            $this->process_course_content($coursetocategory, $bulkcourse, $headers, $sourcetext, $syncconfig, $n, $p, $s, $i);
                         } else {
                             $this->report('SIMULATION: '.get_string('willcreatecourse', 'tool_sync', $bulkcourse));
                         }
                     }
                 } else {
+                    // Course exists. Shall we update content ? 
                     if (!empty($syncconfig->courses_forceupdate)) {
 
                         $coursetocategory = 0;
@@ -1222,7 +1165,14 @@ class course_sync_manager extends sync_manager {
                                 $oldcourse->$key = $value;
                             }
                         }
+
                         if (empty($syncconfig->simulate)) {
+
+                            if (!empty($bulkcourse['template']) && $syncconfig->courses_template_mode > 0) {
+                                // If we have a template on update, then add or replace the template to the exiting course.
+                                $this->process_course_content($oldcourse->category, $bulkcourse, $headers, $sourcetext, $syncconfig, $n, $p, $s, $i);
+                            }
+
                             if ($DB->update_record('course', $oldcourse)) {
                                 $e = new StdClass;
                                 $e->i = $i;
@@ -1426,6 +1376,90 @@ class course_sync_manager extends sync_manager {
 
         set_config('lastrunning_courses', null, 'tool_sync');
         return true;
+    }
+
+    protected function process_course_content($coursetocategory, $bulkcourse, $headers, $sourcetext, $syncconfig, &$n, &$p, &$s, &$i) {
+
+        $result = $this->fast_create_course_ex($coursetocategory, $bulkcourse, $headers, $syncconfig);
+        $e = new StdClass;
+        $e->coursename = $bulkcourse['shortname'];
+        $e->shortname = $bulkcourse['shortname'];
+        $e->fullname = $bulkcourse['fullname'];
+        $e->i = $i;
+        $e->error = $result;
+        switch ($result) {
+            case 1:
+                $this->report(get_string('coursecreated', 'tool_sync', $e));
+                $n++; // Succeeded.
+            break;
+            case -1:
+                $this->report(get_string('errorinputconditions', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            case -20:
+            case -21:
+            case -22:
+            case -23:
+            case -24:
+                $this->report(get_string('errorbackupfile', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            case -3:
+                $this->report(get_string('errorsectioncreate', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            case -4:
+                $this->report(get_string('errorteacherenrolincourse', 'tool_sync', $e));
+                if (!empty($CFG->sync_filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            case -5:
+                $this->report(get_string('errorteacherrolemissing', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            case -6:
+                $this->report(get_string('errorcoursemisconfiguration', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            case -7:
+                $e->template = $bulkcourse['template'];
+                $this->report(get_string('errortemplatenotfound', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            case -8:
+                $this->report(get_string('errorrestoringtemplatesql', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+                $p++;
+            break;
+            default:
+                $this->report(get_string('errorrestoringtemplate', 'tool_sync', $e));
+                if (!empty($syncconfig->filefailed)) {
+                    $this->feed_tryback($sourcetext[$i]);
+                }
+            break;
+        }
     }
 
     /**
@@ -1860,6 +1894,7 @@ class course_sync_manager extends sync_manager {
         // Trap when template not found.
         if (!empty($course['template']) && $course['template'] != "\n") {
             if (tool_sync_is_course_identifier($course['template'])) {
+                // If the template cannot be found by shortname.
                 if (!($DB->get_record('course', array('shortname' => $course['template'])))) {
                     return -7;
                 }
@@ -1900,7 +1935,13 @@ class course_sync_manager extends sync_manager {
         if (!empty($course['template']) && $course['template'] != "\n") {
 
             $course['category'] = $hcategoryid;
-            $result = $this->create_course_from_template($course, $syncconfig);
+            if (!empty($course['id'])) {
+                // If the course seems being existing already, add the template content to the course without creating it from scratch.
+                $result = $this->create_course_from_template($course, $syncconfig, true);
+            } else {
+                // Create a complete new course.
+                $result = $this->create_course_from_template($course, $syncconfig, false);
+            }
             if ($result < 0) {
                 return $result;
             }
@@ -2092,8 +2133,10 @@ class course_sync_manager extends sync_manager {
         $rows = array();
         $cols = array('shortname', 'roles', 'local_roles', 'completion', 'grades', 'groups', 'groupings',
                       'blog_associations', 'events', 'logs', 'notes', 'comments', 'modules');
+        $addidentifier = false;
         if (!in_array($identifiername, $cols)) {
             $cols[] = $identifiername;
+            $addidentifier = true;
         }
         $rows[] = implode($syncconfig->csvseparator, $cols);
 
@@ -2185,7 +2228,7 @@ class course_sync_manager extends sync_manager {
         }
     }
 
-    public function create_course_from_template($course, $syncconfig) {
+    public function create_course_from_template($course, $syncconfig, $addcontent = false) {
         global $DB, $CFG, $USER;
 
         $origincourse = $DB->get_record('course', array('shortname' => $course['template']));
@@ -2261,7 +2304,18 @@ class course_sync_manager extends sync_manager {
 
             // Create new course.
             $userdoingtherestore = $USER->id; // E.g. 2 == admin.
-            $newcourseid = \restore_dbops::create_new_course('', '', $course['category']);
+            if (empty($course['id']) && !$addcontent) {
+                $newcourseid = \restore_dbops::create_new_course('', '', $course['category']);
+                $backuptarget = \backup::TARGET_NEW_COURSE;
+            } else {
+                // Content must be added from the template file.
+                $newcourseid = $course['id'];
+                if ($syncconfig->courses_template_mode == 1) {
+                    $backuptarget = \backup::TARGET_EXISTING_ADDING;
+                } else {
+                    $backuptarget = \backup::TARGET_EXISTING_DELETING;
+                }
+            }
 
             /*
              * Restore backup into course.
@@ -2270,7 +2324,7 @@ class course_sync_manager extends sync_manager {
              */
             $controller = new \restore_controller($uniq, $newcourseid,
                     \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $userdoingtherestore,
-                    \backup::TARGET_NEW_COURSE );
+                    $backuptarget);
             $controller->execute_precheck();
             if (empty($syncconfig->simulate)) {
                 $controller->execute_plan();

@@ -140,10 +140,11 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
         $first = false;
     }
 
-    $checktext = preg_replace("/\n?\r?/", '', $text);
+    $checktext = preg_replace("/\r/", '', $text);
+    $checktext = preg_replace("/\n/", '', $checktext);
 
     if (@$config->encoding != 'UTF-8') {
-        $checktext = utf8_encode($text);
+        $checktext = utf8_encode($checktext);
     }
 
     return preg_match('/^$/', $checktext) || preg_match('/^(\(|\[|-|#|\/| )/', $checktext);
@@ -610,4 +611,17 @@ function tool_sync_groups_is_member($groupid, $userid=null, $component = null) {
         $params['component'] = $component;
     }
     return $DB->record_exists('groups_members', $params);
+}
+
+function tool_sync_check_repair_plugin_version() {
+    global $DB;
+
+    if (!$DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'version'))) {
+        $version = new StdClass;
+        $version->plugin = 'tool_sync';
+        $version->name = 'version';
+        $version->value = '2018100100';
+        $DB->insert_record('config_plugins', $version);
+        purge_all_caches();
+    }
 }
