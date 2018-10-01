@@ -620,7 +620,7 @@ function tool_sync_check_repair_plugin_version() {
         $version = new StdClass;
         $version->plugin = 'tool_sync';
         $version->name = 'version';
-        $version->value = '2018052103';
+        $version->value = '2018100100';
         $DB->insert_record('config_plugins', $version);
         purge_all_caches();
     }
