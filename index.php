@@ -24,6 +24,7 @@
 
 require('../../../config.php');
 require_once($CFG->dirroot.'/admin/tool/sync/tool_form.php');
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
 // Security.
 
@@ -32,6 +33,9 @@ $PAGE->set_context($context);
 
 require_login();
 require_capability('tool/sync:configure', $context);
+
+// Hack : confirm plugin version. Why in the hell it disapears from DB ?
+tool_sync_check_repair_plugin_version();
 
 tool_sync_capture_input_files(true);
 
@@ -119,7 +123,7 @@ $config = get_config('tool_sync');
 echo $OUTPUT->heading(get_string('title', 'tool_sync'));
 
 if ($message = optional_param('resultmessage', '', PARAM_TEXT)) {
-    echo $OUTPUT->box_start('center', '100%', '', 5, 'informationbox');
+    echo $OUTPUT->box_start('informationbox');
     echo $message;
     echo $OUTPUT->box_end();
 }
