@@ -59,6 +59,11 @@ X.X.0023
 ===================================
 Enrol tool : allow pursuing enrolling on disabled plugin instances (global tool config).
 
-Increment X.X.0025 (2018100100)
+X.X.0024 (2018050300)
+===================================
+Adding provision to choose course identifier field on user synchronisation when
+adding course enrolment.
+
+X.X.0025 (2018100100)
 ===================================
 Add group sync task.
