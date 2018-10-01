@@ -612,3 +612,16 @@ function tool_sync_groups_is_member($groupid, $userid=null, $component = null) {
     }
     return $DB->record_exists('groups_members', $params);
 }
+
+function tool_sync_check_repair_plugin_version() {
+    global $DB;
+
+    if (!$DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'version'))) {
+        $version = new StdClass;
+        $version->plugin = 'tool_sync';
+        $version->name = 'version';
+        $version->value = '2018052103';
+        $DB->insert_record('config_plugins', $version);
+        purge_all_caches();
+    }
+}
