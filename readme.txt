@@ -71,3 +71,7 @@ Increment X.X.0022
 
 Increment X.X.0023
 Enrol tool : allow pursuing enrolling on disabled plugin instances (global tool config).
+
+Increment X.X.0025 (2018100100)
+===================================
+Add group sync task.

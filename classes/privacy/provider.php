@@ -14,24 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Version details.
- *
- * @package     tool_sync
- * @category    tool
- * @author      Valery Fremaux <valery.fremaux@gmail.com>
- * @copyright   2013 onwards Valery Fremaux (http://www.mylearningfactory.com)
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace tool_sync\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2018100100;
-$plugin->requires = 2017110800; // Requires this Moodle version.
-$plugin->component = 'tool_sync'; // Full name of the plugin (used for diagnostics).
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.5.0 (Build 2018100100)';
-
-// Non moodle attributes.
-$plugin->codeincrement = '3.5.0025';
-$plugin->privacy = 'dualrelease';
+class provider implements \core_privacy\local\metadata\null_provider {
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

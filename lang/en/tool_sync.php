@@ -24,6 +24,9 @@
 
 $string['sync:configure'] = 'Configure the synchronisation manager';
 
+// Privacy.
+$string['privacy:metadata'] = 'The Sync tool does not store any personal data about any user.';
+
 $string['addedtogroup'] = 'User {$a->myuser} added to group {$a->mygroup}';
 $string['addedtogroupnot'] = 'User {$a->myuser} NOT added to group {$a->mygroup}';
 $string['allowrename'] = 'Allow renaming users';
@@ -329,7 +332,8 @@ $string['passwordnotification'] = 'Your credentials on {$a}';
 $string['pluginname'] = 'User and course synchronisation by files';
 $string['pluginname_desc'] = 'User and course synchronisation by CSV files';
 $string['predeletewarning'] = '<b><font color="red">WARNING:</font></b> Bulk Deleter is about to delete the following courses:';
-$string['primaryidentity'] = 'Primary identity field';
+$string['userprimaryidentity'] = 'User primary identity field';
+$string['courseprimaryidentity'] = 'Course primary identity field';
 $string['process'] = 'Process';
 $string['processerror'] = 'Process error. the reason is: {$a}';
 $string['processingfile'] = 'Processing...';
@@ -393,6 +397,7 @@ $string['task_synccourses'] = 'CSV Course Synchronisation';
 $string['task_syncenrols'] = 'CSV Enrolment Synchronisation';
 $string['task_syncuserpictures'] = 'CSV User Picture Synchronisation';
 $string['task_syncusers'] = 'CSV Users Synchronisation';
+$string['task_syncgroups'] = 'CSV Course groups Synchronisation';
 $string['taskrunmsg'] = 'Script execution on {$a}<br/>.';
 $string['taskrunmsgnofile'] = 'No file<br/>.';
 $string['testcourseexist'] = 'Test if courses exist in Moodle';

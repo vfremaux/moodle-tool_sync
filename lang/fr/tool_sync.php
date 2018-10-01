@@ -24,6 +24,9 @@
 
 $string['sync:configure'] = 'Configurer les synchronisations';
 
+// Privacy.
+$string['privacy:metadata'] = 'L\'outil de Sync Tool ne détient directement aucune donnée relative aux utilisateurs.';
+
 $string['addedtogroup'] = 'L\'utilisateur {$a->myuser} a été ajouté au groupe {$a->mygroup}';
 $string['addedtogroupnot'] = 'L\'utilisateur {$a->myuser} n\'a pas été ajouté au groupe {$a->mygroup}';
 $string['allowrename'] = 'Permettre le changement d\'identifiant';
@@ -320,7 +323,8 @@ $string['parsingfile'] = 'Examen du fichier...';
 $string['passwordnotification'] = 'Vos accès sur {$a}';
 $string['pluginname'] = 'Synchronisation des cours et utilisateurs par fichiers CSV';
 $string['predeletewarning'] = '<b><font color="red">ATTENTION :</font></b> La suppression des cours suivant va être effectuée :';
-$string['primaryidentity'] = 'champ d\'identité primaire';
+$string['userprimaryidentity'] = 'Champ d\'identité primaire utilisateur';
+$string['courseprimaryidentity'] = 'Champ d\'identité primaire cours';
 $string['process'] = 'Effectuer l\'opération';
 $string['processerror'] = 'Erreur d\'exécution. La raison est : {$a}';
 $string['processingfile'] = 'Examen du fichier : {$a}';
@@ -382,6 +386,7 @@ $string['task_synccourses'] = 'Synchronisation de cours par CSV';
 $string['task_syncenrols'] = 'Synchronisation des inscriptions par CSV';
 $string['task_syncuserpictures'] = 'Synchronisation des avatars';
 $string['task_syncusers'] = 'Synchronisation des utilisateurs par CSV';
+$string['task_syncgroups'] = 'Synchronisation des groupes de cours par CSV';
 $string['taskrunmsg'] = 'Exécution du script sur {$a}<br/>.';
 $string['taskrunmsgnofile'] = 'Pas de fichier défini<br/>.';
 $string['testcourseexist'] = 'Tester l\'existence de cours';
