@@ -684,6 +684,8 @@ $string['allowrename_help'] = 'If checked, username can be changed. an "oldusern
 $string['protectemails_help'] = 'If checked, import will not change user emails when they have one in their account. Missing emails will
 be completed from the file data.';
 
-$string['createpasswords_help'] = 'If checked, missing password will be created when password column is missing.';
+$string['createpasswords_help'] = 'If checked, missing password will be created when password column is mentionned but password value is empty. *NOPASS* special7
+tag can be used to exclude some users from generation. Explicit password value will be recorded in moodle, and eventualy notified to user depending
+on the beneath config state.';
 
 $string['sendpasswordtousers_help'] = 'If checked and passwords are incoming from the user creation file, passwords will be notified to users.';

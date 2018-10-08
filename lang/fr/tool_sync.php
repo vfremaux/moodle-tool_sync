@@ -694,8 +694,9 @@ $string['allowrename_help'] = 'Si actif, les identifiants de connexion peuvent �
 $string['protectemails_help'] = 'Si actif, les adresses de courriel exprimées des utilisateurs resteront inchangées.
 Les adresses vides seront complétées par les données du fichier.';
 
-$string['createpasswords_help'] = 'Si actif et que la colonne "password" n\'est pas fournie, les mots de passe
-seront générés et envoyés par Moodle.';
+$string['createpasswords_help'] = 'Si actif, la colonne "password" est fournie, mais laissée vide, les mots de passe
+seront générés et envoyés par Moodle. Vous pouvez mentionner *NOPASS* pour eclure certains utilisateurs de la génération, ou
+mentionner un mot de passe explicite qui sera notifié aux utilisateurs suivant la valeur de l\'option ci-dessous.';
 
 $string['sendpasswordtousers_help'] = 'Si actif et que les mots de passes sont fournis par le fichier, ils seront notifiés aux
 utilisateur sur l\'adresse de courriel fournie.';
