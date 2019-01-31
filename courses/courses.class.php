@@ -2003,7 +2003,9 @@ class course_sync_manager extends sync_manager {
                             $csection->summary = '';
                             $csection->sequence = '';
                             $csection->visible = 1;
-                            if (!$DB->insert_record('course_sections', $csection)) {
+                            try {
+                                $DB->insert_record('course_sections', $csection);
+                            } catch(Exception $e) {
                                 return -3;
                             }
                         }
@@ -2070,7 +2072,9 @@ class course_sync_manager extends sync_manager {
                     $roleassignrec->modifierid = 0;
                     $roleassignrec->enrol = 'manual';
                     if (empty($syncconfig->simulate)) {
-                        if (!$DB->insert_record('role_assignments', $roleassignrec)) {
+                        try {
+                            $DB->insert_record('role_assignments', $roleassignrec);
+                        } catch (Exception $e) {
                             return -4;
                         }
                         $e = new StdClass;
