@@ -189,7 +189,7 @@ class enrol_sync_manager extends sync_manager {
             }
             $line = explode($csvdelimiter2, $text);
 
-            if (debugging(null, DEBUG_DEVELOPER)) {
+            if ($CFG->debug, DEBUG_DEVELOPER) {
                 echo ">> Decoding \n";
             }
             foreach ($line as $key => $value) {
@@ -209,7 +209,7 @@ class enrol_sync_manager extends sync_manager {
                 }
             }
 
-            if (debugging(null, DEBUG_DEVELOPER)) {
+            if ($CFG->debug, DEBUG_DEVELOPER) {
                 echo ">> Fixing time \n";
             }
             if (array_key_exists('starttime', $record)) {
@@ -238,7 +238,7 @@ class enrol_sync_manager extends sync_manager {
             $e->userby = $uidentifiername;
             $e->mycourse = $record['cid']; // Course identifier.
 
-            if (debugging(null, DEBUG_DEVELOPER)) {
+            if ($CFG->debug == DEBUG_DEVELOPER) {
                 echo ">> Check user \n";
             }
             if (!$user = $DB->get_record('user', array($uidentifiername => $record['uid'])) ) {
@@ -252,7 +252,7 @@ class enrol_sync_manager extends sync_manager {
 
             $e->myuser = $user->username.' ('.$e->myuser.')'; // Complete idnumber with real username.
 
-            if (debugging(null, DEBUG_DEVELOPER)) {
+            if ($CFG->debug == DEBUG_DEVELOPER) {
                 echo ">> Check course \n";
             }
             if (empty($record['cid'])) {
@@ -530,7 +530,7 @@ class enrol_sync_manager extends sync_manager {
                 $component = 'tool_sync';
             }
 
-            if (debugging(null, DEBUG_DEVELOPER)) {
+            if ($CFG->debug == DEBUG_DEVELOPER) {
                 echo "Grouping...\n";
             }
             if (!empty($record['gcmd'])) {
@@ -617,13 +617,13 @@ class enrol_sync_manager extends sync_manager {
                                 $e->mycourse = $course->shortname;
                                 $gname = $record['g'.$j];
                                 if ($gid = $DB->get_field('groups', 'id', array('courseid' => $course->id, 'name' => $record['g'.$j]))) {
-                                    if (debugging(null, DEBUG_DEVELOPER)) {
+                                    if ($CFG->debug == DEBUG_DEVELOPER) {
                                         echo ">> Got group $gid by name $e->group\n";
                                     }
                                     $groupid[$j] = $gid;
                                 } else {
                                     if ($record['gcmd'] == 'greplacecreate') {
-                                        if (debugging(null, DEBUG_DEVELOPER)) {
+                                        if ($CFG->debug == DEBUG_DEVELOPER) {
                                             echo ">> Creating group \n";
                                         }
                                         $groupsettings = new StdClass;
@@ -677,7 +677,7 @@ class enrol_sync_manager extends sync_manager {
                     for ($j = 1; $j < 10; $j++) {
                         if (!empty($record['g'.$j])) {
                             if (empty($syncconfig->simulate)) {
-                                if (debugging(null, DEBUG_DEVELOPER)) {
+                                if ($CFG->debug == DEBUG_DEVELOPER) {
                                     echo " >> Removing membership \n";
                                 }
                                 $e = new StdClass();
@@ -712,7 +712,7 @@ class enrol_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
-        if (debugging(null, DEBUG_DEVELOPER)) {
+        if ($CFG->debug == DEBUG_DEVELOPER) {
             mtrace("Finalization");
         }
 
