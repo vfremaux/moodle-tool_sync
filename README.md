@@ -67,3 +67,7 @@ adding course enrolment.
 X.X.0025 (2018100100)
 ===================================
 Add group sync task.
+
+Increment X.X.0026 (2018100100)
+===================================
+control verbosity. Less verbose when no DEVELOPER output.
