@@ -189,7 +189,7 @@ class enrol_sync_manager extends sync_manager {
             }
             $line = explode($csvdelimiter2, $text);
 
-            if ($CFG->debug, DEBUG_DEVELOPER) {
+            if ($CFG->debug == DEBUG_DEVELOPER) {
                 echo ">> Decoding \n";
             }
             foreach ($line as $key => $value) {
@@ -209,7 +209,7 @@ class enrol_sync_manager extends sync_manager {
                 }
             }
 
-            if ($CFG->debug, DEBUG_DEVELOPER) {
+            if ($CFG->debug == DEBUG_DEVELOPER) {
                 echo ">> Fixing time \n";
             }
             if (array_key_exists('starttime', $record)) {
