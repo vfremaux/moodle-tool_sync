@@ -783,7 +783,11 @@ class tool_sync_core_ext_external extends external_api {
                     if ($context = context::instance_by_id($ra->contextid, IGNORE_MISSING)) {
                         // this is a bit expensive but necessary
                         $context->mark_dirty();
+<<<<<<< HEAD
                         coursecat::role_assignment_changed($ra->roleid, $context);
+=======
+                        \core_course_category::role_assignment_changed($ra->roleid, $context);
+>>>>>>> MOODLE_36_STABLE
                     }
                 }
                 unset($ras);
@@ -800,7 +804,11 @@ class tool_sync_core_ext_external extends external_api {
                     if ($context = context::instance_by_id($ra->contextid, IGNORE_MISSING)) {
                         // this is a bit expensive but necessary
                         $context->mark_dirty();
+<<<<<<< HEAD
                         coursecat::role_assignment_changed($ra->roleid, $context);
+=======
+                        \core_course_category::role_assignment_changed($ra->roleid, $context);
+>>>>>>> MOODLE_36_STABLE
                     }
                 }
                 unset($ras);

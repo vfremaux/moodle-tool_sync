@@ -146,6 +146,8 @@ function tool_sync_is_empty_line_or_format(&$text, $resetfirst = false) {
     if (@$config->encoding != 'UTF-8') {
         $checktext = utf8_encode($checktext);
     }
+    // Put it back into the incoming data.
+    $text = $checktext;
 
     return preg_match('/^$/', $checktext) || preg_match('/^(\(|\[|-|#|\/| )/', $checktext);
 }

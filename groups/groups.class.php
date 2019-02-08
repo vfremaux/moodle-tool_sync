@@ -127,6 +127,13 @@ class group_sync_manager extends sync_manager {
     public function cron($syncconfig) {
         global $CFG, $DB;
 
+<<<<<<< HEAD
+=======
+        if ($CFG->debug == DEBUG_DEVELOPER) {
+            echo "Starting group cron ";
+        }
+
+>>>>>>> MOODLE_36_STABLE
         raise_memory_limit(MEMORY_HUGE);
 
         $component = 'tool_sync';
@@ -146,6 +153,13 @@ class group_sync_manager extends sync_manager {
 
         if ($this->execute == SYNC_COURSE_GROUPS) {
 
+<<<<<<< HEAD
+=======
+            if ($CFG->debug == DEBUG_DEVELOPER) {
+                echo "Starting course group processing ";
+            }
+
+>>>>>>> MOODLE_36_STABLE
             if (empty($this->manualfilerec)) {
                 $filerec = $this->get_input_file(@$syncconfig->groups_filelocation, 'groups.csv');
             } else {
@@ -191,7 +205,11 @@ class group_sync_manager extends sync_manager {
             array_walk($headers, 'trim_array_values');
 
             foreach ($headers as $h) {
+<<<<<<< HEAD
                 $header[] = trim($h); // Remove whitespace.
+=======
+                $h = trim($h); // Remove whitespace.
+>>>>>>> MOODLE_36_STABLE
                 if (!(isset($required[$h]) or isset($optional[$h]))) {
                     $this->report(get_string('errorinvalidcolumnname', 'tool_sync', $h));
                     set_config('lastrunning_group', null, 'tool_sync');
@@ -500,6 +518,13 @@ class group_sync_manager extends sync_manager {
 
         if ($this->execute == SYNC_GROUP_MEMBERS) {
 
+<<<<<<< HEAD
+=======
+            if ($CFG->debug == DEBUG_DEVELOPER) {
+                echo "Starting group members processing ";
+            }
+
+>>>>>>> MOODLE_36_STABLE
             if (empty($this->manualfilerec)) {
                 $filerec = $this->get_input_file(@$syncconfig->groupmembers_filelocation, 'groupmembers.csv');
             } else {
