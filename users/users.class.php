@@ -418,6 +418,9 @@ class users_sync_manager extends sync_manager {
                 if ($olduser) {
 
                     if ($this->user_has_identity_collision($user, $syncconfig->users_primaryidentity, $olduser)) {
+                        if (!empty($syncconfig->filefailed)) {
+                            $this->feed_tryback($text);
+                        }
                         continue;
                     }
 
@@ -475,6 +478,9 @@ class users_sync_manager extends sync_manager {
                     // New user.
 
                     if ($this->user_has_identity_collision($user, $syncconfig->users_primaryidentity, null)) {
+                        if (!empty($syncconfig->filefailed)) {
+                            $this->feed_tryback($text);
+                        }
                         continue;
                     }
 
@@ -804,11 +810,17 @@ class users_sync_manager extends sync_manager {
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
             $this->store_report_file($filerec);
         }
+
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
             $this->archive_input_file($filerec);
         }
+
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
             $this->cleanup_input_file($filerec);
+        }
+
+        if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
+            $this->write_tryback($filerec);
         }
 
         set_config('lastrunning_users', null, 'tool_sync');

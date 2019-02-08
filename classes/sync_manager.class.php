@@ -44,10 +44,15 @@ class sync_manager {
     /**
      * Adds a report message into the log buffer.
      */
-    protected function report($message, $screen = true) {
+    protected function report($message, $screen = false) {
+        global $CFG;
+
         if (empty($this->log)) {
             $this->log = '';
         }
+
+        $screen = $screen || ($CFG->debug == DEBUG_DEVELOPER);
+
         if ($screen) {
             mtrace($message);
         }
@@ -102,6 +107,7 @@ class sync_manager {
      * @param string $originalfilerec the original file record being processed.
      */
     public function write_tryback($originalfilerec) {
+        global $CFG;
 
         $config = get_config('tool_sync');
 
@@ -129,7 +135,9 @@ class sync_manager {
             $oldfile->delete();
         }
 
-        echo "Creating tryback\n";
+        if ($CFG->debug == DEBUG_DEVELOPER) {
+            echo "Creating tryback\n";
+        }
         $fs->create_file_from_string($filerec, $buffer);
     }
 
@@ -199,10 +207,14 @@ class sync_manager {
         }
 
         if (!$this->filename_has_wildcard($filename)) {
-            mtrace('SINGLE FILE mode');
+            if ($CFG->debug == DEBUG_DEVELOPER) {
+                mtrace('SINGLE FILE mode');
+            }
             return $filerec;
         } else {
-            mtrace('WILDCARD mode');
+            if ($CFG->debug == DEBUG_DEVELOPER) {
+                mtrace('WILDCARD mode');
+            }
             if (tool_sync_supports_feature('fileloading/wildcard')) {
                 // This is a remotely stored exposed file on the web. First retreive it.
                 require_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
@@ -226,6 +238,7 @@ class sync_manager {
      * Given a file rec, get an open strem on it and process error cases.
      */
     protected function open_input_file($filerec, $tool) {
+        global $CFG;
 
         $lastrunning = get_config('tool_sync', 'lastrunning_'.$tool);
 
@@ -262,9 +275,13 @@ class sync_manager {
 
                 $fs->create_file_from_storedfile($discardedrec, $oldfile);
                 $oldfile->delete();
-                mtrace("discarding old file $lastname");
+                if ($CFG->debug == DEBUG_DEVELOPER) {
+                    mtrace("discarding old file $lastname");
+                }
             } else {
-                mtrace("No old file");
+                if ($CFG->debug == DEBUG_DEVELOPER) {
+                    mtrace("No old file");
+                }
             }
             set_config('lastrunning_'.$tool, null, 'tool_sync');
             mtrace("Rearming for next run");
@@ -297,6 +314,7 @@ class sync_manager {
      *
      */
     protected function archive_input_file($filerec) {
+        global $CFG;
 
         $fs = get_file_storage();
 
@@ -313,7 +331,9 @@ class sync_manager {
 
         $inputfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
                                    $filerec->filepath, $filerec->filename);
-        echo "Archive input file\n";
+        if ($CFG->debug == DEBUG_DEVELOPER) {
+            mtrace("Archive input file");
+        }
         $fs->create_file_from_storedfile($archiverec, $inputfile);
     }
 
