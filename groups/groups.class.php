@@ -250,7 +250,7 @@ class group_sync_manager extends sync_manager {
                 }
                 $line = explode($csvdelimiter2, $text);
 
-                if (debugging(null, DEBUG_DEVELOPER)) {
+                if ($CFG->debug == DEBUG_DEVELOPER) {
                     echo ">> Decoding \n";
                 }
                 foreach ($line as $key => $value) {
@@ -273,7 +273,7 @@ class group_sync_manager extends sync_manager {
                 $e->courseby = $cidentifiername;
                 $e->mycourse = $record['courseid']; // Course identifier.
 
-                if (debugging(null, DEBUG_DEVELOPER)) {
+                if ($CFG->debug == DEBUG_DEVELOPER) {
                     echo ">> Check course \n";
                 }
                 if (empty($record['courseid'])) {
@@ -294,7 +294,7 @@ class group_sync_manager extends sync_manager {
                     continue;
                 }
 
-                if (debugging(null, DEBUG_DEVELOPER)) {
+                if ($CFG->debug == DEBUG_DEVELOPER) {
                     echo "Grouping...\n";
                 }
 
@@ -597,7 +597,7 @@ class group_sync_manager extends sync_manager {
                 }
                 $line = explode($csvdelimiter2, $text);
 
-                if (debugging(null, DEBUG_DEVELOPER)) {
+                if ($CFG->debug == DEBUG_DEVELOPER) {
                     echo ">> Decoding \n";
                 }
                 foreach ($line as $key => $value) {
@@ -613,7 +613,7 @@ class group_sync_manager extends sync_manager {
                 $e->courseby = $cidentifiername;
                 $e->mycourse = $record['courseid']; // Course identifier.
 
-                if (debugging(null, DEBUG_DEVELOPER)) {
+                if ($CFG->debug == DEBUG_DEVELOPER) {
                     echo ">> Check course \n";
                 }
 
@@ -693,7 +693,7 @@ class group_sync_manager extends sync_manager {
                     continue;
                 }
 
-                if (debugging(null, DEBUG_DEVELOPER)) {
+                if ($CFG->debug == DEBUG_DEVELOPER) {
                     echo "Grouping people...\n";
                 }
 
@@ -831,7 +831,7 @@ class group_sync_manager extends sync_manager {
             fclose($filereader);
         }
 
-        if (debugging(null, DEBUG_DEVELOPER)) {
+        if ($CFG->debug == DEBUG_DEVELOPER) {
             mtrace("Finalization");
         }
 
