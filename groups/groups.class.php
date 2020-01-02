@@ -307,7 +307,7 @@ class group_sync_manager extends sync_manager {
                             $oldrec->idnumber = @$record['idnumber'];
                             if (empty($syncconfig->simulate)) {
                                 $DB->update_record('groups', $oldrec);
-                                $this->report("group updated in DB ".print_r($oldrec, true));
+                                $this->report("group updated in DB ".tool_sync_print_r($oldrec, true));
                                 $updatedgroups[$oldrec->courseid][] = $oldrec->name;
                                 $group = $oldrec;
                                 $this->report('Group "'.$group->name.'" updated in course '.$oldrec->courseid);
