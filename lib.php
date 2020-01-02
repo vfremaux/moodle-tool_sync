@@ -27,6 +27,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/courses/courses.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
+require_once($CFG->dirroot.'/admin/tool/sync/extralibs/extralibs.php');
 
 define('SYNC_COURSE_CHECK', 0x001);
 define('SYNC_COURSE_CREATE', 0x002);
