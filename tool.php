@@ -40,6 +40,8 @@ class tool_plugin_sync {
         $frm->addElement('select', 'tool_sync/encoding', get_string('encoding', 'tool_sync'), $encodings);
         $separators = array(',' => ', (coma)', ';' => '; (semicolon)');
         $frm->addElement('select', 'tool_sync/csvseparator', get_string('csvseparator', 'tool_sync'), $separators);
+        $frm->addElement('checkbox', 'tool_sync/discardfileonfailure', get_string('discardfileonfailure', 'tool_sync'));
+        $frm->addElement('checkbox', 'tool_sync/invalidnamesnocheck', get_string('invalidnamesnocheck', 'tool_sync'));
 
         $frm->addElement('header', 'globalconf3', get_string('final_action', 'tool_sync'));
 
