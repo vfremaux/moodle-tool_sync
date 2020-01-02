@@ -71,8 +71,8 @@ class tool_sync_core_ext_external extends external_api {
             'contexttype' => new external_value(PARAM_TEXT, 'The context type'),
             'instanceidsource' => new external_value(PARAM_TEXT, 'The source for the context attached instance'),
             'instanceid' => new external_value(PARAM_TEXT, 'The instance identifier'),
-            'shiftrole' => new external_value(PARAM_BOOL, 'If true, will remove other roles', VALUE_OPTIONAL),
-            'component' => new external_value(PARAM_TEXT, 'If set, allow forcing a targer component', VALUE_OPTIONAL),
+            'shiftrole' => new external_value(PARAM_BOOL, 'If true, will remove other roles', VALUE_DEFAULT, 0),
+            'component' => new external_value(PARAM_TEXT, 'If set, allow forcing a targer component', VALUE_DEFAULT, ''),
         );
     }
 
@@ -736,7 +736,7 @@ class tool_sync_core_ext_external extends external_api {
                 'contexttype' => new external_value(PARAM_TEXT, 'The context type'),
                 'instanceidsource' => new external_value(PARAM_TEXT, 'The source for the context attached instance'),
                 'instanceid' => new external_value(PARAM_TEXT, 'The instance identifier'),
-                'component' => new external_value(PARAM_TEXT, 'If set, forces the component scope of the assignation', VALUE_OPTIONAL),
+                'component' => new external_value(PARAM_TEXT, 'If set, forces the component scope of the assignation', VALUE_DEFAULT, ''),
             )
         );
     }

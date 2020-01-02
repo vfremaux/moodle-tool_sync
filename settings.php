@@ -36,15 +36,18 @@ if (is_dir($CFG->dirroot.'/local/adminsettings')) {
     $hasconfig = $hassiteconfig = has_capability('moodle/site:config', context_system::instance());
 }
 
-if ($hassiteconfig) {
+$systemcontext = context_system::instance();
+if ($hassiteconfig || ($hasconfig && has_capability('tool/sync:configure', $systemcontext))) {
     if (!$ADMIN->locate('automation')) {
         $ADMIN->add('root', new admin_category('automation', new lang_string('automation', 'tool_sync')));
     }
 
-    if (has_capability('tool/sync:configure', context_system::instance())) {
-        // General settings.
-        $syncurl = new moodle_url('/admin/tool/sync/index.php');
-        $label = get_string('pluginname', 'tool_sync');
-        $ADMIN->add('automation', new admin_externalpage('toolsync', $label, $syncurl, 'tool/sync:configure'));
+    // General settings.
+    $syncurl = new moodle_url('/admin/tool/sync/index.php');
+    $label = get_string('pluginname', 'tool_sync');
+    $ADMIN->add('automation', new admin_externalpage('toolsync', $label, $syncurl, 'tool/sync:configure'));
+    if ($hassiteconfig) {
+        // Needs having plugin/tools/.
+        $ADMIN->add('tools', new admin_externalpage('toolsynctools', $label, $syncurl, 'tool/sync:configure'));
     }
 }
