@@ -25,19 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// PATCH+ : Adminsettings takeover
-// settings default init
-if (is_dir($CFG->dirroot.'/local/adminsettings')) {
-    // Integration driven code.
-    require_once($CFG->dirroot.'/local/adminsettings/lib.php');
-    list($hasconfig, $hassiteconfig, $capability) = local_adminsettings_access();
-} else {
-    // Standard Moodle code.
-    $hasconfig = $hassiteconfig = has_capability('moodle/site:config', context_system::instance());
-}
-
 $systemcontext = context_system::instance();
-if ($hassiteconfig || ($hasconfig && has_capability('tool/sync:configure', $systemcontext))) {
+if ($hassiteconfig || (!empty($hasconfig) && has_capability('tool/sync:configure', $systemcontext))) {
     if (!$ADMIN->locate('automation')) {
         $ADMIN->add('root', new admin_category('automation', new lang_string('automation', 'tool_sync')));
     }

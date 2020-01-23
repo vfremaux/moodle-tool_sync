@@ -10,4 +10,3 @@ function tool_sync_category_role_assignment_changed($roleid, $context) {
 function tool_sync_get_category($catid) {
     return \core_course_category::get($catid);
 }
-
