@@ -28,4 +28,11 @@
     <version>3.5.0</version>
     <licenseversion>3.5.0</licenseversion>
   </library>
+  <library>
+    <location>extralibs</location>
+    <name>Out of Moodle check function</name>
+    <license>GPL</license>
+    <version>3</version></version>
+    <licenseversion>3</licenseversion>
+  </library>
 </libraries>
