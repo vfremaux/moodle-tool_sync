@@ -63,7 +63,7 @@ if ($options['help']) {
         -v, --verbose               Provides lot of output
         -h, --help          Print out this help
         -s, --simulate      Get all data for simulation but will NOT process any writing in database.
-        -f, --file          the operation command file.
+        -f, --file          the operation command file as an absolute path in the system. If not given, will run the active file in sync configuration.
         -a, --action        The course operation (check, reset, delete, create).
         -C, --catid         The categoryidentifier mode (idnumber, idname).
         -H, --host          Set the host (physical or virtual) to operate on.
@@ -121,6 +121,13 @@ switch ($options['action']) {
 }
 
 $syncconfig = get_config('tool_sync');
+if (empty($syncconfig->csvseparator)) {
+    $syncconfig->csvseparator = ';'; // semi-column as default.
+}
+
+if (empty($syncconfig->encoding)) {
+    $syncconfig->encoding = 'UTF-8'; // UTF8 as default.
+}
 
 // Integrates file in file system within tool_sync file area.
 if (!empty($options['file'])) {
@@ -144,10 +151,19 @@ if (!empty($options['file'])) {
     $manager = new \tool_sync\course_sync_manager($action, $filerec);
 } else {
     if ($options['action'] == 'check') {
-        $processedfile = $syncconfig->courses_fileexsitlocation;
+        if (!isset($syncconfig->courses_fileuploadlocation)) {
+            die('No course check file setup in config. Aborting.'."\n");
+        }
+        $processedfile = $syncconfig->courses_fileexistlocation;
     } else if ($options['action'] == 'delete') {
+        if (!isset($syncconfig->courses_filedeletelocation)) {
+            die('No delete file setup in config. Aborting.'."\n");
+        }
         $processedfile = $syncconfig->courses_filedeletelocation;
     } else if ($options['action'] == 'create') {
+        if (!isset($syncconfig->courses_fileuploadlocation)) {
+            die('No upload file setup in config. Aborting.'."\n");
+        }
         $processedfile = $syncconfig->courses_fileuploadlocation;
     }
     $manager = new \tool_sync\course_sync_manager($action);
