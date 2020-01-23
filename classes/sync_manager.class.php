@@ -249,7 +249,7 @@ class sync_manager {
         $systemcontext = \context_system::instance();
         $fs = get_file_storage();
 
-        if (!empty($lastrunning)) {
+        if (!empty($lastrunning) && !empty($config->discardfileonfailure)) {
             // Something has gone wrong in the previous processing. We must discard this file by renaming it to tryback.
             $lastpath = dirname($lastrunning);
             $lastname = basename($lastrunning);
@@ -355,18 +355,23 @@ class sync_manager {
      */
     protected function check_headers($headers, $required, $patterns, $metas, $optional, $optionaldefaults) {
 
+        $config = get_config('tool_sync');
+
         // Check for valid field names.
         foreach ($headers as $h) {
             $header[] = trim($h);
             $patternized = implode('|', $patterns) . "\\d+";
             $metapattern = implode('|', $metas);
-            if (!(isset($required[$h]) ||
-                    isset($optionaldefaults[$h]) ||
-                            isset($optional[$h]) ||
-                                    preg_match("/$patternized/", $h) ||
-                                            preg_match("/$metapattern/", $h))) {
-                $this->report(get_string('invalidfieldname', 'error', $h));
-                return false;
+
+            if (empty($config->invalidnamesnocheck)) {
+                if (!(isset($required[$h]) ||
+                        isset($optionaldefaults[$h]) ||
+                                isset($optional[$h]) ||
+                                        preg_match("/$patternized/", $h) ||
+                                                preg_match("/$metapattern/", $h))) {
+                    $this->report(get_string('invalidfieldname', 'error', $h));
+                    return false;
+                }
             }
 
             if (isset($required[$h])) {

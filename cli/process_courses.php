@@ -45,6 +45,7 @@ list($options, $unrecognized) = cli_get_params(
         'v' => 'verbose',
         's' => 'simulate',
         'a' => 'action',
+        'C' => 'catid',
         'H' => 'host'
     )
 );
@@ -62,8 +63,9 @@ if ($options['help']) {
         -v, --verbose               Provides lot of output
         -h, --help          Print out this help
         -s, --simulate      Get all data for simulation but will NOT process any writing in database.
-        -f, --file          the operation command file.
+        -f, --file          the operation command file as an absolute path in the system. If not given, will run the active file in sync configuration.
         -a, --action        The course operation (check, reset, delete, create).
+        -C, --catid         The categoryidentifier mode (idnumber, idname).
         -H, --host          Set the host (physical or virtual) to operate on.
 
          \n"; // TODO: localize - to be translated later when everything is finished.
@@ -80,45 +82,24 @@ if (!empty($options['host'])) {
 
 // Replay full config whenever. If vmoodle switch is armed, will switch now config.
 
-require(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php'); // Global moodle config file.
+if (!defined('MOODLE_INTERNAL')) {
+    include(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php'); // Global moodle config file.
+}
 echo('Config check : playing for '.$CFG->wwwroot."\n");
-
-// Here can real processing start.
-
-if (empty($options['file'])) {
-    die("No file given. Aborting....\n");
-}
-
-if (!file_exists($options['file'])) {
-    die("File not found. Aborting....\n");
-}
 
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
 
-// Integrates file in file system within tool_sync file area.
+// Here can real processing start.
 
-$fs = get_file_storage();
-$filerec = new Stdclass();
-$contextid = context_system::instance()->id;
-$filerec->contextid = $contextid;
-$filerec->component = 'tool_sync';
-$filerec->filearea = 'syncfiles';
-$filerec->itemid = 0;
-$filerec->filepath = '/';
-$filerec->filename = basename($options['file']);
-
-// Purge eventual previous file.
-if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
-                             $filerec->filepath, $filerec->filename)) {
-    $oldfile->delete();
+if (empty($options['file'])) {
+    echo("No file given. Using configuration file....\n");
+} else {
+    if (!file_exists($options['file'])) {
+        die("File not found. Aborting....\n");
+    }
 }
-
-$inputfile = $fs->create_file_from_pathname($filerec, $options['file']);
-
-global $USER;
-$USER = get_admin();
 
 switch ($options['action']) {
     case 'check':
@@ -141,9 +122,43 @@ switch ($options['action']) {
 
 $syncconfig = get_config('tool_sync');
 
-$manager = new \tool_sync\course_sync_manager($action, $filerec);
+// Integrates file in file system within tool_sync file area.
+if (!empty($options['file'])) {
+    $fs = get_file_storage();
+    $filerec = new Stdclass();
+    $contextid = context_system::instance()->id;
+    $filerec->contextid = $contextid;
+    $filerec->component = 'tool_sync';
+    $filerec->filearea = 'syncfiles';
+    $filerec->itemid = 0;
+    $filerec->filepath = '/';
+    $filerec->filename = basename($options['file']);
 
-$syncconfig->courses_coursecategoryidentifier = 'idnumber';
+    // Purge eventual previous file.
+    if ($oldfile = $fs->get_file($filerec->contextid, $filerec->component, $filerec->filearea, $filerec->itemid,
+                                 $filerec->filepath, $filerec->filename)) {
+        $oldfile->delete();
+    }
+
+    $fs->create_file_from_pathname($filerec, $options['file']);
+    $manager = new \tool_sync\course_sync_manager($action, $filerec);
+} else {
+    if ($options['action'] == 'check') {
+        $processedfile = $syncconfig->courses_fileexsitlocation;
+    } else if ($options['action'] == 'delete') {
+        $processedfile = $syncconfig->courses_filedeletelocation;
+    } else if ($options['action'] == 'create') {
+        $processedfile = $syncconfig->courses_fileuploadlocation;
+    }
+    $manager = new \tool_sync\course_sync_manager($action);
+}
+
+global $USER;
+$USER = get_admin();
+
+if (!empty($options['catid'])) {
+    $syncconfig->courses_coursecategoryidentifier = $options['catid'];
+}
 $manager->cron($syncconfig);
 
 if ($options['verbose']) {

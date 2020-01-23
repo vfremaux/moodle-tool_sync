@@ -221,6 +221,11 @@ class users_sync_manager extends sync_manager {
             $i++;
         }
 
+        $bom = "\xef\xbb\xbf";
+        if (strpos($text, $bom) === 0) {
+            print_error("BOM detector : BOM is there ! It should have been removed from the incoming file.");
+        }
+
         $text = preg_replace('/\n?\r?$/', '', $text); // Remove a trailing end line.
         $headers = explode($csvdelimiter2, $text);
 
@@ -567,7 +572,9 @@ class users_sync_manager extends sync_manager {
                 if (!empty($addcourses)) {
                     foreach ($addcourses as $c) {
 
-                        if (empty($c->idnumber)) {
+                        $courseidentifier = $syncconfig->courses_primaryidentity ;
+
+                        if (empty($c->$courseidentifier)) {
                             // Empty course sets should be ignored.
                             continue;
                         }
@@ -848,10 +855,12 @@ class users_sync_manager extends sync_manager {
             // Same username exists with a different identifier.
             if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                 if (empty($olduser)) {
-                    $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $message = "Required : {$user->$identifiedby} as $identifyby\n";
+                    $message .= "{$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                     $this->report(get_string('usercreatecollision', 'tool_sync', $message));
                 } else {
-                    $message = "({$olduser->id}) $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $message = "Required : {$user->$identifiedby} as $identifyby\n";
+                    $message .= "({$olduser->id}) {$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                     $this->report(get_string('userupdatecollision', 'tool_sync', $message));
                 }
                 return true;
@@ -861,10 +870,12 @@ class users_sync_manager extends sync_manager {
             // Other username is used with this identifier.
             if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                 if (empty($olduser)) {
-                    $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $message = "Required : {$user->$identifiedby} as $identifyby\n";
+                    $message .= "{$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                     $this->report(get_string('usercreatecollision', 'tool_sync', $message));
                 } else {
-                    $message = "({$olduser->id}) $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                    $message = "Required : {$user->$identifiedby} as $identifyby\n";
+                    $message .= "({$olduser->id}) {$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                     $this->report(get_string('userupdatecollision', 'tool_sync', $message));
                 }
                 return true;
@@ -879,10 +890,10 @@ class users_sync_manager extends sync_manager {
                 // Same email is used with this identifier.
                 if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                     if (empty($olduser)) {
-                        $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $message = "{$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                         $this->report(get_string('usercreatemailcollision', 'tool_sync', $message));
                     } else {
-                        $message = "({$olduser->id}) , $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $message = "({$olduser->id}) , {$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                         $this->report(get_string('userupdatemailcollision', 'tool_sync', $message));
                     }
                     return true;
@@ -891,10 +902,12 @@ class users_sync_manager extends sync_manager {
                 $select = " mnethostid = :mnethostid AND email <> :email AND $identifiedby = :$identifiedby ";
                 if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                     if (empty($olduser)) {
-                        $message = "$user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $message = "Required : {$user->$identifiedby} as $identifyby\n";
+                        $message .= "{$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                         $this->report(get_string('usercreatemailcollision', 'tool_sync', $message));
                     } else {
-                        $message = "({$olduser->id}) , $user->username , [{$user->idnumber}], $user->firstname, $user->lastname ";
+                        $message = "Required : {$user->$identifiedby} as $identifyby\n";
+                        $message .= "({$olduser->id}) , {$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                         $this->report(get_string('userupdatemailcollision', 'tool_sync', $message));
                     }
                     return true;

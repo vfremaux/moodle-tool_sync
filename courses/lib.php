@@ -22,7 +22,11 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/lib/coursecatlib.php');
+if (!function_exists('debug_trace')) {
+    function debug_trace($msg) {
+        assert(1);
+    }
+}
 
 /**
  * An helper function to create the course deletion file from a selection
@@ -222,7 +226,7 @@ function tool_sync_erase_empty_categories($catid, $ignoresubs, &$hascontent) {
 
     if (($catid > 0) && !$hascontent) {
         $str .= get_string('coursecatdeleted', 'tool_sync', $cat->name)."\n";
-        $catobj = coursecat::get($catid);
+        $catobj = tool_sync_get_category($catid);
         $catobj->delete_full();
     }
 
