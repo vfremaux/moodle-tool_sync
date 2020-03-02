@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version = 2018100100;
-$plugin->requires = 2019112200; // Requires this Moodle version.
+$plugin->requires = 2019111200; // Requires this Moodle version.
 $plugin->component = 'tool_sync'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '3.8.0 (Build 2018100100)';
