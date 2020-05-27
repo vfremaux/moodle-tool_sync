@@ -62,7 +62,7 @@ $string['cohortconflict'] = 'La cohorte n\'a pas été créée à cause d\'un co
 $string['cohortcoursebindingfilelocation'] = 'Fichier des liaisons des cohortes aux cours';
 $string['cohortcourseidentifier'] = 'Identifiant de cours';
 $string['cohortcreated'] = 'Cohorte {$a->name} ajoutée';
-$string['cohortfilelocation'] = 'Emplacement du fichier de cohortes';
+$string['cohortfilelocation'] = 'Fichier local des cohortes (dans le gestionnaire de fichiers)';
 $string['cohortfreed'] = 'Cohorte [{$a->idnumber}] {$a->name} réinitialisée';
 $string['cohortmanualsync'] = 'Exécution de la synchronisation des cohortes';
 $string['cohortmemberadded'] = 'Utilisateur {$a->username} ({$a->idnumber})  ajouté à la cohorte {$a->cname}';
@@ -94,7 +94,7 @@ $string['coursecreated'] = 'Le cours [{$a->shortname}] {$a->fullname} a été cr
 $string['coursecronprocessing'] = 'Exécution de la synchronisation des cours';
 $string['coursedefaultsummary'] = 'Ecrire un résumé court et motivant expliquant le contenu et objectifs du cours';
 $string['coursedeleted'] = 'Cours {$a} supprimé.';
-$string['coursedeletefile'] = 'Fichier de suppression';
+$string['coursedeletefile'] = 'Fichier local de suppression de cours (dans le gestionnaire de fichiers)';
 $string['coursedeletion'] = 'Destruction de cours';
 $string['courseexists'] = 'Le cours [{$a->shortname}] {$a->fullname} existe déjà sous l\'id {$a->id}.';
 $string['coursefoundas'] = 'Le cours d\'idnumber {{$a->idnumber}} existe : <ol><li>fullname = {$a->fullname} </li><li> shortname = {$a->shortname}</li></ol>';
@@ -281,6 +281,7 @@ $string['ignoresubcats'] = 'Ignorer les sous-categories vides';
 $string['importfile'] = 'Importer un nouveau fichier de test';
 $string['invalidseparatordetected'] = 'Séparateur de champ innatendu dans les noms de colonne. Le format du fichier ne semble pas correspondre au régalge de l\'outil.';
 $string['invalidnamesnocheck'] = 'Ne pas vérifier les noms de colonne (champs inutilisés acceptés).';
+$string['localfile'] = 'Utilisation des fichiers locaux';
 $string['load'] = 'Charger';
 $string['location'] = 'Emplacement';
 $string['mail'] = 'Rapport de traitement';
@@ -344,7 +345,7 @@ $string['removedemptygroup'] = 'Groupe vide {$a->name} supprimé';
 $string['removedemptygrouping'] = 'Groupement vide {$a->name} supprimé';
 $string['report'] = 'Rapport';
 $string['reportdisabledbyconf'] = 'Rapport non sauvegardé (désactivé dans la configuration)';
-$string['resetfile'] = 'Fichier de reinitialisation';
+$string['resetfile'] = 'Fichier local de réinitialisation de cours (dans le gestionnaire de fichiers)';
 $string['resetfilebuilder'] = 'Générateur de fichier CSV de réinitialisation';
 $string['resetfileidentifier'] = 'Identifiant de cours pour la réinitialisation';
 $string['resettingcourse'] = 'Réinitialisation du cours :';
@@ -405,7 +406,7 @@ $string['unknownrole'] = 'Role inconnu à la ligne {$a->i}';
 $string['unknownshortname'] = 'Nom court inconnu à la ligne {$a->i}';
 $string['upload'] = 'Télécharger';
 $string['uploadcourse'] = 'Mise à jour des cours';
-$string['uploadcoursecreationfile'] = 'fichier de creation de cours';
+$string['uploadcoursecreationfile'] = 'Fichier local d\'import de cours (dans le gestionnaire de fichiers)';
 $string['uploadpictures'] = 'Mise à jour des avatars';
 $string['uploadusers2'] = 'Mise à jour des utilisateurs';
 $string['uselocal'] = 'Utiliser le fichier local : {$a}';
@@ -441,7 +442,7 @@ $string['userpicturesync'] = 'Synchronisation des avatars d\'utilisateurs';
 $string['userrevived'] = 'Utilisateur supprimé réanimé : {$a}';
 $string['usersconfig'] = 'Configuration des opérations sur les utilisateurs';
 $string['userscronconfig'] = 'Activer la synchronisation par cron des utilisateurs';
-$string['usersfile'] = 'Fichier des utilisateurs';
+$string['usersfile'] = 'Fichier local des utilisateurs (dans le gestionnaire de fichiers)';
 $string['usersupdated'] = 'Utilisateurs mis à jour ';
 $string['usersync'] = 'Synchronisation des utilisateurs';
 $string['userunknownremotely'] = 'L\'utilisateur {$a} n\'existe pas sur le distant';
@@ -703,3 +704,14 @@ mentionner un mot de passe explicite qui sera notifié aux utilisateurs suivant 
 
 $string['sendpasswordtousers_help'] = 'Si actif et que les mots de passes sont fournis par le fichier, ils seront notifiés aux
 utilisateur sur l\'adresse de courriel fournie.';
+
+$string['localfile_help'] = 'Si vous chargez régulièrement un fichier de mise à jour, vous pouvez choisir ici un nom d\'un fichier
+local qui sera utilisé pour les chargements manuels au automatisés par le cron';
+
+$string['filemanager_help'] = '
+<p>Vous pouvez stocker localement les fichiers CSV d\'alimentation que vous voulez faire prendre en charge par les différents outils
+de chargement ou pour automatiser une procédure de mise à jour. Cependant, la plupart des outils permettent d\'exécuter un fichier téléchargé à la volée à partir de votre ordinateur
+local.</p>
+<p>Le gestionnaire de fichiers contient également les rapports d\'exécution, les fichiers de reprise en cas d\'erreur, les
+archives de fichiers d\'alimentation, suivant les options activées, et certains fichiers générés.</p>
+';
