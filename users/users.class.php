@@ -43,6 +43,7 @@ class users_sync_manager extends sync_manager {
         $label = get_string('usersfile', 'tool_sync');
         $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/users_filelocation', PARAM_TEXT);
+        $frm->addHelpButton($key, 'localfile', 'tool_sync');
 
         $frm->addElement('static', 'usersst1', '<hr>');
 
@@ -76,7 +77,6 @@ class users_sync_manager extends sync_manager {
         $cronurl = new \moodle_url('/admin/tool/sync/users/execcron.php');
         $params = array('onclick' => 'document.location.href= \''.$cronurl.'\'');
         $frm->addElement('button', 'manualusers', get_string('manualuserrun', 'tool_sync'), $params);
-
     }
 
     public function get_userfields() {
@@ -870,7 +870,7 @@ class users_sync_manager extends sync_manager {
             // Other username is used with this identifier.
             if ($otherusers = $DB->get_records_select('user', $select, $params)) {
                 if (empty($olduser)) {
-                    $message = "Required : {$user->$identifiedby} as $identifyby\n";
+                    $message = "Required : {$user->$identifiedby} as $identifiedby\n";
                     $message .= "{$user->username} , [{$user->idnumber}], {$user->firstname}, {$user->lastname} ";
                     $this->report(get_string('usercreatecollision', 'tool_sync', $message));
                 } else {

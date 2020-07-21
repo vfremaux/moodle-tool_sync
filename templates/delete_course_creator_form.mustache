@@ -1,0 +1,64 @@
+
+
+<!-- tool_sync/delete_course_creator_form -->
+<form name="form_deletion" method="post" action="#" onSubmit="return select_all(this)">
+    <center>
+    <table class="generaltable" width="80%">
+        <tr class="r0" valign="top">
+            <th class="header c0" align="left">
+            {{#str}}shortname{{/str}}
+            </th>
+
+            <th class="header c1" align="left">
+            {{#str}}fullname{{/str}}
+            </th>
+            <th class="header c2" align="left" colspan="5">
+            {{#str}}roles{{/str}}
+            </th>
+        </tr>
+
+        {{#courses}}
+        {{^printcaption}}
+        </tr>
+            <tr valign="top" class="{{class}}">
+                <td align="left" class="c0">{{shortname}}</td>
+                <td align="left" class="c1">{{fullname}}</td>
+        {{/printcaption}}
+        {{#printcaption}}
+                <td>{{rolename}} : {{people}}</td>
+        {{/printcaption}}
+        {{/courses}}
+    </table>
+    <hr width="90%" />
+
+    <table width="90%">
+        <tr valign="top">
+            <td></td>
+            <td align="center">
+                {{#str}}choosecoursetodelete, tool_sync{{/str}}
+            </td>
+            <td align="center">
+                {{#str}}selecteditems, tool_sync{{/str}}
+            </td>
+        </tr>
+        <tr valign="top">
+            <td align="center">
+                <select style="height:200px"
+                 name="courselist"
+                 multiple
+                 OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)">
+                {{#distinctcourses}}
+                <option value="{{cid}}">({{idnumber}}) {{shortname}} - {{fullname}}</option>
+                {{/distinctcourses}}
+
+                </select>
+            </td>
+
+            {{{courselector}}}
+
+        </tr>
+    </table>
+    <p><input type="submit" value="{{#str}}generate, tool_sync{{/str}}"/></p>
+    </center>
+</form>
+<!-- /tool_sync/delete_course_creator_form -->

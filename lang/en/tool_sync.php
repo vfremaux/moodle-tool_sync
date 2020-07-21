@@ -290,6 +290,7 @@ $string['importfile'] = 'Import a new test file';
 $string['invalidseparatordetected'] = 'Invalid separator detected. The file formatting may not match the tool settings.';
 $string['invalidnamesnocheck'] = 'Do not check column names (let additional unused columns in file)';
 $string['load'] = 'Load';
+$string['localfile'] = 'Using local file';
 $string['location'] = 'Emplacement';
 $string['mail'] = 'Process report';
 $string['mailenrolreport'] = 'Enrolment report:';
@@ -451,7 +452,7 @@ $string['userpicturesync'] = 'User pictures synchronisation';
 $string['userrevived'] = 'User was revived : {$a}';
 $string['usersconfig'] = 'Configuration for user synchronisation';
 $string['userscronconfig'] = 'Enable synchronization cron users';
-$string['usersfile'] = 'File for syncing users&nbsp;';
+$string['usersfile'] = 'File for syncing users in the File manager';
 $string['usersupdated'] = 'Users updated&nbsp;';
 $string['usersync'] = 'Users synchronization';
 $string['userunknownremotely'] = 'User {$a} unkown on remote end';
@@ -692,3 +693,12 @@ tag can be used to exclude some users from generation. Explicit password value w
 on the beneath config state.';
 
 $string['sendpasswordtousers_help'] = 'If checked and passwords are incoming from the user creation file, passwords will be notified to users.';
+
+$string['localfile_help'] = 'If you schedule regular updates from a named file, you may tell here the file manager file name to use. This file
+will be used by automated sync triggering by cron';
+
+$string['filemanager_help'] = '
+<p>You can store locally in moodle the CSV files that will be processed by the several tools or make an automated updating action. Note that most
+of the tools can process a directly uploaded file from your computer.</p>
+<p>The Sync File Manager also stores reports, tryback (errored lines) and your processed files archives. It may also store some files produced by generators.</p>
+';
