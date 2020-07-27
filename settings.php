@@ -37,7 +37,7 @@ if (is_dir($CFG->dirroot.'/local/adminsettings')) {
 }
 
 $systemcontext = context_system::instance();
-if ($hassiteconfig || ($hasconfig && has_capability('tool/sync:configure', $systemcontext))) {
+if ($hassiteconfig || (!empty($hasconfig) && has_capability('tool/sync:configure', $systemcontext))) {
     if (!$ADMIN->locate('automation')) {
         $ADMIN->add('root', new admin_category('automation', new lang_string('automation', 'tool_sync')));
     }

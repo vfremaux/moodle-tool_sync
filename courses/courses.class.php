@@ -1059,7 +1059,7 @@ class course_sync_manager extends sync_manager {
             $caterrors = 0; // Errored categories.
             $catcreated = 0; // Created categories.
 
-            debug_trace('startingbulkcreation');
+            // debug_trace('startingbulkcreation');
             foreach ($bulkcourses as $i => $bulkcourse) {
                 $a = new StdClass();
                 $a->shortname = $bulkcourse['shortname'];
@@ -1121,7 +1121,7 @@ class course_sync_manager extends sync_manager {
                         continue;
                     } else {
                         if (empty($syncconfig->simulate)) {
-                            debug_trace('creating course '.$bulkcourse['shortname']);
+                            // debug_trace('creating course '.$bulkcourse['shortname']);
                             $this->process_course_content($coursetocategory, $bulkcourse, $headers, $sourcetext, $syncconfig, $n, $p, $s, $i);
                         } else {
                             $this->report('SIMULATION: '.get_string('willcreatecourse', 'tool_sync', $bulkcourse));
@@ -2258,7 +2258,7 @@ class course_sync_manager extends sync_manager {
         // Find the most suitable archive file.
         if (tool_sync_is_course_identifier($course['template'])) {
             // Template is NOT a real path and thus designates a course shortname.
-            debug_trace('create_course_from_template : locating backup from identifier');
+            // debug_trace('create_course_from_template : locating backup from identifier');
             if (!$archive = tool_sync_locate_backup_file($origincourse->id, 'course')) {
 
                 // Get course template from publishflow backups if publishflow installed.
@@ -2272,7 +2272,7 @@ class course_sync_manager extends sync_manager {
                 }
             }
         } else {
-            debug_trace('create_course_from_template : locating backup in file system');
+            // debug_trace('create_course_from_template : locating backup in file system');
             if (!preg_match('/^\/|[a-zA-Z]\:/', $course['template'])) {
                 /*
                  * If relative path we expect finding those files somewhere in the distribution.
@@ -2307,7 +2307,7 @@ class course_sync_manager extends sync_manager {
         }
 
         $this->report(get_string('creatingcoursefromarchive', 'tool_sync', $archive->get_filename()));
-        debug_trace('create_course_from_template : creating course from archive '.$archive->get_filename());
+        // debug_trace('create_course_from_template : creating course from archive '.$archive->get_filename());
 
         $uniq = rand(1, 9999);
 
@@ -2322,11 +2322,11 @@ class course_sync_manager extends sync_manager {
 
         require_once($CFG->dirroot.'/lib/filestorage/mbz_packer.php');
 
-        debug_trace('create_course_from_template : up to extract to '.$tempdir);
+        // debug_trace('create_course_from_template : up to extract to '.$tempdir);
         if ($archive->extract_to_pathname(new \mbz_packer(), $tempdir)) {
 
             // Transaction.
-            debug_trace('create_course_from_template : archive extracted ');
+            // debug_trace('create_course_from_template : archive extracted ');
             $transaction = $DB->start_delegated_transaction();
 
             // Create new course.
@@ -2349,7 +2349,7 @@ class course_sync_manager extends sync_manager {
              * folder needs being a relative path from $CFG->tempdir.'/backup/'.
              * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
              */
-            debug_trace('create_course_from_template : restore to '.$newcourseid);
+            // debug_trace('create_course_from_template : restore to '.$newcourseid);
             $controller = new \restore_controller($uniq, $newcourseid,
                     \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $userdoingtherestore,
                     $backuptarget);
