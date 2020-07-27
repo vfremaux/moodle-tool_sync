@@ -37,6 +37,7 @@ list($options, $unrecognized) = cli_get_params(
         'simulate'          => false,
         'host'              => false,
         'action'            => false,
+        'catid'             => false,
         'file'              => false,
     ),
     array(
@@ -75,6 +76,7 @@ if ($options['help']) {
 }
 
 if (!empty($options['host'])) {
+    $options['host'] = trim($options['host']);
     // Arms the vmoodle switching.
     echo('Arming for '.$options['host']."\n"); // mtrace not yet available.
     define('CLI_VMOODLE_OVERRIDE', $options['host']);
