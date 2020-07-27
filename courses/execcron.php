@@ -77,6 +77,7 @@ if ($form->is_cancelled()) {
 }
 
 if ($data = $form->get_data()) {
+    $syncconfig->simulate = @$data->simulate; // Pass eventual simulate flag to the config.
     if (!empty($data->uselocal)) {
         // Use the server side stored file on one unique operation.
         $coursesmanager = new \tool_sync\course_sync_manager($action);

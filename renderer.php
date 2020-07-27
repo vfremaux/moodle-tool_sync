@@ -52,20 +52,7 @@ class tool_sync_renderer extends plugin_renderer_base {
 
     public function print_delete_course_creator($syncconfig) {
 
-        $str = '<form name="form_deletion" method="post" action="#" onSubmit="return select_all(this)">';
-        $str .= '<center>';
-        $str .= '<table class="generaltable" width="80%">';
-        $str .= '<tr class="r0" valign="top">';
-        $str .= '<th class="header c0" align="left">';
-        $str .= get_string('shortname');
-        $str .= '</th>';
-        $str .= '<th class="header c1" align="left">';
-        $str .= get_string('fullname');
-        $str .= '</th>';
-        $str .= '<th class="header c2" align="left" colspan="5">';
-        $str .= get_string('roles');
-        $str .= '</th>';
-        $str .= '</tr>';
+        $template = new StdClass;
 
         $coursesorts = array(
             0 => 'idnumber',
@@ -78,54 +65,27 @@ class tool_sync_renderer extends plugin_renderer_base {
         $courses = tool_sync_get_all_courses($sortorder);
         $class = 'r0';
         $distinctcourses = array();
-        foreach ($courses as $c) {
+        foreach ($courses as $coursetpl) {
             $class = ($class == 'r0') ? 'r1' : 'r0';
             if (@$prevc->shortname != $c->shortname) {
-                $str .= '</tr>';
-                $str .= '<tr valign="top" class="'.$class.'">';
-                $str .= '<td align="left" class="c0">'.$c->shortname .'</td><td align="left" class="c1"> '.$c->fullname .'</td>';
+                $coursetpl->printcaption = false;
+                $coursetpl->class = $class;
             } else {
-                $str .= "<td>$c->rolename : $c->people</td>";
+                $coursetpl->printcaption = true;
             }
             $distinctcourses[$c->shortname] = $c;
             $prevc = $c;
+            $template->courses[] = $coursetpl;
         }
 
-        $str .= '</table>';
-        $str .= '<hr width="90%" />';
-        $str .= '<table width="90%">';
-        $str .= '<tr valign="top">';
-        $str .= '<td>';
-        $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= get_string('choosecoursetodelete', 'tool_sync');
-        $str .= '</td>';
-        $str .= '<td align="center">';
-        $str .= get_string('selecteditems', 'tool_sync');
-        $str .= '</td>';
-        $str .= '</tr>';
-        $str .= '<tr valign="top">';
-        $str .= '<td align="center">';
-        $str .= '<select style="height:200px"
-                         name="courselist"
-                         multiple
-                         OnDblClick="javascript:selectcourses(this.form.courselist,this.form.selection)" >';
-        foreach ($distinctcourses as $c) {
-            $cid = tool_sync_get_course_identifier($c, 'course_filedeleteidentifier', $syncconfig);
-            $str .= '<option value="'.$cid.'">('.$c->idnumber.') '.$c->shortname.' - '.$c->fullname.'</option>';
+        foreach ($distinctcourses as $distinctcoursetpl) {
+            $distinctcoursetpl->cid = tool_sync_get_course_identifier($c, 'course_filedeleteidentifier', $syncconfig);
+            $template->distinctcourses[] = $distinctcoursetpl;
         }
-        $str .= '</select>';
-        $str .= '</td>';
 
-        $str .= $this->course_selector_form();
+        $template->courselector = $this->course_selector_form();
 
-        $str .= '</tr>';
-        $str .= '</table>';
-        $str .= '<p><input type="submit" value="'.get_string('generate', 'tool_sync').'"/></p>';
-        $str .= '</center>';
-        $str .= '</form>';
-
-        return $str;
+        return $this->output->render_from_template('tool_sync/delete_course_creator_form', $template);
     }
 
     /**
