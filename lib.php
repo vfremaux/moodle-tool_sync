@@ -47,10 +47,12 @@ define('SYNC_GROUP_MEMBERS', 0x1008);
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
-function tool_sync_supports_feature($feature) {
+function tool_sync_supports_feature($feature = null, $getsupported = false) {
     static $supports;
 
-    $config = get_config('tool_sync');
+    if (!during_initial_install()) {
+        $config = get_config('tool_sync');
+    }
 
     if (!isset($supports)) {
         $supports = array(
@@ -63,6 +65,10 @@ function tool_sync_supports_feature($feature) {
             ),
         );
         $prefer = array();
+    }
+
+    if ($getsupported) {
+        return $supports;
     }
 
     // Check existance of the 'pro' dir in plugin.
@@ -464,7 +470,8 @@ function tool_sync_read($filereader, $length, &$config) {
     $input = fgets($filereader, $length);
 
     if (@$config->encoding != 'UTF-8') {
-        return utf8_encode($input);
+        $output = utf8_encode($input);
+        return $output;
     }
     return $input;
 }

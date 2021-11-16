@@ -326,6 +326,7 @@ $string['othermatchs'] = 'Autres fichiers potentiels';
 $string['parsingfile'] = 'Examen du fichier...';
 $string['passwordnotification'] = 'Vos accès sur {$a}';
 $string['pluginname'] = 'Synchronisation des cours et utilisateurs par fichiers CSV';
+$string['pluginsettings'] = 'Réglages généraux de l\'importeur CSV';
 $string['predeletewarning'] = '<b><font color="red">ATTENTION :</font></b> La suppression des cours suivant va être effectuée :';
 $string['userprimaryidentity'] = 'Champ d\'identité primaire utilisateur';
 $string['courseprimaryidentity'] = 'Champ d\'identité primaire cours';
@@ -450,8 +451,9 @@ $string['userupdatecollision'] = 'Error : Collision d\'identifiant à la mise à
 $string['userupdatemailcollision'] = 'Error : Collision d\'adresse mail à la création de {$a}';
 $string['utilities'] = 'Utilitaires';
 $string['willcreatecategory'] = 'Va créer la catégorie {$a}';
-$string['willcreatecourse'] = 'Va créer le cours[{$a->shorname}] {$a->fullname} identifié par ({$a->idnumber})';
-$string['willupdatecourse'] = 'Va créer le cours [{$a->shorname}] {$a->fullname} identifié par ({$a->idnumber})';
+$string['willcreatecourse'] = 'Va créer le cours [{$a->shortname}] {$a->fullname} identifié par ({$a->idnumber})';
+$string['willcreatecourseontemplate'] = 'Va créer le cours [{$a->shortname}] {$a->fullname} identifié par ({$a->idnumber}) avec le template {$a->template}';
+$string['willupdatecourse'] = 'Va mettre à jour le cours [{$a->shortname}] {$a->fullname} identifié par ({$a->idnumber})';
 
 $string['coursesync_help'] = '
 ';
@@ -715,3 +717,5 @@ local.</p>
 <p>Le gestionnaire de fichiers contient également les rapports d\'exécution, les fichiers de reprise en cas d\'erreur, les
 archives de fichiers d\'alimentation, suivant les options activées, et certains fichiers générés.</p>
 ';
+
+include(__DIR__.'/pro_additional_strings.php');

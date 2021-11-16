@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/admin/tool/sync/lib.php');
+
 $systemcontext = context_system::instance();
 if ($hassiteconfig || (!empty($hasconfig) && has_capability('tool/sync:configure', $systemcontext))) {
     if (!$ADMIN->locate('automation')) {
@@ -36,7 +38,17 @@ if ($hassiteconfig || (!empty($hasconfig) && has_capability('tool/sync:configure
     $label = get_string('pluginname', 'tool_sync');
     $ADMIN->add('automation', new admin_externalpage('toolsync', $label, $syncurl, 'tool/sync:configure'));
     if ($hassiteconfig) {
-        // Needs having plugin/tools/.
-        $ADMIN->add('tools', new admin_externalpage('toolsynctools', $label, $syncurl, 'tool/sync:configure'));
+
+        $settings = new admin_settingpage('toolsettingssync', get_string('pluginsettings', 'tool_sync'));
+
+        if (tool_sync_supports_feature('emulate/community') == 'pro') {
+            include_once($CFG->dirroot.'/admin/tool/sync/pro/prolib.php');
+            \tool_sync\pro_manager::add_settings($ADMIN, $settings);
+        } else {
+            $label = get_string('plugindist', 'tool_sync');
+            $desc = get_string('plugindist_desc', 'tool_sync');
+            $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
+        }
+        $ADMIN->add('tools', $settings);
     }
 }

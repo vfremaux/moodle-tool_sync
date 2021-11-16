@@ -940,13 +940,12 @@ class course_sync_manager extends sync_manager {
                     $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
                     $oldcourse = $DB->get_record('course', array($uploadidentifier => $keyedvalues[$uploadidentifier]));
 
-                    // If there is an old course, load the ocurse id in the bulkcourse to allow template addition.
+                    // If there is an old course, load the course id in the bulkcourse to allow template addition.
                     if ($oldcourse) {
                         $coursetocreate['id'] = $oldcourse->id;
                     }
 
                     // Set course array to defaults.
-                    // Fix Edunao eiffel-10.
                     foreach ($optional as $key => $value) {
                         if ($key == 'visible' || $key == 'oldvisible') {
                             if ($oldcourse) {
@@ -1065,9 +1064,12 @@ class course_sync_manager extends sync_manager {
 
             // debug_trace('startingbulkcreation');
             foreach ($bulkcourses as $i => $bulkcourse) {
+
+                // Make a record for reports.
                 $a = new StdClass();
                 $a->shortname = $bulkcourse['shortname'];
                 $a->fullname = $bulkcourse['fullname'];
+                $a->idnumber = $bulkcourse['idnumber'];
 
                 // Try to create the course.
                 $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
@@ -1128,7 +1130,11 @@ class course_sync_manager extends sync_manager {
                             // debug_trace('creating course '.$bulkcourse['shortname']);
                             $this->process_course_content($coursetocategory, $bulkcourse, $headers, $sourcetext, $syncconfig, $n, $p, $s, $i);
                         } else {
-                            $this->report('SIMULATION: '.get_string('willcreatecourse', 'tool_sync', $bulkcourse));
+                            if (!empty($bulkcourse['template'])) {
+                                $this->report('SIMULATION: '.get_string('willcreatecourseontemplate', 'tool_sync', $bulkcourse));
+                            } else {
+                                $this->report('SIMULATION: '.get_string('willcreatecourse', 'tool_sync', $bulkcourse));
+                            }
                         }
                     }
                 } else {
@@ -1207,7 +1213,7 @@ class course_sync_manager extends sync_manager {
                         if (!empty($syncconfig->simulate)) {
                             $simulate = 'SIMULATION: ';
                         }
-                        $this->report($simulate.get_string('courseexists', 'tool_sync', $a));
+                        $this->report($simulate.get_string('courseexists', 'tool_sync', $oldcourse));
                           // Skip course, already exists.
                     }
 
@@ -1953,7 +1959,7 @@ class course_sync_manager extends sync_manager {
             }
         }
 
-        debug_trace('fast_create_course : about to create course');
+        // debug_trace('fast_create_course : about to create course');
         if (!empty($course['template']) && $course['template'] != "\n") {
 
             $course['category'] = $hcategoryid;

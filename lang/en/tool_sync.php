@@ -335,6 +335,7 @@ $string['parsingfile'] = 'Parsing file...';
 $string['passwordnotification'] = 'Your credentials on {$a}';
 $string['pluginname'] = 'User and course synchronisation by files';
 $string['pluginname_desc'] = 'User and course synchronisation by CSV files';
+$string['pluginsettings'] = 'Tool Sync settings';
 $string['predeletewarning'] = '<b><font color="red">WARNING:</font></b> Bulk Deleter is about to delete the following courses:';
 $string['userprimaryidentity'] = 'User primary identity field';
 $string['courseprimaryidentity'] = 'Course primary identity field';
@@ -460,8 +461,9 @@ $string['userupdatecollision'] = 'Error : User username collision when updating 
 $string['userupdatemailcollision'] = 'Error : User email collision when updating {$a}';
 $string['utilities'] = 'Utilities';
 $string['willcreatecategory'] = 'Will create category {$a}';
-$string['willcreatecourse'] = 'Will create course [{$a->shorname}] {$a->fullname} identified by ({$a->idnumber})';
-$string['willupdatecourse'] = 'Will update course [{$a->shorname}] {$a->fullname} identified by ({$a->idnumber})';
+$string['willcreatecourse'] = 'Will create course [{$a->shortname}] {$a->fullname} identified by ({$a->idnumber})';
+$string['willcreatecourseontemplate'] = 'Will create course [{$a->shortname}] {$a->fullname} identified by ({$a->idnumber}) on template {$a->template}';
+$string['willupdatecourse'] = 'Will update course [{$a->shortname}] {$a->fullname} identified by ({$a->idnumber})';
 
 $string['coursesync_help'] = '
 <p>this service allows creating massively courses with a default format or using a designated course template
@@ -702,3 +704,5 @@ $string['filemanager_help'] = '
 of the tools can process a directly uploaded file from your computer.</p>
 <p>The Sync File Manager also stores reports, tryback (errored lines) and your processed files archives. It may also store some files produced by generators.</p>
 ';
+
+include(__DIR__.'/pro_additional_strings.php');
