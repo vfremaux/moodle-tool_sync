@@ -48,6 +48,7 @@ define('SYNC_GROUP_MEMBERS', 0x1008);
  * @param string $feature a feature key to be tested.
  */
 function tool_sync_supports_feature($feature = null, $getsupported = false) {
+	global $CFG;
     static $supports;
 
     if (!during_initial_install()) {
@@ -85,6 +86,11 @@ function tool_sync_supports_feature($feature = null, $getsupported = false) {
         $versionkey = 'community';
     }
 
+    if (empty($feature)) {
+        // Just return version.
+        return $versionkey;
+    }
+
     list($feat, $subfeat) = explode('/', $feature);
 
     if (!array_key_exists($feat, $supports[$versionkey])) {
@@ -93,18 +99,6 @@ function tool_sync_supports_feature($feature = null, $getsupported = false) {
 
     if (!in_array($subfeat, $supports[$versionkey][$feat])) {
         return false;
-    }
-
-    if (in_array($feat, $supports['community'])) {
-        if (in_array($subfeat, $supports['community'][$feat])) {
-            // If community exists, default path points community code.
-            if (isset($prefer[$feat][$subfeat])) {
-                // Configuration tells which location to prefer if explicit.
-                $versionkey = $prefer[$feat][$subfeat];
-            } else {
-                $versionkey = 'community';
-            }
-        }
     }
 
     return $versionkey;
