@@ -125,6 +125,7 @@ $string['day_wed'] = 'Mercredi';
 $string['deletecontrolfiles'] = 'Si activé, supprime les fichiers de controle après exécution';
 $string['deletecoursesconfirmquestion'] = 'Etes-vous sur de vouloir détruire ces cours<br />pour l\'éternité à venir et à la face du monde ? pour toujours ?';
 $string['deletefile'] = 'Utiliser un fichier de suppression mémorisé';
+$string['deleteusersfile'] = 'Fichier de suppression des utilisateurs';
 $string['deletefilebuilder'] = 'Création de fichiers de commande pour la suppression de cours';
 $string['deletefileidentifier'] = 'Identifiant de cours pour suppression';
 $string['deletefileinstructions'] = 'Choisissez un fichier contenant la liste des noms cours des cours à supprimer (un nom par ligne).';
@@ -300,6 +301,9 @@ $string['manualuploadrun'] = 'Exécuter manuellement une creation de cours';
 $string['manualuserpicturesrun'] = 'Exécuter manuellement le rechargement d\'avatars';
 $string['manualuserrun'] = 'Exécuter manuellement ce script à partir du fichier de commande';
 $string['manualuserrun2'] = 'Exécuter manuellement ce script à partir d\'un fichier distant';
+$string['manualdeleteuserrun'] = 'Supprimer manuellement des utilisateurs';
+$string['manualsuspenduserrun'] = 'suspendre manuellement des utilisateurs';
+$string['manualrestoreuserrun'] = 'Restaurer manuellement des utilisateurs (suspendus)';
 $string['metabindingfile'] = 'Fichier de liaison metacours';
 $string['metabindingfileidentifier'] = 'Identifiant de cours pour les liaisons Metacours';
 $string['metalinkcreated'] = 'Liaison Metacours pour {$e->for} à partir de {$e->from} créée';
@@ -708,7 +712,7 @@ $string['sendpasswordtousers_help'] = 'Si actif et que les mots de passes sont f
 utilisateur sur l\'adresse de courriel fournie.';
 
 $string['localfile_help'] = 'Si vous chargez régulièrement un fichier de mise à jour, vous pouvez choisir ici un nom d\'un fichier
-local qui sera utilisé pour les chargements manuels au automatisés par le cron';
+local qui sera utilisé pour les chargements manuels ou automatisés par le cron';
 
 $string['filemanager_help'] = '
 <p>Vous pouvez stocker localement les fichiers CSV d\'alimentation que vous voulez faire prendre en charge par les différents outils

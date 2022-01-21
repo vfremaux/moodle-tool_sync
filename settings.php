@@ -43,7 +43,8 @@ if ($hassiteconfig || (!empty($hasconfig) && has_capability('tool/sync:configure
 
         if (tool_sync_supports_feature('emulate/community') == 'pro') {
             include_once($CFG->dirroot.'/admin/tool/sync/pro/prolib.php');
-            \tool_sync\pro_manager::add_settings($ADMIN, $settings);
+            $promanager = \tool_sync\pro_manager::instance();
+            $promanager->add_settings($ADMIN, $settings);
         } else {
             $label = get_string('plugindist', 'tool_sync');
             $desc = get_string('plugindist_desc', 'tool_sync');

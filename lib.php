@@ -37,6 +37,11 @@ define('SYNC_COURSE_RESET', 0x008);
 define('SYNC_COURSE_METAS', 0x010);
 define('SYNC_COURSE_CREATE_DELETE', 0x006);
 
+define('SYNC_USER_ADD', 0x001);
+define('SYNC_USER_SUSPEND', 0x002);
+define('SYNC_USER_DELETE', 0x004);
+define('SYNC_USER_RESTORE', 0x008);
+
 define('SYNC_COHORT_CREATE_UPDATE', 0x1001);
 define('SYNC_COHORT_BIND_COURSES', 0x1002);
 define('SYNC_COURSE_GROUPS', 0x1004);
@@ -48,7 +53,7 @@ define('SYNC_GROUP_MEMBERS', 0x1008);
  * @param string $feature a feature key to be tested.
  */
 function tool_sync_supports_feature($feature = null, $getsupported = false) {
-	global $CFG;
+    global $CFG;
     static $supports;
 
     if (!during_initial_install()) {
