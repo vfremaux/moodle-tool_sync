@@ -942,22 +942,30 @@ class users_sync_manager extends sync_manager {
         }
         fclose($filereader);
 
-        mtrace("Finalization");
+        // mtrace("Finalization");
 
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'storereport'))) {
-            $this->store_report_file($filerec);
+            if (is_object($filerec)) {
+                $this->store_report_file($filerec);
+            }
         }
 
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filearchive'))) {
-            $this->archive_input_file($filerec);
+            if (is_object($filerec)) {
+                $this->archive_input_file($filerec);
+            }
         }
 
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filecleanup'))) {
-            $this->cleanup_input_file($filerec);
+            if (is_object($filerec)) {
+                $this->cleanup_input_file($filerec);
+            }
         }
 
         if ($DB->get_field('config_plugins', 'value', array('plugin' => 'tool_sync', 'name' => 'filefailed'))) {
-            $this->write_tryback($filerec);
+            if (is_object($filerec)) {
+                $this->write_tryback($filerec);
+            }
         }
 
         $this->report("\n".get_string('endofreport', 'tool_sync'));
