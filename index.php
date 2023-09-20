@@ -35,7 +35,8 @@ require_login();
 require_capability('tool/sync:configure', $context);
 
 // Hack : confirm plugin version. Why in the hell it disapears from DB ?
-tool_sync_check_repair_plugin_version();
+// tool_sync_check_repair_plugin_version();
+// OBSOLETE
 
 tool_sync_capture_input_files(true);
 
@@ -88,7 +89,7 @@ if ($data = $form->get_data()) {
     }
 
     // Erase all configs but not version !
-    $DB->delete_records_select('config_plugins', " plugin = 'tool_sync' AND 'name' != 'version' ");
+    $DB->delete_records_select('config_plugins', " plugin = 'tool_sync' AND name != 'version' ");
 
     foreach ($data as $key => $value) {
         if (strpos($key, '/') > 0) {

@@ -28,6 +28,7 @@ require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/enrols/enrols.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/userpictures/userpictures.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/extralibs/extralibs.php');
+require_once($CFG->dirroot.'/admin/tool/sync/compatlib.php');
 
 define('SYNC_COURSE_CHECK', 0x001);
 define('SYNC_COURSE_CREATE', 0x002);
@@ -35,6 +36,11 @@ define('SYNC_COURSE_DELETE', 0x004);
 define('SYNC_COURSE_RESET', 0x008);
 define('SYNC_COURSE_METAS', 0x010);
 define('SYNC_COURSE_CREATE_DELETE', 0x006);
+
+define('SYNC_USER_ADD', 0x001);
+define('SYNC_USER_SUSPEND', 0x002);
+define('SYNC_USER_DELETE', 0x004);
+define('SYNC_USER_RESTORE', 0x008);
 
 define('SYNC_COHORT_CREATE_UPDATE', 0x1001);
 define('SYNC_COHORT_BIND_COURSES', 0x1002);
@@ -46,10 +52,13 @@ define('SYNC_GROUP_MEMBERS', 0x1008);
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
-function tool_sync_supports_feature($feature) {
+function tool_sync_supports_feature($feature = null, $getsupported = false) {
+    global $CFG;
     static $supports;
 
-    $config = get_config('tool_sync');
+    if (!during_initial_install()) {
+        $config = get_config('tool_sync');
+    }
 
     if (!isset($supports)) {
         $supports = array(
@@ -62,6 +71,10 @@ function tool_sync_supports_feature($feature) {
             ),
         );
         $prefer = array();
+    }
+
+    if ($getsupported) {
+        return $supports;
     }
 
     // Check existance of the 'pro' dir in plugin.
@@ -78,6 +91,11 @@ function tool_sync_supports_feature($feature) {
         $versionkey = 'community';
     }
 
+    if (empty($feature)) {
+        // Just return version.
+        return $versionkey;
+    }
+
     list($feat, $subfeat) = explode('/', $feature);
 
     if (!array_key_exists($feat, $supports[$versionkey])) {
@@ -86,18 +104,6 @@ function tool_sync_supports_feature($feature) {
 
     if (!in_array($subfeat, $supports[$versionkey][$feat])) {
         return false;
-    }
-
-    if (in_array($feat, $supports['community'])) {
-        if (in_array($subfeat, $supports['community'][$feat])) {
-            // If community exists, default path points community code.
-            if (isset($prefer[$feat][$subfeat])) {
-                // Configuration tells which location to prefer if explicit.
-                $versionkey = $prefer[$feat][$subfeat];
-            } else {
-                $versionkey = 'community';
-            }
-        }
     }
 
     return $versionkey;
@@ -232,7 +238,8 @@ function tool_sync_get_all_courses($orderby = 'shortname') {
             c.fullname,
             c.idnumber,
             count( DISTINCT ass.userid ) AS people,
-            ass.rolename
+            ass.rolename,
+            ass.roleshortname
         FROM
             {course} c
         LEFT JOIN
@@ -240,6 +247,7 @@ function tool_sync_get_all_courses($orderby = 'shortname') {
                 co.instanceid,
                 ra.userid,
                 r.name as rolename,
+                r.shortname as roleshortname,
                 r.id as roleid
              FROM
                 {context} co,
@@ -411,14 +419,14 @@ function trim_array_values(&$e) {
 
 function tool_sync_get_course_identifier($course, $forfile, $syncconfig) {
     $cid = false;
-    switch (0 + @$syncconfig->$forfile) {
-        case 0 :
+    switch ($syncconfig->$forfile) {
+        case 'idnumber' :
             $cid = $course->idnumber;
             break;
-        case 1 :
+        case 'shortname' :
             $cid = $course->shortname;
             break;
-        case 2 :
+        case 'id' :
             $cid = $course->id;
             break;
     }
@@ -463,7 +471,8 @@ function tool_sync_read($filereader, $length, &$config) {
     $input = fgets($filereader, $length);
 
     if (@$config->encoding != 'UTF-8') {
-        return utf8_encode($input);
+        $output = utf8_encode($input);
+        return $output;
     }
     return $input;
 }
@@ -616,6 +625,8 @@ function tool_sync_groups_is_member($groupid, $userid=null, $component = null) {
     return $DB->record_exists('groups_members', $params);
 }
 
+/*
+// should need no more repair.
 function tool_sync_check_repair_plugin_version() {
     global $DB;
 
@@ -628,3 +639,4 @@ function tool_sync_check_repair_plugin_version() {
         purge_all_caches();
     }
 }
+*/

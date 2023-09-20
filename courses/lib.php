@@ -22,6 +22,21 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+if (!function_exists('debug_trace')) {
+    @include_once($CFG->dirroot.'/local/advancedperfs/debugtools.php');
+    if (!function_exists('debug_trace')) {
+        function debug_trace($msg, $tracelevel = 0, $label = '', $backtracelevel = 1) {
+            // Fake this function if not existing in the target moodle environment.
+            assert(1);
+        }
+        define('TRACE_ERRORS', 1); // Errors should be always traced when trace is on.
+        define('TRACE_NOTICE', 3); // Notices are important notices in normal execution.
+        define('TRACE_DEBUG', 5); // Debug are debug time notices that should be burried in debug_fine level when debug is ok.
+        define('TRACE_DATA', 8); // Data level is when requiring to see data structures content.
+        define('TRACE_DEBUG_FINE', 10); // Debug fine are control points we want to keep when code is refactored and debug needs to be reactivated.
+    }
+}
+
 /**
  * An helper function to create the course deletion file from a selection
  */
@@ -124,7 +139,7 @@ function tool_sync_locate_backup_file($courseid, $filearea) {
     $files = $fs->get_area_files($coursecontext->id, 'backup', $filearea, 0, 'timecreated DESC', false);
 
     if (count($files) > 0) {
-        return array_pop($files);
+        return array_shift($files);
     }
 
     return false;
@@ -220,7 +235,7 @@ function tool_sync_erase_empty_categories($catid, $ignoresubs, &$hascontent) {
 
     if (($catid > 0) && !$hascontent) {
         $str .= get_string('coursecatdeleted', 'tool_sync', $cat->name)."\n";
-        $catobj = \core_course_category::get($catid);
+        $catobj = tool_sync_get_category($catid);
         $catobj->delete_full();
     }
 

@@ -128,6 +128,7 @@ $string['day_tue'] = 'Tuesday';
 $string['day_wed'] = 'Wednesday';
 $string['deletecontrolfiles'] = 'Delete command files after sync has run';
 $string['deletecoursesconfirmquestion'] = 'Are you absolutely sure you want to completely delete these courses<br />for all eternity and from the face of this planet, forever?';
+$string['deleteusersfile'] = 'User deletion file';
 $string['deletefile'] = 'Delete command file after running the sync';
 $string['deletefilebuilder'] = 'Creating command files for course deletion';
 $string['deletefileidentifier'] = 'File deletion identifier';
@@ -152,10 +153,14 @@ $string['enroldefaultcmd_desc'] = 'If the "cmd" column is missing or value is em
 $string['enroldefaultinfo'] = 'Default configuration for the column cmd';
 $string['enrolemailcourseadmins'] = 'Notify enrolments to course admins';
 $string['enrolemailcourseadmins_desc'] = 'If enabled, sends a notification (enrolment summary) to course admins (usually teachers)';
+$string['disableenrol'] => 'disabled';
+$string['enableenrol'] => 'enabled';
 $string['enrolfile'] = 'Enrol command file';
 $string['enrolfilelocation'] = 'Enrol file location';
 $string['enrolled'] = 'User {$a->myuser} enrolled in course {$a->mycourse}';
-$string['enrollednot'] = 'User enrol {$a->myuser} failure in course {$a->mycourse}';
+$string['allenrolupdated'] = 'All enrolments of user {$a->myuser} have been {$a->status} in course {$a->mycourse} ';
+$string['enrolupdated'] = 'User {$a->myuser} {$e->enrol} enrolment in course {$a->mycourse} has been {$a->status}';
+$string['enrollednot'] = 'User enrol {$a->myuser} failure in course {$a->mycourse}. Enrol and role data in file are not consistant.';
 $string['enrolmanualsync'] = 'Manual execution of enrollment syncronisation';
 $string['enrolmgtmanual'] = 'Manual execution of the enrollment command file';
 $string['enrolname'] = 'Courses and Users Synchronization Manager ';
@@ -182,6 +187,7 @@ $string['errordirectory'] = 'Requested directory does not exist.';
 $string['erroremptycommand'] = 'Error at line {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : no value for the command column \'cmd\'';
 $string['erroremptyrole'] = 'Error at line {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : empty role';
 $string['errorenrol'] = 'Enrol failed. {$a->myuser} in course {$a->mycourse}';
+$string['errorenrolupdate'] = 'Enrol update failed. {$a->myuser} in course {$a->mycourse}';
 $string['errorgcmdvalue'] = 'Error at line {$a->i} : {$a->mycmd} {$a->myrole} {$a->myuser} {$a->mycourse} : No group command column value';
 $string['errorinputconditions'] = 'Incorrect course create input condition in function call.';
 $string['errorinvalidcolumnname'] = 'Error: column name as n{$a} is invalid';
@@ -290,6 +296,7 @@ $string['importfile'] = 'Import a new test file';
 $string['invalidseparatordetected'] = 'Invalid separator detected. The file formatting may not match the tool settings.';
 $string['invalidnamesnocheck'] = 'Do not check column names (let additional unused columns in file)';
 $string['load'] = 'Load';
+$string['localfile'] = 'Using local file';
 $string['location'] = 'Emplacement';
 $string['mail'] = 'Process report';
 $string['mailenrolreport'] = 'Enrolment report:';
@@ -307,6 +314,9 @@ $string['manualuploadrun'] = 'Run manually a course creation';
 $string['manualuserpicturesrun'] = 'Run user pictures resync manually';
 $string['manualuserrun'] = 'Sync users manually';
 $string['manualuserrun2'] = 'Run user sync manually from a file upload';
+$string['manualdeleteuserrun'] = 'Delete users manually';
+$string['manualsuspenduserrun'] = 'Suspend users manually';
+$string['manualrestoreuserrun'] = 'Restore users manually';
 $string['metabindingfile'] = 'Metacourse binding file';
 $string['metabindingfileidentifier'] = 'course identifier for Metacourse bindings';
 $string['metalinkcreated'] = 'Metacourse binding for {$e->for} from {$e->from} created';
@@ -334,6 +344,7 @@ $string['parsingfile'] = 'Parsing file...';
 $string['passwordnotification'] = 'Your credentials on {$a}';
 $string['pluginname'] = 'User and course synchronisation by files';
 $string['pluginname_desc'] = 'User and course synchronisation by CSV files';
+$string['pluginsettings'] = 'Tool Sync settings';
 $string['predeletewarning'] = '<b><font color="red">WARNING:</font></b> Bulk Deleter is about to delete the following courses:';
 $string['userprimaryidentity'] = 'User primary identity field';
 $string['courseprimaryidentity'] = 'Course primary identity field';
@@ -451,16 +462,18 @@ $string['userpicturesync'] = 'User pictures synchronisation';
 $string['userrevived'] = 'User was revived : {$a}';
 $string['usersconfig'] = 'Configuration for user synchronisation';
 $string['userscronconfig'] = 'Enable synchronization cron users';
-$string['usersfile'] = 'File for syncing users&nbsp;';
+$string['usersfile'] = 'File for syncing users in the File manager';
 $string['usersupdated'] = 'Users updated&nbsp;';
 $string['usersync'] = 'Users synchronization';
+$string['usersstarting'] = 'Starting users synchronisation...';
 $string['userunknownremotely'] = 'User {$a} unkown on remote end';
 $string['userupdatecollision'] = 'Error : User username collision when updating {$a}';
 $string['userupdatemailcollision'] = 'Error : User email collision when updating {$a}';
 $string['utilities'] = 'Utilities';
 $string['willcreatecategory'] = 'Will create category {$a}';
-$string['willcreatecourse'] = 'Will create course [{$a->shorname}] {$a->fullname} identified by ({$a->idnumber})';
-$string['willupdatecourse'] = 'Will update course [{$a->shorname}] {$a->fullname} identified by ({$a->idnumber})';
+$string['willcreatecourse'] = 'Will create course [{$a->shortname}] {$a->fullname} identified by ({$a->idnumber})';
+$string['willcreatecourseontemplate'] = 'Will create course [{$a->shortname}] {$a->fullname} identified by ({$a->idnumber}) on template {$a->template}';
+$string['willupdatecourse'] = 'Will update course [{$a->shortname}] {$a->fullname} identified by ({$a->idnumber})';
 
 $string['coursesync_help'] = '
 <p>this service allows creating massively courses with a default format or using a designated course template
@@ -692,3 +705,14 @@ tag can be used to exclude some users from generation. Explicit password value w
 on the beneath config state.';
 
 $string['sendpasswordtousers_help'] = 'If checked and passwords are incoming from the user creation file, passwords will be notified to users.';
+
+$string['localfile_help'] = 'If you schedule regular updates from a named file, you may tell here the file manager file name to use. This file
+will be used by automated sync triggering by cron';
+
+$string['filemanager_help'] = '
+<p>You can store locally in moodle the CSV files that will be processed by the several tools or make an automated updating action. Note that most
+of the tools can process a directly uploaded file from your computer.</p>
+<p>The Sync File Manager also stores reports, tryback (errored lines) and your processed files archives. It may also store some files produced by generators.</p>
+';
+
+include(__DIR__.'/pro_additional_strings.php');

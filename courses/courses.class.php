@@ -52,6 +52,7 @@ class course_sync_manager extends sync_manager {
         $label = get_string('uploadcoursecreationfile', 'tool_sync');
         $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/courses_fileuploadlocation', PARAM_TEXT);
+        $frm->addHelpButton($key, 'localfile', 'tool_sync');
 
         $key = 'tool_sync/courses_fileuploadidentifier';
         $label = get_string('uploadcoursecreationfile', 'tool_sync');
@@ -77,6 +78,7 @@ class course_sync_manager extends sync_manager {
         $label = get_string('coursedeletefile', 'tool_sync');
         $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/courses_filedeletelocation', PARAM_TEXT);
+        $frm->addHelpButton($key, 'localfile', 'tool_sync');
 
         $key = 'tool_sync/courses_filedeleteidentifier';
         $label = get_string('deletefileidentifier', 'tool_sync');
@@ -86,6 +88,7 @@ class course_sync_manager extends sync_manager {
         $label = get_string('existcoursesfile', 'tool_sync');
         $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/courses_fileexistlocation', PARAM_TEXT);
+        $frm->addHelpButton($key, 'localfile', 'tool_sync');
 
         $key = 'tool_sync/courses_existfileidentifier';
         $label = get_string('existfileidentifier', 'tool_sync');
@@ -95,6 +98,7 @@ class course_sync_manager extends sync_manager {
         $label = get_string('resetfile', 'tool_sync');
         $frm->addElement('text', $key, $label);
         $frm->setType('tool_sync/courses_fileresetlocation', PARAM_TEXT);
+        $frm->addHelpButton($key, 'localfile', 'tool_sync');
 
         $key = 'tool_sync/courses_fileresetidentifier';
         $label = get_string('resetfileidentifier', 'tool_sync');
@@ -936,13 +940,12 @@ class course_sync_manager extends sync_manager {
                     $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
                     $oldcourse = $DB->get_record('course', array($uploadidentifier => $keyedvalues[$uploadidentifier]));
 
-                    // If there is an old course, load the ocurse id in the bulkcourse to allow template addition.
+                    // If there is an old course, load the course id in the bulkcourse to allow template addition.
                     if ($oldcourse) {
                         $coursetocreate['id'] = $oldcourse->id;
                     }
 
                     // Set course array to defaults.
-                    // Fix Edunao eiffel-10.
                     foreach ($optional as $key => $value) {
                         if ($key == 'visible' || $key == 'oldvisible') {
                             if ($oldcourse) {
@@ -1059,11 +1062,14 @@ class course_sync_manager extends sync_manager {
             $caterrors = 0; // Errored categories.
             $catcreated = 0; // Created categories.
 
-            debug_trace('startingbulkcreation');
+            // debug_trace('startingbulkcreation');
             foreach ($bulkcourses as $i => $bulkcourse) {
+
+                // Make a record for reports.
                 $a = new StdClass();
                 $a->shortname = $bulkcourse['shortname'];
                 $a->fullname = $bulkcourse['fullname'];
+                $a->idnumber = $bulkcourse['idnumber'];
 
                 // Try to create the course.
                 $uploadidentifier = $syncconfig->courses_fileuploadidentifier;
@@ -1121,10 +1127,14 @@ class course_sync_manager extends sync_manager {
                         continue;
                     } else {
                         if (empty($syncconfig->simulate)) {
-                            debug_trace('creating course '.$bulkcourse['shortname']);
+                            // debug_trace('creating course '.$bulkcourse['shortname']);
                             $this->process_course_content($coursetocategory, $bulkcourse, $headers, $sourcetext, $syncconfig, $n, $p, $s, $i);
                         } else {
-                            $this->report('SIMULATION: '.get_string('willcreatecourse', 'tool_sync', $bulkcourse));
+                            if (!empty($bulkcourse['template'])) {
+                                $this->report('SIMULATION: '.get_string('willcreatecourseontemplate', 'tool_sync', $bulkcourse));
+                            } else {
+                                $this->report('SIMULATION: '.get_string('willcreatecourse', 'tool_sync', $bulkcourse));
+                            }
                         }
                     }
                 } else {
@@ -1164,7 +1174,7 @@ class course_sync_manager extends sync_manager {
                         }
 
                         foreach ($bulkcourse as $key => $value) {
-                            if (isset($oldcourse->$key) && !in_array($key, array('id', 'category', 'self', 'guest'))) {
+                            if (isset($oldcourse->$key) && !in_array($key, array('id', 'format', 'category', 'self', 'guest'))) {
                                 $oldcourse->$key = $value;
                             }
                         }
@@ -1203,7 +1213,7 @@ class course_sync_manager extends sync_manager {
                         if (!empty($syncconfig->simulate)) {
                             $simulate = 'SIMULATION: ';
                         }
-                        $this->report($simulate.get_string('courseexists', 'tool_sync', $a));
+                        $this->report($simulate.get_string('courseexists', 'tool_sync', $oldcourse));
                           // Skip course, already exists.
                     }
 
@@ -1949,7 +1959,7 @@ class course_sync_manager extends sync_manager {
             }
         }
 
-        debug_trace('fast_create_course : about to create course');
+        // debug_trace('fast_create_course : about to create course');
         if (!empty($course['template']) && $course['template'] != "\n") {
 
             $course['category'] = $hcategoryid;
@@ -2149,8 +2159,15 @@ class course_sync_manager extends sync_manager {
 
         $filename = 'resetcourses.csv';
 
+        /*
         $identifieroptions = array('idnumber', 'shortname', 'id');
-        $identifiername = $identifieroptions[0 + @$syncconfig->course_resetfileidentifier];
+        $identifiername = $identifieroptions[0 + @];
+        */
+
+        $identifiername = $syncconfig->course_resetfileidentifier;
+        if (empty($identifiername)) {
+            $identifiername = 'shortname';
+        }
 
         $rows = array();
         $cols = array('shortname', 'roles', 'local_roles', 'completion', 'grades', 'groups', 'groupings',
@@ -2164,7 +2181,7 @@ class course_sync_manager extends sync_manager {
 
         for ($i = 0; $i < count($selection); $i++) {
 
-            if (@$syncconfig->course_resetfileidentifier == 0 &&
+            if (@$syncconfig->course_resetfileidentifier == 'idnumber' &&
                         ($DB->count_records('course', array('idnumber' => $selection[$i])) > 1)) {
                 $this->report(get_string('nonuniqueidentifierexception', 'tool_sync', $i));
                 continue;
@@ -2258,7 +2275,7 @@ class course_sync_manager extends sync_manager {
         // Find the most suitable archive file.
         if (tool_sync_is_course_identifier($course['template'])) {
             // Template is NOT a real path and thus designates a course shortname.
-            debug_trace('create_course_from_template : locating backup from identifier');
+            // debug_trace('create_course_from_template : locating backup from identifier');
             if (!$archive = tool_sync_locate_backup_file($origincourse->id, 'course')) {
 
                 // Get course template from publishflow backups if publishflow installed.
@@ -2272,7 +2289,7 @@ class course_sync_manager extends sync_manager {
                 }
             }
         } else {
-            debug_trace('create_course_from_template : locating backup in file system');
+            // debug_trace('create_course_from_template : locating backup in file system');
             if (!preg_match('/^\/|[a-zA-Z]\:/', $course['template'])) {
                 /*
                  * If relative path we expect finding those files somewhere in the distribution.
@@ -2307,7 +2324,7 @@ class course_sync_manager extends sync_manager {
         }
 
         $this->report(get_string('creatingcoursefromarchive', 'tool_sync', $archive->get_filename()));
-        debug_trace('create_course_from_template : creating course from archive '.$archive->get_filename());
+        // debug_trace('create_course_from_template : creating course from archive '.$archive->get_filename());
 
         $uniq = rand(1, 9999);
 
@@ -2322,11 +2339,11 @@ class course_sync_manager extends sync_manager {
 
         require_once($CFG->dirroot.'/lib/filestorage/mbz_packer.php');
 
-        debug_trace('create_course_from_template : up to extract to '.$tempdir);
+        // debug_trace('create_course_from_template : up to extract to '.$tempdir);
         if ($archive->extract_to_pathname(new \mbz_packer(), $tempdir)) {
 
             // Transaction.
-            debug_trace('create_course_from_template : archive extracted ');
+            // debug_trace('create_course_from_template : archive extracted ');
             $transaction = $DB->start_delegated_transaction();
 
             // Create new course.
@@ -2349,7 +2366,7 @@ class course_sync_manager extends sync_manager {
              * folder needs being a relative path from $CFG->tempdir.'/backup/'.
              * @see /backup/util/helper/convert_helper.class.php function detect_moodle2_format
              */
-            debug_trace('create_course_from_template : restore to '.$newcourseid);
+            // debug_trace('create_course_from_template : restore to '.$newcourseid);
             $controller = new \restore_controller($uniq, $newcourseid,
                     \backup::INTERACTIVE_NO, \backup::MODE_SAMESITE, $userdoingtherestore,
                     $backuptarget);

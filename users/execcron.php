@@ -29,6 +29,9 @@ require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/admin/tool/sync/users/users.class.php');
 require_once($CFG->dirroot.'/admin/tool/sync/inputfileload_form.php');
 
+$default = SYNC_USER_ADD;
+$action = optional_param('action', $default, PARAM_INT);
+
 // Security.
 
 $systemcontext = context_system::instance();
@@ -101,7 +104,8 @@ if ($canprocess) {
 
     echo '<pre>';
     try {
-        $usersmanager->cron($syncconfig);
+        $usersmanager->cron($syncconfig, $action);
+        echo $usersmanager->log;
         echo '</pre>';
     } catch (Exception $ex) {
         echo '</pre>';

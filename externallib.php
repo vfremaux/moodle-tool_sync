@@ -274,8 +274,8 @@ class tool_sync_external extends external_api {
 
         if (tool_sync_supports_feature('api/process')) {
             include_once($CFG->dirroot.'/admin/tool/sync/pro/lib.php');
-            tool_sync_process($draftitemid);
-            return true;
+            $log = tool_sync_process($service, $action);
+            return $log;
         } else {
             throw new moodle_exception('proreleasefeature');
         }

@@ -47,6 +47,7 @@ require_capability('tool/sync:configure', $systemcontext);
 
 $renderer = $PAGE->get_renderer('tool_sync');
 $syncconfig = get_config('tool_sync');
+$syncconfig->simulate = optional_param('simulate', 0, PARAM_BOOL);
 
 $url = new moodle_url('/admin/tool/sync/courses/execcron.php', array('action' => $action));
 $PAGE->navigation->add(get_string('synchronization', 'tool_sync'), new moodle_url('/admin/tool/sync/index.php'));
@@ -64,6 +65,9 @@ if ($action == SYNC_COURSE_DELETE) {
     $singlecommand = true;
 } else if ($action == SYNC_COURSE_CREATE) {
     $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->courses_fileuploadlocation));
+    $singlecommand = true;
+} else if ($action == SYNC_COURSE_RESET) {
+    $form = new InputfileLoadform($url, array('localfile' => @$syncconfig->courses_fileresetlocation));
     $singlecommand = true;
 } else {
     $form = new InputfileLoadform($url, array('runlocalfiles' => true));
@@ -86,6 +90,8 @@ if ($data = $form->get_data()) {
             $processedfile = $syncconfig->courses_filedeletelocation;
         } else if ($action & SYNC_COURSE_CREATE) {
             $processedfile = $syncconfig->courses_fileuploadlocation;
+        } else if ($action & SYNC_COURSE_RESET) {
+            $processedfile = $syncconfig->courses_fileresetlocation;
         }
         $canprocess = true;
     } else if (!empty($data->runlocalfiles)) {

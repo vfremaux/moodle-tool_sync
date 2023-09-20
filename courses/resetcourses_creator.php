@@ -45,6 +45,8 @@ $coursesmanager = new \tool_sync\course_sync_manager('', null);
 $selection = optional_param_array('selection', '', PARAM_TEXT);
 if ($selection) {
     $coursesmanager->create_course_reinitialisation_file($selection, $syncconfig);
+    $returnurl = new moodle_url('/admin/tool/sync/filearea.php');
+    redirect($returnurl);
 }
 
 $url = new moodle_url('/admin/tool/sync/courses/resetcourses_creator.php');
@@ -57,8 +59,6 @@ $PAGE->set_heading($SITE->fullname);
 echo $OUTPUT->header();
 
 echo $OUTPUT->heading(get_string('resetfilebuilder', 'tool_sync'));
-
-echo $OUTPUT->heading(get_string('deletefilebuilder', 'tool_sync'));
 
 echo $renderer->print_reset_course_creator($syncconfig);
 

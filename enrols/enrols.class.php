@@ -201,6 +201,8 @@ class enrol_sync_manager extends sync_manager {
                 $record['cmd'] = (empty($syncconfig->enrols_defaultcmd)) ? 'add' : $syncconfig->enrols_defaultcmd;
             }
 
+            // If enrol not mentionned in file, will default to first active available method.
+            // Else if column is present but empty, defaults to "manual"
             if (!array_key_exists('enrol', $record)) {
                 $record['enrol'] = '';
             } else {
@@ -236,6 +238,7 @@ class enrol_sync_manager extends sync_manager {
             $e->courseby = $cidentifiername;
             $e->myuser = $record['uid']; // User identifier.
             $e->userby = $uidentifiername;
+            $e->enrol = $record['enrol'];
             $e->mycourse = $record['cid']; // Course identifier.
 
             if ($CFG->debug == DEBUG_DEVELOPER) {
@@ -273,10 +276,12 @@ class enrol_sync_manager extends sync_manager {
                 continue;
             }
 
+            // At this point user and course are known.
+
             $syncconfig->coursesg[$i - 1] = $course->id;
             $context = \context_course::instance($course->id);
 
-            // Get enrolment plugin and method.
+            // Get enrolment default (first available) plugin and method.
             if ($enrolments = enrol_get_instances($course->id, true)) {
                 $enrol = array_pop($enrolments);
                 $enrolcomponent = 'enrol_'.$enrol->enrol;
@@ -290,16 +295,24 @@ class enrol_sync_manager extends sync_manager {
                 $enrol = enrol_get_plugin('manual');
                 $params = array('enrol' => $record['enrol'], 'courseid' => $course->id);
                 if (empty($syncconfig->enrols_enableenrolondisabled)) {
+                    // Here we can enrol on disable methods...
                     $params['status'] = ENROL_INSTANCE_ENABLED;
                 }
                 if (!$enrols = $DB->get_records('enrol', $params, 'sortorder ASC')) {
+                    // We default to manual in this case.
                     $this->report(get_string('errornoenrolmethod', 'tool_sync'));
                     $record['enrol'] = '';
                 } else {
+                    // We CANNOT focus to multiple enrol methods here. Just the first available (by sortorder) of the plugin is accessible.
+                    // TODO : get this limit off.
                     $enrol = reset($enrols);
                     $enrolplugin = enrol_get_plugin($record['enrol']);
                 }
             } else {
+                /*
+                 * If we use "enrol_sync", we should only invoke static wrappers for enrolling. So no instance
+                 * is needed.
+                 */
                 require_once($CFG->dirroot.'/enrol/sync/lib.php');
             }
 
@@ -369,7 +382,7 @@ class enrol_sync_manager extends sync_manager {
                                                              $record['endtime'], ENROL_USER_ACTIVE);
                                 } else {
                                     \enrol_sync_plugin::static_enrol_user($course, $user->id, $role->id, $record['starttime'],
-                                                             $record['endtime']);
+                                                             $record['endtime'], ENROL_USER_ACTIVE);
                                 }
                                 $this->report(get_string('enrolled', 'tool_sync', $e));
                             } catch (Exception $exc) {
@@ -379,6 +392,7 @@ class enrol_sync_manager extends sync_manager {
                             $this->report('SIMULATION : '.get_string('enrolled', 'tool_sync', $e));
                         }
                     } else {
+                        // When NO enrol column is present, we process to a simple role assign, without enrolment. 
                         $params = array('roleid' => $role->id,
                                         'contextid' => $context->id,
                                         'userid' => $user->id,
@@ -518,6 +532,49 @@ class enrol_sync_manager extends sync_manager {
                     $i++;
                     continue;
                 }
+            } else if (in_array($record['cmd'], ['disable', 'enable'])) {
+                /*
+                 * disable disables all instances if enrol not given.
+                 */
+
+                $status = ($record['cmd'] == 'disable') ? ENROL_USER_INACTIVE : ENROL_USER_ACTIVE;
+                $e->status = ($record['cmd'] == 'disable') ? 'disableenrol' : 'enableenrol';
+
+                if (!empty($record['enrol'])) {
+                    if (empty($syncconfig->simulate)) {
+                        try {
+                            if ($record['enrol'] == 'sync') {
+                                \enrol_sync_plugin::static_update_user_enrol($course, $user->id, $status, $record['starttime'],
+                                                         $record['endtime']);
+                            } else {
+                                $enrolplugin->update_user_enrol($enrol, $user->id, $status, $record['starttime'], $record['endtime']);
+                            }
+                            $this->report(get_string('enrolupdated', 'tool_sync', $e));
+                        } catch (Exception $exc) {
+                            $this->report(get_string('errorenrolupdate', 'tool_sync', $e));
+                        }
+                    } else {
+                        $this->report('SIMULATION : '.get_string('enrolupdated', 'tool_sync', $e));
+                    }
+                } else {
+                    // No enrol column is given. Strongly disable all enrol of the user.
+                    if (empty($syncconfig->simulate)) {
+                        $params = ['courseid' => $course->id];
+                        if (!empty($syncconfig->enrols_enableenrolondisabled)) {
+                            $params['status'] = $status;
+                        }
+                        $enrols = $DB->get_records('enrol', $params);
+                        if (!empty($enrols)) {
+                            [$insql, $params] = $DB->get_in_or_equal(array_keys($enrols));
+                            $params[] = $user->id;
+                            $DB->set_field_select('user_enrolments', 'status', $status, " enrolid $insql AND userid = ? ", $params);
+                        }
+                        $this->report(get_string('allenrolsupdated', 'tool_sync', $e));
+                    } else {
+                        $this->report('SIMULATION: '.get_string('allenrolsupdated', 'tool_sync', $e));
+                    }
+                }
+
             } else {
                 if (!empty($syncconfig->filefailed)) {
                     $this->feed_tryback($text);
