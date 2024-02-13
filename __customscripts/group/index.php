@@ -79,7 +79,10 @@ switch ($action) {
     case 'ajax_getmembersingroup':
         $roles = array();
         // CHANGE+.
-        if ($groupmemberroles = groups_get_members_by_role($groupids[0], $courseid, 'u.id, ' . get_all_user_name_fields(true, 'u').', gm.component')) {
+        // M4.
+        $fields = \core_user\fields::for_name()->excluding('id')->get_required_fields();
+        $fields = 'u.id,'.implode(',', $fields);
+        if ($groupmemberroles = groups_get_members_by_role($groupids[0], $courseid, $fields.', gm.component')) {
             foreach($groupmemberroles as $roleid=>$roledata) {
                 $shortroledata = new stdClass();
                 $shortroledata->name = $roledata->name;
@@ -238,7 +241,10 @@ $member_names = array();
 $atleastonemember = false;
 if ($singlegroup) {
     // CHANGE+.
-    if ($groupmemberroles = groups_get_members_by_role($groupids[0], $courseid, 'u.id, ' . get_all_user_name_fields(true, 'u').',gm.component')) {
+    // M4.
+    $fields = \core_user\fields::for_name()->excluding('id')->get_required_fields();
+    $fields = 'u.id,'.implode(',', $fields);
+    if ($groupmemberroles = groups_get_members_by_role($groupids[0], $courseid, $fields.',gm.component')) {
         foreach ($groupmemberroles as $roleid => $roledata) {
             echo '<optgroup label="'.s($roledata->name).'">';
             foreach ($roledata->users as $member) {

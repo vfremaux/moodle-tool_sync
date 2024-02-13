@@ -188,7 +188,9 @@ if ($groups) {
 // Get list of group members to render if there is a single selected group.
 $members = array();
 if ($singlegroup) {
-    $usernamefields = get_all_user_name_fields(true, 'u');
+    // M4.
+    $fields = \core_user\fields::for_name()->excluding('id')->get_required_fields();
+    $usernamefields = 'u.id,'.implode(',', $fields);
     if ($groupmemberroles = groups_get_members_by_role(reset($groupids), $courseid, 'u.id, ' . $usernamefields)) {
         foreach ($groupmemberroles as $roleid => $roledata) {
             $users = array();

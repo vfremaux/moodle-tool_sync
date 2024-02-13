@@ -133,8 +133,8 @@ $string['deletefromremote'] = 'Télécharger et exécuter un fichier de suppress
 $string['deletethisreport'] = 'Voulez-vous effacer ce rapport ?';
 $string['description'] = '<center><a href="/enrol/sync/index.php">Gestionnaire complet de synchronisation</a></center>';
 $string['disabled'] = 'Désactivé.';
-$string['disableenrol'] => 'désactivé(s)';
-$string['enableenrol'] => 'activé(s)';
+$string['disableenrol'] = 'désactivé(s)';
+$string['enableenrol'] = 'activé(s)';
 $string['displayoldreport'] = 'Afficher un ancien rapport';
 $string['discardfileonfailure'] = 'Ecarter le fichier sur les exceptions de traitement';
 $string['emptycats'] = 'Catégories vides sous : {$a}';
